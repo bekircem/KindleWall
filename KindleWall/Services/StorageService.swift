@@ -1,0 +1,184 @@
+import Foundation
+
+// MARK: - Protocol
+
+/// Protocol for persisting user preferences and application state.
+protocol StorageServiceProtocol {
+    /// The security-scoped bookmark data for the clippings file.
+    var clippingsFileBookmark: Data? { get set }
+
+    /// The selected wallpaper style.
+    var selectedStyle: WallpaperStyle { get set }
+
+    /// The schedule interval for wallpaper changes.
+    var scheduleInterval: ScheduleInterval { get set }
+
+    /// Custom schedule date (for .custom interval).
+    var customScheduleDate: Date? { get set }
+
+    /// IDs of clippings that have already been shown.
+    var shownClippingIDs: Set<UUID> { get set }
+
+    /// IDs of favorite clippings.
+    var favoriteClippingIDs: Set<UUID> { get set }
+
+    /// The URL of the wallpaper that was active before KindleWall.
+    var previousWallpaperURL: URL? { get set }
+
+    /// Whether the app should launch at login.
+    var launchAtLogin: Bool { get set }
+
+    /// Whether to show the menu bar icon.
+    var showInMenuBar: Bool { get set }
+
+    /// Whether to show notifications on wallpaper change.
+    var showNotifications: Bool { get set }
+
+    /// Whether the user has completed onboarding.
+    var hasCompletedOnboarding: Bool { get set }
+
+    /// Resolves the security-scoped bookmark to a file URL.
+    /// - Returns: The resolved file URL, or nil if resolution fails.
+    func resolveClippingsFileURL() -> URL?
+
+    /// Creates and stores a security-scoped bookmark for the given URL.
+    /// - Parameter url: The file URL to bookmark.
+    /// - Throws: KindleWallError if bookmark creation fails.
+    func saveClippingsFileBookmark(for url: URL) throws
+}
+
+// MARK: - Implementation
+
+/// Persists user preferences using UserDefaults and security-scoped bookmarks.
+final class StorageService: StorageServiceProtocol {
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    // MARK: - Clippings File Bookmark
+
+    var clippingsFileBookmark: Data? {
+        get { defaults.data(forKey: Constants.StorageKeys.clippingsFileBookmark) }
+        set { defaults.set(newValue, forKey: Constants.StorageKeys.clippingsFileBookmark) }
+    }
+
+    func resolveClippingsFileURL() -> URL? {
+        guard let bookmarkData = clippingsFileBookmark else { return nil }
+        var isStale = false
+        guard let url = try? URL(
+            resolvingBookmarkData: bookmarkData,
+            options: .withSecurityScope,
+            relativeTo: nil,
+            bookmarkDataIsStale: &isStale
+        ) else { return nil }
+
+        if isStale {
+            // Try to refresh the bookmark
+            if let newBookmark = try? url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) {
+                clippingsFileBookmark = newBookmark
+            }
+        }
+
+        return url
+    }
+
+    func saveClippingsFileBookmark(for url: URL) throws {
+        guard let bookmarkData = try? url.bookmarkData(
+            options: .withSecurityScope,
+            includingResourceValuesForKeys: nil,
+            relativeTo: nil
+        ) else {
+            throw KindleWallError.bookmarkCreationFailed
+        }
+        clippingsFileBookmark = bookmarkData
+    }
+
+    // MARK: - Style
+
+    var selectedStyle: WallpaperStyle {
+        get {
+            guard let raw = defaults.string(forKey: Constants.StorageKeys.selectedStyle),
+                  let style = WallpaperStyle(rawValue: raw) else {
+                return .minimalDark
+            }
+            return style
+        }
+        set { defaults.set(newValue.rawValue, forKey: Constants.StorageKeys.selectedStyle) }
+    }
+
+    // MARK: - Schedule
+
+    var scheduleInterval: ScheduleInterval {
+        get {
+            guard let raw = defaults.string(forKey: Constants.StorageKeys.scheduleInterval),
+                  let interval = ScheduleInterval(rawValue: raw) else {
+                return .hourly
+            }
+            return interval
+        }
+        set { defaults.set(newValue.rawValue, forKey: Constants.StorageKeys.scheduleInterval) }
+    }
+
+    var customScheduleDate: Date? {
+        get { defaults.object(forKey: Constants.StorageKeys.customScheduleDate) as? Date }
+        set { defaults.set(newValue, forKey: Constants.StorageKeys.customScheduleDate) }
+    }
+
+    // MARK: - Shown Clippings
+
+    var shownClippingIDs: Set<UUID> {
+        get {
+            guard let array = defaults.stringArray(forKey: Constants.StorageKeys.shownClippingIDs) else { return [] }
+            return Set(array.compactMap { UUID(uuidString: $0) })
+        }
+        set {
+            defaults.set(Array(newValue.map { $0.uuidString }), forKey: Constants.StorageKeys.shownClippingIDs)
+        }
+    }
+
+    // MARK: - Favorites
+
+    var favoriteClippingIDs: Set<UUID> {
+        get {
+            guard let array = defaults.stringArray(forKey: Constants.StorageKeys.favoriteClippingIDs) else { return [] }
+            return Set(array.compactMap { UUID(uuidString: $0) })
+        }
+        set {
+            defaults.set(Array(newValue.map { $0.uuidString }), forKey: Constants.StorageKeys.favoriteClippingIDs)
+        }
+    }
+
+    // MARK: - Previous Wallpaper
+
+    var previousWallpaperURL: URL? {
+        get {
+            guard let path = defaults.string(forKey: Constants.StorageKeys.previousWallpaperPath) else { return nil }
+            return URL(fileURLWithPath: path)
+        }
+        set { defaults.set(newValue?.path, forKey: Constants.StorageKeys.previousWallpaperPath) }
+    }
+
+    // MARK: - General Settings
+
+    var launchAtLogin: Bool {
+        get { defaults.bool(forKey: Constants.StorageKeys.launchAtLogin) }
+        set { defaults.set(newValue, forKey: Constants.StorageKeys.launchAtLogin) }
+    }
+
+    var showInMenuBar: Bool {
+        get { defaults.object(forKey: Constants.StorageKeys.showInMenuBar) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Constants.StorageKeys.showInMenuBar) }
+    }
+
+    var showNotifications: Bool {
+        get { defaults.object(forKey: Constants.StorageKeys.showNotifications) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Constants.StorageKeys.showNotifications) }
+    }
+
+    var hasCompletedOnboarding: Bool {
+        get { defaults.bool(forKey: Constants.StorageKeys.hasCompletedOnboarding) }
+        set { defaults.set(newValue, forKey: Constants.StorageKeys.hasCompletedOnboarding) }
+    }
+}

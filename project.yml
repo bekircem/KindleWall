@@ -1,0 +1,37 @@
+name: KindleWall
+options:
+  bundleIdPrefix: com.kindlewall
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    GENERATE_INFOPLIST_FILE: false
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGNING_REQUIRED: "NO"
+
+targets:
+  KindleWall:
+    type: application
+    platform: macOS
+    sources:
+      - path: KindleWall
+        excludes:
+          - "Resources/Info.plist"
+          - "Resources/KindleWall.entitlements"
+    info:
+      path: KindleWall/Resources/Info.plist
+    entitlements:
+      path: KindleWall/Resources/KindleWall.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kindlewall.app
+        INFOPLIST_FILE: KindleWall/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: KindleWall/Resources/KindleWall.entitlements
+        PRODUCT_NAME: KindleWall
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    dependencies: []

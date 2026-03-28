@@ -1,0 +1,64 @@
+import Foundation
+import SwiftUI
+
+/// Application-wide constants.
+enum Constants {
+    /// App metadata
+    enum App {
+        static let name = "KindleWall"
+        static let bundleIdentifier = "com.kindlewall.app"
+        static let version = "1.0.0"
+    }
+
+    /// Directory and file paths
+    enum Paths {
+        static let appSupportDirectory: URL = {
+            let paths = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
+            return paths[0].appendingPathComponent(Constants.App.name)
+        }()
+
+        static let wallpapersDirectory: URL = {
+            appSupportDirectory.appendingPathComponent("wallpapers")
+        }()
+    }
+
+    /// Wallpaper rendering constants
+    enum Wallpaper {
+        static let paddingRatio: CGFloat = 0.17
+        static let minFontSize: CGFloat = 18
+        static let maxFontSize: CGFloat = 48
+        static let decorativeQuoteFontSize: CGFloat = 120
+        static let decorativeQuoteOpacity: CGFloat = 0.15
+        static let metaFontSizeRange: ClosedRange<CGFloat> = 16...20
+    }
+
+    /// Storage keys for UserDefaults
+    enum StorageKeys {
+        static let clippingsFileBookmark = "clippingsFileBookmark"
+        static let selectedStyle = "selectedStyle"
+        static let scheduleInterval = "scheduleInterval"
+        static let customScheduleDate = "customScheduleDate"
+        static let shownClippingIDs = "shownClippingIDs"
+        static let favoriteClippingIDs = "favoriteClippingIDs"
+        static let previousWallpaperPath = "previousWallpaperPath"
+        static let launchAtLogin = "launchAtLogin"
+        static let showInMenuBar = "showInMenuBar"
+        static let showNotifications = "showNotifications"
+        static let hasCompletedOnboarding = "hasCompletedOnboarding"
+    }
+
+    /// Menu bar icon name (SF Symbols)
+    enum Icons {
+        static let menuBarIcon = "text.quote"
+        static let newQuote = "dice"
+        static let favorite = "heart"
+        static let favoriteFilled = "heart.fill"
+        static let settings = "gear"
+        static let library = "books.vertical"
+        static let currentQuote = "quote.opening"
+        static let pause = "pause.circle"
+        static let play = "play.circle"
+        static let refresh = "arrow.clockwise"
+        static let wallpaper = "photo"
+    }
+}
