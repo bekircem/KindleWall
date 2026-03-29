@@ -19,7 +19,7 @@ final class MainViewModel {
     private let generator: WallpaperGeneratorProtocol
     private let wallpaperManager: WallpaperManagerProtocol
     private let scheduler: SchedulerServiceProtocol
-    private let storage: StorageServiceProtocol
+    private var storage: StorageServiceProtocol
 
     // MARK: - Init
 

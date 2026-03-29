@@ -72,7 +72,7 @@ struct OnboardingView: View {
         VStack(spacing: 16) {
             Image(systemName: Constants.Icons.currentQuote)
                 .font(.system(size: 64))
-                .foregroundStyle(.accent)
+                .foregroundStyle(Color.accentColor)
 
             Text("KindleWall'a Hoş Geldiniz")
                 .font(.largeTitle)

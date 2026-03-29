@@ -13,7 +13,7 @@ final class LibraryViewModel {
 
     // MARK: - Dependencies
 
-    private let storage: StorageServiceProtocol
+    private var storage: StorageServiceProtocol
 
     init(storage: StorageServiceProtocol = StorageService()) {
         self.storage = storage

@@ -27,7 +27,7 @@ protocol WallpaperManagerProtocol {
 
 /// Manages applying and restoring desktop wallpapers using NSWorkspace.
 final class WallpaperManager: WallpaperManagerProtocol {
-    private let storageService: StorageServiceProtocol
+    private var storageService: StorageServiceProtocol
 
     private(set) var previousWallpaperURL: URL?
 
