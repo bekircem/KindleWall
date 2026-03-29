@@ -9,6 +9,15 @@ struct OnboardingView: View {
     @State private var selectedStyle: WallpaperStyle = .minimalDark
     @State private var selectedInterval: ScheduleInterval = .hourly
 
+    // Preview state
+    @State private var parsedClippings: [Clipping] = []
+    @State private var sampleClipping: Clipping?
+    @State private var previewImage: NSImage?
+    @State private var isGenerating: Bool = false
+
+    private let parser = ClippingsParser()
+    private let generator = WallpaperGenerator()
+
     var body: some View {
         VStack(spacing: 0) {
             // Step content
@@ -48,6 +57,9 @@ struct OnboardingView: View {
                         withAnimation(.spring(duration: 0.3)) {
                             currentStep += 1
                         }
+                        if currentStep == 2 {
+                            loadClippingsAndPreview()
+                        }
                     }
                     .disabled(currentStep == 1 && selectedFileURL == nil)
                     .buttonStyle(.borderedProminent)
@@ -63,7 +75,10 @@ struct OnboardingView: View {
             }
             .padding()
         }
-        .frame(width: 600, height: 450)
+        .frame(width: 700, height: 580)
+        .onChange(of: selectedStyle) { _, _ in
+            generatePreview()
+        }
     }
 
     // MARK: - Steps
@@ -136,25 +151,117 @@ struct OnboardingView: View {
     }
 
     private var styleStep: some View {
-        VStack(spacing: 16) {
-            Text("Stil ve Zamanlama")
-                .font(.title)
-                .fontWeight(.bold)
+        ScrollView {
+            VStack(spacing: 16) {
+                Text("Stil ve Zamanlama")
+                    .font(.title)
+                    .fontWeight(.bold)
 
-            Text("Varsayılan duvar kağıdı stilinizi ve değişim sıklığını seçin.")
-                .foregroundStyle(.secondary)
+                Text("Varsayılan duvar kağıdı stilinizi ve değişim sıklığını seçin.")
+                    .foregroundStyle(.secondary)
 
-            StylePickerView(selectedStyle: $selectedStyle)
-                .padding(.horizontal)
-
-            Picker("Değişim Sıklığı", selection: $selectedInterval) {
-                ForEach(ScheduleInterval.allCases) { interval in
-                    Text(interval.rawValue).tag(interval)
+                // Wallpaper preview
+                Group {
+                    if isGenerating {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(.quaternary)
+                            .aspectRatio(16/10, contentMode: .fit)
+                            .overlay { ProgressView() }
+                    } else {
+                        WallpaperPreviewView(image: previewImage, cornerRadius: 12)
+                    }
                 }
+                .frame(maxHeight: 180)
+                .padding(.horizontal, 40)
+
+                // Preview info and actions
+                if let clipping = sampleClipping {
+                    Text("\"\(clipping.text.truncated(to: 80))\"")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .padding(.horizontal, 40)
+                }
+
+                HStack(spacing: 12) {
+                    Button {
+                        pickRandomClipping()
+                        generatePreview()
+                    } label: {
+                        Label("Farklı Alıntı", systemImage: Constants.Icons.newQuote)
+                    }
+                    .disabled(parsedClippings.isEmpty)
+
+                    Button {
+                        applyPreviewWallpaper()
+                    } label: {
+                        Label("Wallpaper Uygula", systemImage: Constants.Icons.wallpaper)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(previewImage == nil)
+                }
+
+                StylePickerView(selectedStyle: $selectedStyle)
+                    .padding(.horizontal)
+
+                Picker("Değişim Sıklığı", selection: $selectedInterval) {
+                    ForEach(ScheduleInterval.allCases) { interval in
+                        Text(interval.rawValue).tag(interval)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 40)
             }
-            .pickerStyle(.segmented)
-            .padding(.horizontal, 40)
+            .padding()
         }
-        .padding()
+    }
+
+    // MARK: - Preview Helpers
+
+    private func loadClippingsAndPreview() {
+        guard let url = selectedFileURL else { return }
+        guard parsedClippings.isEmpty else { return }
+
+        do {
+            parsedClippings = try parser.parse(fileURL: url)
+            pickRandomClipping()
+            generatePreview()
+        } catch {
+            // Silently fail — user will see empty preview
+        }
+    }
+
+    private func pickRandomClipping() {
+        sampleClipping = parsedClippings.randomElement()
+    }
+
+    private func generatePreview() {
+        guard let clipping = sampleClipping else { return }
+        guard let screen = NSScreen.main else { return }
+
+        isGenerating = true
+        let screenSize = CGSize(
+            width: screen.frame.size.width * screen.backingScaleFactor,
+            height: screen.frame.size.height * screen.backingScaleFactor
+        )
+        let style = selectedStyle
+
+        Task.detached {
+            let image = generator.generateWallpaper(
+                clipping: clipping,
+                style: style,
+                screenSize: screenSize
+            )
+            await MainActor.run {
+                previewImage = image
+                isGenerating = false
+            }
+        }
+    }
+
+    private func applyPreviewWallpaper() {
+        guard let image = previewImage else { return }
+        let manager = WallpaperManager(storageService: StorageService())
+        try? manager.setWallpaper(image: image)
     }
 }
