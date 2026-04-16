@@ -37,6 +37,27 @@ protocol StorageServiceProtocol {
     /// Whether the user has completed onboarding.
     var hasCompletedOnboarding: Bool { get set }
 
+    /// Typography settings for wallpaper rendering.
+    var typography: TypographySettings { get set }
+
+    /// Whether to apply wallpaper to all Mission Control spaces (not just the active one).
+    var applyToAllSpaces: Bool { get set }
+
+    /// User-supplied metadata corrections keyed by original parsed book title.
+    var bookMetadataOverrides: [String: BookMetadataOverride] { get set }
+
+    /// IDs of all clippings seen across imports (for incremental merge detection).
+    var persistedClippingIDs: Set<UUID> { get set }
+
+    /// The active rotation mode for clipping selection.
+    var rotationMode: RotationMode { get set }
+
+    /// The book title currently being exhausted in bookByBook mode.
+    var currentBookTitle: String? { get set }
+
+    /// Raw book titles pinned by the user for pinnedBooks mode.
+    var pinnedBookTitles: [String] { get set }
+
     /// Resolves the security-scoped bookmark to a file URL.
     /// - Returns: The resolved file URL, or nil if resolution fails.
     func resolveClippingsFileURL() -> URL?
@@ -180,5 +201,82 @@ final class StorageService: StorageServiceProtocol {
     var hasCompletedOnboarding: Bool {
         get { defaults.bool(forKey: Constants.StorageKeys.hasCompletedOnboarding) }
         set { defaults.set(newValue, forKey: Constants.StorageKeys.hasCompletedOnboarding) }
+    }
+
+    // MARK: - Spaces
+
+    var applyToAllSpaces: Bool {
+        get { defaults.object(forKey: Constants.StorageKeys.applyToAllSpaces) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Constants.StorageKeys.applyToAllSpaces) }
+    }
+
+    // MARK: - Book Metadata Overrides
+
+    var bookMetadataOverrides: [String: BookMetadataOverride] {
+        get {
+            guard let data = defaults.data(forKey: Constants.StorageKeys.bookMetadataOverrides),
+                  let overrides = try? JSONDecoder().decode([String: BookMetadataOverride].self, from: data)
+            else { return [:] }
+            return overrides
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                defaults.set(data, forKey: Constants.StorageKeys.bookMetadataOverrides)
+            }
+        }
+    }
+
+    // MARK: - Persisted Clipping IDs
+
+    var persistedClippingIDs: Set<UUID> {
+        get {
+            guard let array = defaults.stringArray(forKey: Constants.StorageKeys.persistedClippingIDs) else { return [] }
+            return Set(array.compactMap { UUID(uuidString: $0) })
+        }
+        set {
+            defaults.set(Array(newValue.map { $0.uuidString }), forKey: Constants.StorageKeys.persistedClippingIDs)
+        }
+    }
+
+    // MARK: - Rotation Mode
+
+    var rotationMode: RotationMode {
+        get {
+            guard let raw = defaults.string(forKey: Constants.StorageKeys.rotationMode),
+                  let mode = RotationMode(rawValue: raw) else { return .allRandom }
+            return mode
+        }
+        set { defaults.set(newValue.rawValue, forKey: Constants.StorageKeys.rotationMode) }
+    }
+
+    // MARK: - Current Book (bookByBook state)
+
+    var currentBookTitle: String? {
+        get { defaults.string(forKey: Constants.StorageKeys.currentBookTitle) }
+        set { defaults.set(newValue, forKey: Constants.StorageKeys.currentBookTitle) }
+    }
+
+    // MARK: - Pinned Book Titles
+
+    var pinnedBookTitles: [String] {
+        get { defaults.stringArray(forKey: Constants.StorageKeys.pinnedBookTitles) ?? [] }
+        set { defaults.set(newValue, forKey: Constants.StorageKeys.pinnedBookTitles) }
+    }
+
+    // MARK: - Typography
+
+    var typography: TypographySettings {
+        get {
+            guard let data = defaults.data(forKey: Constants.StorageKeys.typographySettings),
+                  let settings = try? JSONDecoder().decode(TypographySettings.self, from: data) else {
+                return .default
+            }
+            return settings
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                defaults.set(data, forKey: Constants.StorageKeys.typographySettings)
+            }
+        }
     }
 }

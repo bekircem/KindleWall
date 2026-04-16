@@ -1,16 +1,37 @@
 import AppKit
 import ServiceManagement
+import UserNotifications
 
 /// Manages NSApplication lifecycle and login item registration.
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Ensure the wallpapers directory exists
         ensureDirectoriesExist()
+
+        // Set delegate so notifications appear while the app is in the foreground.
+        // Without this, macOS silently suppresses notifications from the active app.
+        UNUserNotificationCenter.current().delegate = self
+
+        // Request authorization on every launch — no-op if already granted or denied.
+        Task {
+            _ = await NotificationService().requestAuthorization()
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         // Keep the app running in menu bar even when the window is closed
         return false
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    /// Shows notification banners even when KindleWall is the active application.
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner])
     }
 
     // MARK: - Private

@@ -1,0 +1,201 @@
+import SwiftUI
+
+/// Sheet for editing a book's display title and author.
+/// Shows the raw parsed value as read-only reference, lets the user override both fields,
+/// and offers an auto-correct suggestion fetched from Google Books API.
+struct BookMetadataEditView: View {
+    let book: Book
+    var existingOverride: BookMetadataOverride?
+    var onSave: (BookMetadataOverride) -> Void = { _ in }
+    var onReset: () -> Void = {}
+
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var editTitle: String = ""
+    @State private var editAuthor: String = ""
+    @State private var suggestionState: SuggestionState = .idle
+    private var isSuggestionLoading: Bool {
+        if case .loading = suggestionState { return true }
+        return false
+    }
+
+    fileprivate enum SuggestionState {
+        case idle, loading
+        case found(title: String, author: String?)
+        case notFound
+    }
+
+    // Raw values from the clippings file — shown as reference, not editable
+    private var rawReference: String {
+        if let a = book.author { return "\(book.title) (\(a))" }
+        return book.title
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            // Title
+            Text("Metadata Düzenle")
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            // Raw parsed value as read-only reference
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Dosyadan okunan:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(rawReference)
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(2)
+            }
+
+            Divider()
+
+            // Edit fields
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Kitap Adı")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    TextField("Kitap adını girin", text: $editTitle)
+                        .textFieldStyle(.roundedBorder)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Yazar")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    TextField("Yazar adını girin", text: $editAuthor)
+                        .textFieldStyle(.roundedBorder)
+                }
+            }
+
+            // Auto-correct box
+            GroupBox {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Button("Otomatik Düzelt") {
+                            Task { await fetchSuggestion() }
+                        }
+                        .disabled(isSuggestionLoading)
+
+                        if isSuggestionLoading {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                                .padding(.leading, 4)
+                        }
+
+                        Spacer()
+                    }
+
+                    switch suggestionState {
+                    case .idle:
+                        Text("Google Books'tan başlık ve yazar önerisi alır.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                    case .loading:
+                        EmptyView()
+
+                    case .found(let sugTitle, let sugAuthor):
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Öneri:")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text("Ad: \(sugTitle)")
+                                .font(.caption)
+                            if let a = sugAuthor {
+                                Text("Yazar: \(a)")
+                                    .font(.caption)
+                            }
+                        }
+
+                        Button("Uygula") {
+                            editTitle = sugTitle
+                            editAuthor = sugAuthor ?? ""
+                        }
+                        .buttonStyle(.bordered)
+
+                    case .notFound:
+                        Text("Eşleşen kitap bulunamadı. Lütfen manuel düzeltin.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            Spacer()
+
+            // Action buttons
+            HStack {
+                // Reset to original — only enabled if an override exists
+                Button("Sıfırla") {
+                    onReset()
+                    dismiss()
+                }
+                .foregroundStyle(.red)
+                .disabled(existingOverride == nil)
+
+                Spacer()
+
+                Button("İptal") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+
+                Button("Kaydet") {
+                    let author = editAuthor.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let override = BookMetadataOverride(
+                        originalTitle: book.title,
+                        displayTitle: editTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                            ? book.title
+                            : editTitle.trimmingCharacters(in: .whitespacesAndNewlines),
+                        displayAuthor: author.isEmpty ? nil : author
+                    )
+                    onSave(override)
+                    dismiss()
+                }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(24)
+        .frame(width: 400)
+        .onAppear {
+            editTitle = book.displayTitle
+            editAuthor = book.displayAuthor ?? ""
+        }
+    }
+
+    // MARK: - Auto-correct
+
+    private func fetchSuggestion() async {
+        suggestionState = .loading
+        let query = editTitle
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? editTitle
+        let urlString = "https://www.googleapis.com/books/v1/volumes?q=intitle:\(query)&maxResults=1"
+        guard let url = URL(string: urlString) else {
+            suggestionState = .notFound
+            return
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            guard
+                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                let items = json["items"] as? [[String: Any]],
+                let first = items.first,
+                let volumeInfo = first["volumeInfo"] as? [String: Any],
+                let title = volumeInfo["title"] as? String
+            else {
+                suggestionState = .notFound
+                return
+            }
+            let author = (volumeInfo["authors"] as? [String])?.first
+            suggestionState = .found(title: title, author: author)
+        } catch {
+            suggestionState = .notFound
+        }
+    }
+}
+

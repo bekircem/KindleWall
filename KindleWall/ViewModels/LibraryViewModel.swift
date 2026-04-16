@@ -1,15 +1,22 @@
 import SwiftUI
 import Observation
 
+enum LibraryViewMode {
+    case list, card
+}
+
 /// Manages the state for the clipping library view.
 @Observable
 final class LibraryViewModel {
     // MARK: - State
 
     var searchText: String = ""
-    var selectedBookFilter: String?
     var showFavoritesOnly: Bool = false
     var selectedClipping: Clipping?
+    var viewMode: LibraryViewMode = .list
+
+    /// In-memory cache of user metadata overrides (keyed by original title).
+    var metadataOverrides: [String: BookMetadataOverride] = [:]
 
     // MARK: - Dependencies
 
@@ -17,42 +24,63 @@ final class LibraryViewModel {
 
     init(storage: StorageServiceProtocol = StorageService()) {
         self.storage = storage
+        self.metadataOverrides = storage.bookMetadataOverrides
     }
 
-    // MARK: - Computed
+    // MARK: - Book grouping
 
-    /// Filters clippings based on search text, book filter, and favorites toggle.
-    func filteredClippings(from clippings: [Clipping]) -> [Clipping] {
-        var result = clippings
+    /// Groups clippings into Book objects, applies metadata overrides, sorts by displayTitle.
+    func books(from clippings: [Clipping]) -> [Book] {
+        var dict: [String: (author: String?, clippings: [Clipping])] = [:]
+        for c in clippings {
+            if dict[c.bookTitle] == nil {
+                dict[c.bookTitle] = (c.author, [c])
+            } else {
+                dict[c.bookTitle]!.clippings.append(c)
+            }
+        }
+        return dict.map { key, value in
+            let ov = metadataOverrides[key]
+            return Book(
+                title: key,
+                author: value.author,
+                clippings: value.clippings,
+                displayTitle: ov?.displayTitle,
+                displayAuthor: ov?.displayAuthor
+            )
+        }
+        .sorted { $0.displayTitle.localizedCompare($1.displayTitle) == .orderedAscending }
+    }
 
-        // Filter by favorites
+    /// Filters books by search text (against displayTitle/displayAuthor) and favorites toggle.
+    func filteredBooks(from clippings: [Clipping]) -> [Book] {
+        var result = books(from: clippings)
+
         if showFavoritesOnly {
-            let favorites = storage.favoriteClippingIDs
-            result = result.filter { favorites.contains($0.id) }
+            let favIDs = storage.favoriteClippingIDs
+            result = result.filter { book in
+                book.clippings.contains { favIDs.contains($0.id) }
+            }
         }
 
-        // Filter by book
-        if let book = selectedBookFilter {
-            result = result.filter { $0.bookTitle == book }
-        }
-
-        // Filter by search text
         if !searchText.isEmpty {
-            let query = searchText.lowercased()
+            let q = searchText.lowercased()
             result = result.filter {
-                $0.text.lowercased().contains(query) ||
-                $0.bookTitle.lowercased().contains(query) ||
-                ($0.author?.lowercased().contains(query) ?? false)
+                $0.displayTitle.lowercased().contains(q) ||
+                ($0.displayAuthor?.lowercased().contains(q) ?? false)
             }
         }
 
         return result
     }
 
-    /// Returns a sorted list of unique book titles from the clippings.
-    func bookTitles(from clippings: [Clipping]) -> [String] {
-        Array(Set(clippings.map { $0.bookTitle })).sorted()
+    /// Checks if a book has at least one favorite clipping.
+    func hasFavorite(_ book: Book) -> Bool {
+        let favIDs = storage.favoriteClippingIDs
+        return book.clippings.contains { favIDs.contains($0.id) }
     }
+
+    // MARK: - Clipping-level favorites (used in BookDetailView)
 
     /// Checks if a clipping is a favorite.
     func isFavorite(_ clipping: Clipping) -> Bool {
@@ -68,5 +96,19 @@ final class LibraryViewModel {
             favorites.insert(clipping.id)
         }
         storage.favoriteClippingIDs = favorites
+    }
+
+    // MARK: - Metadata Overrides
+
+    /// Saves or updates a metadata override and persists it to storage.
+    func saveMetadataOverride(_ override: BookMetadataOverride) {
+        metadataOverrides[override.originalTitle] = override
+        storage.bookMetadataOverrides = metadataOverrides
+    }
+
+    /// Removes the metadata override for the given original title.
+    func removeMetadataOverride(forTitle title: String) {
+        metadataOverrides.removeValue(forKey: title)
+        storage.bookMetadataOverrides = metadataOverrides
     }
 }

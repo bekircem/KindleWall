@@ -31,9 +31,22 @@ final class WallpaperManager: WallpaperManagerProtocol {
 
     private(set) var previousWallpaperURL: URL?
 
+    /// The last wallpaper URL applied by KindleWall — used by the space-change observer.
+    private var currentWallpaperURL: URL?
+
     init(storageService: StorageServiceProtocol) {
         self.storageService = storageService
         self.previousWallpaperURL = storageService.previousWallpaperURL
+
+        // Observe Mission Control space changes so we can re-apply the wallpaper
+        // whenever the user switches to (or creates) a space that hasn't received it yet.
+        // This requires no special permissions and works whether running from Xcode or installed.
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(activeSpaceDidChange(_:)),
+            name: NSWorkspace.activeSpaceDidChangeNotification,
+            object: nil
+        )
     }
 
     func setWallpaper(image: NSImage) throws {
@@ -50,17 +63,26 @@ final class WallpaperManager: WallpaperManagerProtocol {
         // Capture current wallpaper before changing
         captureCurrentWallpaper()
 
+        // Track so the space-change observer knows which wallpaper to re-apply
+        currentWallpaperURL = fileURL
+
         let screens = NSScreen.screens
         guard !screens.isEmpty else {
             throw KindleWallError.screenNotAvailable
         }
 
+        // Apply immediately to the active space on every screen (instant visual feedback)
         for screen in screens {
             do {
                 try NSWorkspace.shared.setDesktopImageURL(fileURL, for: screen, options: [:])
             } catch {
                 throw KindleWallError.wallpaperApplyFailed(underlying: error)
             }
+        }
+
+        // Apply to all Mission Control spaces in the background via osascript
+        if storageService.applyToAllSpaces {
+            applyToAllSpacesInBackground(fileURL: fileURL)
         }
     }
 
@@ -74,9 +96,61 @@ final class WallpaperManager: WallpaperManagerProtocol {
                 throw KindleWallError.wallpaperApplyFailed(underlying: error)
             }
         }
+        if storageService.applyToAllSpaces {
+            applyToAllSpacesInBackground(fileURL: previousURL)
+        }
     }
 
     // MARK: - Private
+
+    /// Fires whenever the user switches to a different Mission Control space (or activates a new one).
+    /// Applies the current KindleWall wallpaper to all screens in the newly active space.
+    /// Uses only NSWorkspace — no special Automation permission required.
+    @objc private func activeSpaceDidChange(_ notification: Notification) {
+        guard storageService.applyToAllSpaces,
+              let wallpaperURL = currentWallpaperURL else { return }
+        DispatchQueue.main.async {
+            for screen in NSScreen.screens {
+                try? NSWorkspace.shared.setDesktopImageURL(wallpaperURL, for: screen, options: [:])
+            }
+        }
+    }
+
+    /// Uses System Events AppleScript to apply the wallpaper to every Space on every screen.
+    /// `NSWorkspace.setDesktopImageURL` only targets the *active* Space; osascript covers all immediately.
+    /// Runs in background — caller gets instant feedback from the NSWorkspace call above.
+    /// NOTE: Requires Automation permission (System Settings → Privacy & Security → Automation).
+    /// When running from Xcode this often fails silently; the activeSpaceDidChange observer handles
+    /// coverage in that case (lazily, on each space visit).
+    private func applyToAllSpacesInBackground(fileURL: URL) {
+        // Escape backslashes and quotes so the path is safe inside an AppleScript string literal
+        let safePath = fileURL.path
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+
+        let script = """
+        tell application "System Events"
+            tell every desktop
+                set picture to "\(safePath)"
+            end tell
+        end tell
+        """
+
+        Task.detached(priority: .background) {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+            process.arguments = ["-e", script]
+            process.standardOutput = FileHandle.nullDevice
+            process.standardError = FileHandle.nullDevice
+            try? process.run()
+            process.waitUntilExit()
+            if process.terminationStatus != 0 {
+                // Most likely cause: Automation permission not granted for System Events.
+                // Go to System Settings → Privacy & Security → Automation and enable it for KindleWall.
+                print("[WallpaperManager] osascript failed (exit \(process.terminationStatus)) — Automation permission for System Events may not be granted")
+            }
+        }
+    }
 
     private func captureCurrentWallpaper() {
         if let screen = NSScreen.main {

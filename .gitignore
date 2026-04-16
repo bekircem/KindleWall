@@ -1,6 +1,7 @@
 # Xcode
 build/
 DerivedData/
+.xcode-derived/
 *.xcuserdata
 *.xcworkspace
 !*.xcworkspace/contents.xcworkspacedata
@@ -22,3 +23,7 @@ profile
 *.moved-aside
 *.xccheckout
 *.xcscmblueprint
+
+# Claude Code tooling (local only)
+.claude/TODO.md
+.claude/settings.local.json

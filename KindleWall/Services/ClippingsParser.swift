@@ -9,6 +9,16 @@ protocol ClippingsParserProtocol {
     /// - Returns: An array of parsed Clipping objects.
     /// - Throws: KindleWallError if the file cannot be read or parsed.
     func parse(fileURL: URL) throws -> [Clipping]
+
+    /// Async variant with progress reporting for background imports.
+    /// - Parameters:
+    ///   - fileURL: The URL of the clippings file.
+    ///   - progressHandler: Called periodically with (0.0–1.0 progress, current book title).
+    /// - Returns: An array of parsed Clipping objects.
+    func parse(
+        fileURL: URL,
+        progressHandler: @MainActor @Sendable (Double, String?) -> Void
+    ) async throws -> [Clipping]
 }
 
 // MARK: - Implementation
@@ -41,10 +51,49 @@ final class ClippingsParser: ClippingsParserProtocol {
         for entry in rawEntries {
             guard let clipping = parseEntry(entry) else { continue }
 
-            // Filter out bookmarks and empty texts
-            guard clipping.type != .bookmark, !clipping.text.trimmed.isEmpty else { continue }
+            // Filter out bookmarks, notes, and empty texts — only highlights shown
+            guard clipping.type != .bookmark, clipping.type != .note, !clipping.text.trimmed.isEmpty else { continue }
 
             // Deduplicate by text content
+            let normalizedText = clipping.text.trimmed.lowercased()
+            guard !seenTexts.contains(normalizedText) else { continue }
+
+            seenTexts.insert(normalizedText)
+            clippings.append(clipping)
+        }
+
+        return clippings
+    }
+
+    func parse(
+        fileURL: URL,
+        progressHandler: @MainActor @Sendable (Double, String?) -> Void
+    ) async throws -> [Clipping] {
+        let content: String
+        do {
+            content = try String(contentsOf: fileURL, encoding: .utf8)
+        } catch {
+            throw KindleWallError.fileReadFailed(underlying: error)
+        }
+
+        let rawEntries = content.components(separatedBy: Self.separator)
+        let total = max(rawEntries.count, 1)
+        var clippings: [Clipping] = []
+        var seenTexts: Set<String> = []
+
+        for (index, entry) in rawEntries.enumerated() {
+            if index % 50 == 0 {
+                try Task.checkCancellation()
+                let progress = Double(index) / Double(total)
+                let firstLine = entry.components(separatedBy: "\n")
+                    .map { $0.trimmed }
+                    .first(where: { !$0.isEmpty })
+                await progressHandler(progress, firstLine)
+            }
+
+            guard let clipping = parseEntry(entry) else { continue }
+            guard clipping.type != .bookmark, clipping.type != .note, !clipping.text.trimmed.isEmpty else { continue }
+
             let normalizedText = clipping.text.trimmed.lowercased()
             guard !seenTexts.contains(normalizedText) else { continue }
 
@@ -77,7 +126,10 @@ final class ClippingsParser: ClippingsParserProtocol {
         // Parse metadata (type, page, location, date)
         let metadata = parseMetadataLine(metadataLine)
 
+        let id = Clipping.deterministicID(bookTitle: bookTitle, text: text)
+
         return Clipping(
+            id: id,
             bookTitle: bookTitle,
             author: author,
             text: text,

@@ -9,17 +9,30 @@ final class MainViewModel {
     var currentClipping: Clipping?
     var currentWallpaperImage: NSImage?
     var selectedStyle: WallpaperStyle
+    var typography: TypographySettings = .default
     var isLoading: Bool = false
     var errorMessage: String?
     var clippings: [Clipping] = []
+    private(set) var isSchedulerPaused: Bool = false
 
     // MARK: - Dependencies
 
     private let parser: ClippingsParserProtocol
     private let generator: WallpaperGeneratorProtocol
     private let wallpaperManager: WallpaperManagerProtocol
-    private let scheduler: SchedulerServiceProtocol
+    private var scheduler: SchedulerServiceProtocol
     private var storage: StorageServiceProtocol
+    private let notificationService: NotificationServiceProtocol
+    let importState: ImportState
+
+    // MARK: - Preview task management
+
+    private var previewTask: Task<Void, Never>?
+    private var previewGeneration: Int = 0
+
+    // MARK: - Import task management
+
+    private var importTask: Task<Void, Never>?
 
     // MARK: - Init
 
@@ -28,89 +41,249 @@ final class MainViewModel {
         generator: WallpaperGeneratorProtocol = WallpaperGenerator(),
         wallpaperManager: WallpaperManagerProtocol? = nil,
         scheduler: SchedulerServiceProtocol = SchedulerService(),
-        storage: StorageServiceProtocol = StorageService()
+        storage: StorageServiceProtocol = StorageService(),
+        importState: ImportState = ImportState(),
+        notificationService: NotificationServiceProtocol = NotificationService()
     ) {
         self.parser = parser
         self.generator = generator
         self.storage = storage
         self.scheduler = scheduler
+        self.notificationService = notificationService
         self.selectedStyle = storage.selectedStyle
+        self.typography = storage.typography
+        self.importState = importState
 
         if let wm = wallpaperManager {
             self.wallpaperManager = wm
         } else {
             self.wallpaperManager = WallpaperManager(storageService: storage)
         }
+
+        // Restore stored schedule interval so the scheduler fires at the user's configured cadence
+        self.scheduler.interval = storage.scheduleInterval
+        if let customDate = storage.customScheduleDate {
+            self.scheduler.customDate = customDate
+        }
     }
 
-    // MARK: - Actions
+    // MARK: - Import
+
+    /// Imports clippings from a file URL (or the stored bookmark). Runs async with
+    /// progress reporting and incremental merge.
+    func importClippings(from url: URL? = nil) {
+        guard !importState.isRunning else { return }
+
+        let fileURL: URL
+        if let url {
+            do {
+                try storage.saveClippingsFileBookmark(for: url)
+            } catch {
+                errorMessage = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
+                return
+            }
+            fileURL = url
+        } else {
+            guard let resolved = storage.resolveClippingsFileURL() else {
+                errorMessage = "Lütfen My Clippings.txt dosyasını seçin."
+                return
+            }
+            fileURL = resolved
+        }
+
+        let started = Date()
+        importState.phase = .running
+        importState.progress = 0
+        importState.summary = nil
+        importState.currentBook = nil
+        errorMessage = nil
+
+        importTask?.cancel()
+        importTask = Task { [weak self] in
+            guard let self else { return }
+
+            let accessing = fileURL.startAccessingSecurityScopedResource()
+            defer { if accessing { fileURL.stopAccessingSecurityScopedResource() } }
+
+            do {
+                let parsed = try await self.parser.parse(fileURL: fileURL) { progress, book in
+                    self.importState.progress = progress
+                    self.importState.currentBook = book
+                }
+
+                await MainActor.run {
+                    self.mergeClippings(parsed, started: started)
+                }
+            } catch is CancellationError {
+                await MainActor.run {
+                    self.importState.phase = .idle
+                }
+            } catch {
+                await MainActor.run {
+                    let message = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
+                    self.importState.phase = .failed(message)
+                    self.errorMessage = message
+                }
+            }
+        }
+    }
+
+    /// Merges parsed clippings with existing data, computing new vs. known counts.
+    @MainActor
+    private func mergeClippings(_ incoming: [Clipping], started: Date) {
+        let knownIDs = storage.persistedClippingIDs
+        let existingBookTitles = Set(clippings.map(\.bookTitle))
+
+        let newClippings = incoming.filter { !knownIDs.contains($0.id) }
+
+        clippings = incoming
+        storage.persistedClippingIDs = Set(incoming.map(\.id))
+
+        let newBookTitles = Set(newClippings.map(\.bookTitle)).subtracting(existingBookTitles)
+
+        importState.summary = ImportSummary(
+            totalClippings: incoming.count,
+            newClippings: newClippings.count,
+            totalBooks: Set(incoming.map(\.bookTitle)).count,
+            newBooks: newBookTitles.count,
+            duration: Date().timeIntervalSince(started)
+        )
+        importState.phase = .completed
+        importState.progress = 1.0
+
+        if currentClipping == nil && !clippings.isEmpty {
+            selectRandomClipping()
+        }
+    }
+
+    // MARK: - Legacy loaders (redirect to importClippings)
 
     /// Loads clippings from the stored file bookmark.
     func loadClippings() {
-        guard let fileURL = storage.resolveClippingsFileURL() else {
-            errorMessage = "Lütfen My Clippings.txt dosyasını seçin."
-            return
-        }
-
-        isLoading = true
-        errorMessage = nil
-
-        let accessing = fileURL.startAccessingSecurityScopedResource()
-        defer {
-            if accessing { fileURL.stopAccessingSecurityScopedResource() }
-        }
-
-        do {
-            clippings = try parser.parse(fileURL: fileURL)
-            if clippings.isEmpty {
-                errorMessage = "Dosyada alıntı bulunamadı."
-            }
-        } catch {
-            errorMessage = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
-        }
-
-        isLoading = false
+        importClippings()
     }
 
     /// Loads clippings from a specific file URL (e.g., from onboarding).
     func loadClippings(from url: URL) {
-        do {
-            try storage.saveClippingsFileBookmark(for: url)
-        } catch {
-            errorMessage = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
-            return
-        }
-        loadClippings()
+        importClippings(from: url)
     }
 
-    /// Selects a random unshown clipping and generates a wallpaper preview.
+    // MARK: - Actions
+
+    /// Selects the next clipping according to the active rotation mode and generates a preview.
     func selectRandomClipping() {
         guard !clippings.isEmpty else {
             errorMessage = "Yüklü alıntı yok."
             return
         }
+        errorMessage = nil
+        switch storage.rotationMode {
+        case .allRandom:   selectAllRandom()
+        case .bookByBook:  selectBookByBook()
+        case .pinnedBooks: selectFromPinnedBooks()
+        }
+        generatePreview()
+    }
 
+    /// Selects a random clipping from all loaded clippings, cycling without repeat.
+    private func selectAllRandom() {
         var shownIDs = storage.shownClippingIDs
         let unshown = clippings.filter { !shownIDs.contains($0.id) }
+        let selected: Clipping
+        if let next = unshown.randomElement() {
+            selected = next
+        } else {
+            shownIDs.removeAll()
+            storage.shownClippingIDs = shownIDs
+            selected = clippings.randomElement()!
+        }
+        currentClipping = selected
+        shownIDs.insert(selected.id)
+        storage.shownClippingIDs = shownIDs
+    }
+
+    /// Selects a clipping book-by-book, exhausting all quotes in a book before moving on.
+    private func selectBookByBook() {
+        var shownIDs = storage.shownClippingIDs
+
+        // Determine active book; pick randomly if none stored or book no longer exists
+        let activeBookTitle: String
+        if let stored = storage.currentBookTitle,
+           clippings.contains(where: { $0.bookTitle == stored }) {
+            activeBookTitle = stored
+        } else {
+            let allTitles = Array(Set(clippings.map(\.bookTitle)))
+            guard let picked = allTitles.randomElement() else { return }
+            activeBookTitle = picked
+            storage.currentBookTitle = picked
+        }
+
+        let bookClippings = clippings.filter { $0.bookTitle == activeBookTitle }
+        let unshown = bookClippings.filter { !shownIDs.contains($0.id) }
+
+        if let selected = unshown.randomElement() {
+            // Still have unshown quotes in the current book
+            currentClipping = selected
+            shownIDs.insert(selected.id)
+            storage.shownClippingIDs = shownIDs
+        } else {
+            // Book exhausted — pick a new one
+            let allTitles = Array(Set(clippings.map(\.bookTitle)))
+            let candidates = allTitles.count > 1
+                ? allTitles.filter { $0 != activeBookTitle }
+                : allTitles
+            guard let newTitle = candidates.randomElement() else { return }
+
+            storage.currentBookTitle = newTitle
+
+            // Clear shown IDs only for the new book's clippings; preserve other books
+            let newBookIDs = Set(clippings.filter { $0.bookTitle == newTitle }.map(\.id))
+            shownIDs.subtract(newBookIDs)
+            storage.shownClippingIDs = shownIDs
+
+            let newBookClippings = clippings.filter { $0.bookTitle == newTitle }
+            guard let selected = newBookClippings.randomElement() else { return }
+            currentClipping = selected
+            shownIDs.insert(selected.id)
+            storage.shownClippingIDs = shownIDs
+        }
+    }
+
+    /// Selects a clipping from user-pinned books only, cycling without repeat within that pool.
+    private func selectFromPinnedBooks() {
+        let pinnedTitles = Set(storage.pinnedBookTitles)
+        guard !pinnedTitles.isEmpty else {
+            errorMessage = "Sabitlenmiş kitap yok. Lütfen Ayarlar'dan kitap seçin."
+            selectAllRandom()
+            return
+        }
+
+        let pinnedClippings = clippings.filter { pinnedTitles.contains($0.bookTitle) }
+        guard !pinnedClippings.isEmpty else {
+            errorMessage = "Seçili kitaplarda alıntı bulunamadı."
+            selectAllRandom()
+            return
+        }
+
+        var shownIDs = storage.shownClippingIDs
+        let unshown = pinnedClippings.filter { !shownIDs.contains($0.id) }
 
         let selected: Clipping
         if let next = unshown.randomElement() {
             selected = next
         } else {
-            // All shown — reset and pick again
-            shownIDs.removeAll()
+            // All pinned clippings shown — reset only within the pinned pool
+            let pinnedIDs = Set(pinnedClippings.map(\.id))
+            shownIDs.subtract(pinnedIDs)
             storage.shownClippingIDs = shownIDs
-            selected = clippings.randomElement()!
+            selected = pinnedClippings.randomElement()!
         }
-
         currentClipping = selected
         shownIDs.insert(selected.id)
         storage.shownClippingIDs = shownIDs
-
-        generatePreview()
     }
 
-    /// Generates a wallpaper preview for the current clipping and style.
+    /// Generates a low-resolution wallpaper preview for the app UI.
     func generatePreview() {
         guard let clipping = currentClipping else { return }
         guard let screen = NSScreen.main else {
@@ -118,29 +291,81 @@ final class MainViewModel {
             return
         }
 
-        let screenSize = screen.frame.size * screen.backingScaleFactor
+        // Cancel any in-flight preview render before starting a new one
+        previewTask?.cancel()
+        previewGeneration &+= 1
+        let generation = previewGeneration
 
-        Task.detached { [generator, selectedStyle] in
+        // Use 1x screen size for preview (not Retina) — much faster and readable in the app
+        let previewSize = screen.frame.size
+        let displayClipping = clippingWithOverride(clipping)
+
+        previewTask = Task.detached { [generator, selectedStyle, typography] in
             let image = generator.generateWallpaper(
-                clipping: clipping,
+                clipping: displayClipping,
                 style: selectedStyle,
-                screenSize: screenSize
+                screenSize: previewSize,
+                typography: typography
             )
             await MainActor.run { [weak self] in
-                self?.currentWallpaperImage = image
+                guard let self, self.previewGeneration == generation else { return }
+                self.currentWallpaperImage = image
             }
         }
     }
 
-    /// Applies the current wallpaper preview to the desktop.
+    /// Selects a clipping, updates the preview, and immediately applies the wallpaper.
+    func selectAndApply(_ clipping: Clipping) {
+        currentClipping = clipping
+        generatePreview()
+        applyWallpaper()
+    }
+
+    /// Applies the wallpaper to the desktop at full Retina resolution.
     func applyWallpaper() {
-        guard let image = currentWallpaperImage else { return }
+        guard let clipping = currentClipping else { return }
+        guard let screen = NSScreen.main else {
+            errorMessage = KindleWallError.screenNotAvailable.errorDescription
+            return
+        }
+
+        let fullSize = screen.frame.size * screen.backingScaleFactor
+        let displayClipping = clippingWithOverride(clipping)
+
+        // Render at full resolution for actual wallpaper
+        guard let fullImage = generator.generateWallpaper(
+            clipping: displayClipping,
+            style: selectedStyle,
+            screenSize: fullSize,
+            typography: typography
+        ) else {
+            errorMessage = KindleWallError.wallpaperGenerationFailed(reason: "Render başarısız").errorDescription
+            return
+        }
 
         do {
-            try wallpaperManager.setWallpaper(image: image)
+            try wallpaperManager.setWallpaper(image: fullImage)
+            if storage.showNotifications {
+                notificationService.sendWallpaperChangedNotification(clipping: displayClipping)
+            }
         } catch {
             errorMessage = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
         }
+    }
+
+    /// Returns a copy of the clipping with title/author replaced by the user's saved override, if any.
+    private func clippingWithOverride(_ clipping: Clipping) -> Clipping {
+        guard let ov = storage.bookMetadataOverrides[clipping.bookTitle] else { return clipping }
+        return Clipping(
+            id: clipping.id,
+            bookTitle: ov.displayTitle,
+            author: ov.displayAuthor,
+            text: clipping.text,
+            page: clipping.page,
+            location: clipping.location,
+            dateAdded: clipping.dateAdded,
+            type: clipping.type
+        )
     }
 
     /// Updates the wallpaper style and regenerates the preview.
@@ -148,6 +373,46 @@ final class MainViewModel {
         selectedStyle = style
         storage.selectedStyle = style
         generatePreview()
+    }
+
+    /// Updates typography settings, persists them, and regenerates the preview.
+    func updateTypography(_ settings: TypographySettings) {
+        typography = settings
+        storage.typography = settings
+        generatePreview()
+    }
+
+    /// Updates the rotation mode and clears bookByBook state so the next selection starts fresh.
+    func updateRotationMode(_ mode: RotationMode) {
+        storage.rotationMode = mode
+        storage.currentBookTitle = nil
+    }
+
+    /// Sorted list of unique books (title + first found author) from loaded clippings.
+    var availableBooks: [(title: String, author: String?)] {
+        var seen: [String: String?] = [:]
+        for clipping in clippings where seen[clipping.bookTitle] == nil {
+            seen[clipping.bookTitle] = clipping.author
+        }
+        return seen.map { (title: $0.key, author: $0.value) }
+            .sorted { $0.title < $1.title }
+    }
+
+    /// Re-reads typography from storage and regenerates the preview.
+    /// Called when SettingsView changes decoration style or gradient colors.
+    func reloadTypography() {
+        typography = storage.typography
+        generatePreview()
+    }
+
+    /// Updates the scheduler interval (and optional custom date) from SettingsView.
+    func updateScheduleInterval(_ interval: ScheduleInterval, customDate: Date?) {
+        scheduler.interval = interval
+        storage.scheduleInterval = interval
+        if let date = customDate {
+            scheduler.customDate = date
+            storage.customScheduleDate = date
+        }
     }
 
     /// Toggles the favorite status of the current clipping.
@@ -168,8 +433,23 @@ final class MainViewModel {
         return storage.favoriteClippingIDs.contains(clipping.id)
     }
 
+    /// Returns true if there is a previous wallpaper URL available to restore.
+    var canRestorePreviousWallpaper: Bool {
+        wallpaperManager.previousWallpaperURL != nil
+    }
+
+    /// Restores the desktop wallpaper to the one before KindleWall last changed it.
+    func restorePreviousWallpaper() {
+        do {
+            try wallpaperManager.restorePreviousWallpaper()
+        } catch {
+            errorMessage = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
+        }
+    }
+
     /// Starts the automatic wallpaper change scheduler.
     func startScheduler() {
+        isSchedulerPaused = false
         scheduler.start { [weak self] in
             self?.selectRandomClipping()
             self?.applyWallpaper()
@@ -180,6 +460,15 @@ final class MainViewModel {
     func stopScheduler() {
         scheduler.stop()
     }
+
+    /// Pauses or resumes the automatic wallpaper scheduler.
+    func toggleSchedulerPause() {
+        scheduler.togglePause()
+        isSchedulerPaused = !scheduler.isActive
+    }
+
+    /// The next scheduled wallpaper change date.
+    var nextWallpaperDate: Date? { scheduler.nextChangeDate }
 }
 
 // MARK: - CGSize Helper

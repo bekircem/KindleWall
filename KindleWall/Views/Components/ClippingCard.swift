@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// A card component displaying a single clipping's summary.
+/// A card component displaying a single clipping's text and metadata.
+/// Used in BookDetailView.
 struct ClippingCard: View {
     let clipping: Clipping
     var isFavorite: Bool = false

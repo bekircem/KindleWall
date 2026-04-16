@@ -5,7 +5,7 @@ struct StylePickerView: View {
     @Binding var selectedStyle: WallpaperStyle
 
     private let columns = [
-        GridItem(.adaptive(minimum: 140, maximum: 180), spacing: 12)
+        GridItem(.adaptive(minimum: 160), spacing: 12)
     ]
 
     var body: some View {
@@ -30,15 +30,38 @@ struct StyleCard: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            // Mini preview
-            RoundedRectangle(cornerRadius: 8)
-                .fill(previewGradient)
-                .frame(height: 80)
-                .overlay {
-                    Text("\u{201C}Aa\u{201D}")
-                        .font(.title2)
-                        .foregroundColor(previewTextColor)
+            // Mini preview at wallpaper aspect ratio
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(previewGradient)
+
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("\u{201C}")
+                        .font(.system(size: 24, weight: .bold, design: previewFontDesign))
+                        .foregroundColor(previewTextColor.opacity(0.4))
+                        .padding(.bottom, -4)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Okunmak, binlerce")
+                        Text("farklı hayat yaşamak")
+                        Text("demektir.")
+                    }
+                    .font(.system(size: 9, weight: .regular, design: previewFontDesign))
+                    .foregroundColor(previewTextColor)
+                    .lineLimit(1)
+
+                    Spacer()
+
+                    Text("— Yazar Adı")
+                        .font(.system(size: 8, weight: .light, design: previewFontDesign))
+                        .foregroundColor(previewTextColor.opacity(0.6))
+                        .italic()
                 }
+                .padding(10)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
+            .aspectRatio(16/10, contentMode: .fit)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
 
             Text(style.displayName)
                 .font(.caption)
@@ -79,6 +102,16 @@ struct StyleCard: View {
             return LinearGradient(colors: [Color(white: 0.05), Color(white: 0.08)], startPoint: .top, endPoint: .bottom)
         case .natureBlur:
             return LinearGradient(colors: [.green.opacity(0.6), .green.opacity(0.3)], startPoint: .top, endPoint: .bottom)
+        }
+    }
+
+    private var previewFontDesign: Font.Design {
+        switch style {
+        case .elegantSerif, .paperTexture:
+            return .serif
+        case .modernSans, .minimalDark, .minimalLight,
+             .gradientWarm, .gradientCool, .natureBlur:
+            return .default
         }
     }
 

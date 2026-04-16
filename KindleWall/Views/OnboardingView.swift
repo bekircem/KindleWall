@@ -14,6 +14,8 @@ struct OnboardingView: View {
     @State private var sampleClipping: Clipping?
     @State private var previewImage: NSImage?
     @State private var isGenerating: Bool = false
+    @State private var parseErrorMessage: String?
+    @State private var isDropTargeted: Bool = false
 
     private let parser = ClippingsParser()
     private let generator = WallpaperGenerator()
@@ -114,13 +116,13 @@ struct OnboardingView: View {
             // Drop area
             RoundedRectangle(cornerRadius: 16)
                 .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8]))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(isDropTargeted ? Color.accentColor : Color.secondary)
                 .frame(height: 150)
                 .overlay {
                     VStack(spacing: 12) {
                         Image(systemName: "doc.text")
                             .font(.system(size: 40))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(isDropTargeted ? Color.accentColor : Color.secondary)
 
                         if let url = selectedFileURL {
                             Text(url.lastPathComponent)
@@ -134,7 +136,26 @@ struct OnboardingView: View {
                         }
                     }
                 }
+                .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in
+                    guard let provider = providers.first else { return false }
+                    provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { item, _ in
+                        guard let data = item as? Data,
+                              let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
+                        DispatchQueue.main.async {
+                            selectedFileURL = url
+                            parseErrorMessage = nil
+                        }
+                    }
+                    return true
+                }
                 .padding(.horizontal, 40)
+
+            if let error = parseErrorMessage {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .padding(.horizontal, 40)
+            }
 
             Button("Dosya Seç") {
                 let panel = NSOpenPanel()
@@ -222,12 +243,20 @@ struct OnboardingView: View {
         guard let url = selectedFileURL else { return }
         guard parsedClippings.isEmpty else { return }
 
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+
         do {
             parsedClippings = try parser.parse(fileURL: url)
-            pickRandomClipping()
-            generatePreview()
+            if parsedClippings.isEmpty {
+                parseErrorMessage = "Dosyada alıntı bulunamadı. Lütfen geçerli bir My Clippings.txt seçin."
+            } else {
+                parseErrorMessage = nil
+                pickRandomClipping()
+                generatePreview()
+            }
         } catch {
-            // Silently fail — user will see empty preview
+            parseErrorMessage = (error as? KindleWallError)?.errorDescription ?? "Dosya okunamadı."
         }
     }
 
@@ -240,17 +269,17 @@ struct OnboardingView: View {
         guard let screen = NSScreen.main else { return }
 
         isGenerating = true
-        let screenSize = CGSize(
-            width: screen.frame.size.width * screen.backingScaleFactor,
-            height: screen.frame.size.height * screen.backingScaleFactor
-        )
+        // Use 1x resolution for preview (readable in the small preview area)
+        let screenSize = screen.frame.size
         let style = selectedStyle
+        let capturedGenerator = generator  // capture before Task.detached to avoid @MainActor isolation warning
 
         Task.detached {
-            let image = generator.generateWallpaper(
+            let image = capturedGenerator.generateWallpaper(
                 clipping: clipping,
                 style: style,
-                screenSize: screenSize
+                screenSize: screenSize,
+                typography: .default
             )
             await MainActor.run {
                 previewImage = image
@@ -260,8 +289,19 @@ struct OnboardingView: View {
     }
 
     private func applyPreviewWallpaper() {
-        guard let image = previewImage else { return }
+        guard let clipping = sampleClipping, let screen = NSScreen.main else { return }
+        // Render at full Retina resolution for actual wallpaper
+        let fullSize = CGSize(
+            width: screen.frame.size.width * screen.backingScaleFactor,
+            height: screen.frame.size.height * screen.backingScaleFactor
+        )
+        guard let fullImage = generator.generateWallpaper(
+            clipping: clipping,
+            style: selectedStyle,
+            screenSize: fullSize,
+            typography: .default
+        ) else { return }
         let manager = WallpaperManager(storageService: StorageService())
-        try? manager.setWallpaper(image: image)
+        try? manager.setWallpaper(image: fullImage)
     }
 }

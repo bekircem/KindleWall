@@ -20,6 +20,10 @@ enum Constants {
         static let wallpapersDirectory: URL = {
             appSupportDirectory.appendingPathComponent("wallpapers")
         }()
+
+        static let coversDirectory: URL = {
+            appSupportDirectory.appendingPathComponent("covers")
+        }()
     }
 
     /// Wallpaper rendering constants
@@ -45,6 +49,13 @@ enum Constants {
         static let showInMenuBar = "showInMenuBar"
         static let showNotifications = "showNotifications"
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
+        static let typographySettings = "typographySettings"
+        static let applyToAllSpaces = "applyToAllSpaces"
+        static let bookMetadataOverrides = "bookMetadataOverrides"
+        static let persistedClippingIDs = "persistedClippingIDs"
+        static let rotationMode         = "rotationMode"
+        static let currentBookTitle     = "currentBookTitle"
+        static let pinnedBookTitles     = "pinnedBookTitles"
     }
 
     /// Menu bar icon name (SF Symbols)

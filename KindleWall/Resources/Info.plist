@@ -11,18 +11,12 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>KindleWall</string>
-	<key>CFBundleDisplayName</key>
-	<string>KindleWall</string>
+	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.0</string>
+	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>LSUIElement</key>
-	<false/>
-	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2026 KindleWall. All rights reserved.</string>
 </dict>
 </plist>
