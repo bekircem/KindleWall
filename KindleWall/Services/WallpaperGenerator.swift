@@ -37,8 +37,9 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
             let padding = basePadding * typography.paddingScale
             let contentWidth = rect.width - padding * 2
             let textColor = textColor(for: style, typography: typography)
+                .withAlphaComponent(typography.textOpacity)
             let metaColor = metaColor(for: style, typography: typography)
-            let fontName = quoteFont(for: style)
+                .withAlphaComponent(typography.textOpacity)
             let charCount = clipping.text.count
 
             // Adaptive font limits based on quote length, scaled to resolution
@@ -57,20 +58,23 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
 
             let maxTextHeight = rect.height * maxTextRatio
             let sizeRect = CGRect(x: 0, y: 0, width: contentWidth, height: maxTextHeight)
-            let fontSize = calculateFontSize(for: clipping.text, in: sizeRect, fontName: fontName, maxSize: maxFont, minSize: minFont, step: fontStep)
+            let fontSize = calculateFontSize(for: clipping.text, in: sizeRect, typography: typography, maxSize: maxFont, minSize: minFont, step: fontStep)
 
             // Quote text attributes
-            let font = NSFont(name: fontName, size: fontSize) ?? NSFont.systemFont(ofSize: fontSize)
+            let font = makeQuoteFont(size: fontSize, typography: typography)
             let lineSpacing = fontSize * 0.35 * typography.lineSpacingScale
             let paragraphStyle = NSMutableParagraphStyle()
             paragraphStyle.alignment = .center
             paragraphStyle.lineSpacing = lineSpacing
 
-            let textAttributes: [NSAttributedString.Key: Any] = [
+            var textAttributes: [NSAttributedString.Key: Any] = [
                 .font: font,
                 .foregroundColor: textColor,
                 .paragraphStyle: paragraphStyle
             ]
+            if typography.letterSpacing != 0 {
+                textAttributes[.kern] = typography.letterSpacing
+            }
 
             let textBounds = (clipping.text as NSString).boundingRect(
                 with: CGSize(width: contentWidth, height: .greatestFiniteMagnitude),
@@ -144,7 +148,18 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
                 height: textBounds.height + 4
             )
             let attributedText = NSAttributedString(string: clipping.text, attributes: textAttributes)
-            attributedText.draw(with: drawTextRect, options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine])
+            if typography.shadowEnabled {
+                context.saveGState()
+                context.setShadow(
+                    offset: CGSize(width: 0, height: -1),
+                    blur: typography.shadowRadius,
+                    color: shadowColor(for: style, typography: typography).cgColor
+                )
+                attributedText.draw(with: drawTextRect, options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine])
+                context.restoreGState()
+            } else {
+                attributedText.draw(with: drawTextRect, options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine])
+            }
             cursorY -= textBounds.height + metaGap * 0.5
 
             // 3. Thin separator line
@@ -273,7 +288,7 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
                                 size: CGFloat, style: WallpaperStyle, typography: TypographySettings) {
         switch typography.decorativeStyle {
         case .classicQuote:
-            drawClassicQuoteMark(context: context, centerX: centerX, topY: topY, size: size, style: style)
+            drawClassicQuoteMark(context: context, centerX: centerX, topY: topY, size: size, style: style, typography: typography)
         case .minimalDots:
             drawQuoteIcon(context: context, centerX: centerX, topY: topY, size: size, style: style)
         case .line:
@@ -283,9 +298,9 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
         }
     }
 
-    /// Draws a large typographic open-quote mark " using the wallpaper's serif (or sans) font.
+    /// Draws a large typographic open-quote mark " using the quote font family from typography settings.
     private func drawClassicQuoteMark(context: CGContext, centerX: CGFloat, topY: CGFloat,
-                                      size: CGFloat, style: WallpaperStyle) {
+                                      size: CGFloat, style: WallpaperStyle, typography: TypographySettings) {
         let iconColor: NSColor
         switch style {
         case .minimalDark, .gradientWarm, .gradientCool, .elegantSerif, .modernSans, .natureBlur:
@@ -297,8 +312,7 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
         // Point size ~2× the allocated icon size; visual glyph height ≈ 55% of point size,
         // so the " character fills the quoteIconSize area naturally.
         let fontSize = size * 2.0
-        let fontName: String = (style == .modernSans) ? "SFProDisplay-Regular" : "NewYork-Regular"
-        let font = NSFont(name: fontName, size: fontSize) ?? NSFont.systemFont(ofSize: fontSize, weight: .light)
+        let font = makeQuoteFont(size: fontSize, typography: typography)
 
         let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: iconColor]
         let str = NSAttributedString(string: "\u{201C}", attributes: attrs)
@@ -389,11 +403,11 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
 
     // MARK: - Helpers
 
-    private func calculateFontSize(for text: String, in rect: CGRect, fontName: String, maxSize: CGFloat = Constants.Wallpaper.maxFontSize, minSize: CGFloat = Constants.Wallpaper.minFontSize, step: CGFloat = 2) -> CGFloat {
+    private func calculateFontSize(for text: String, in rect: CGRect, typography: TypographySettings, maxSize: CGFloat = Constants.Wallpaper.maxFontSize, minSize: CGFloat = Constants.Wallpaper.minFontSize, step: CGFloat = 2) -> CGFloat {
         var fontSize = maxSize
 
         while fontSize > minSize {
-            let font = NSFont(name: fontName, size: fontSize) ?? NSFont.systemFont(ofSize: fontSize)
+            let font = makeQuoteFont(size: fontSize, typography: typography)
             let paragraphStyle = NSMutableParagraphStyle()
             paragraphStyle.lineSpacing = fontSize * 0.35
 
@@ -455,15 +469,36 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
         }
     }
 
-    private func quoteFont(for style: WallpaperStyle) -> String {
-        switch style {
-        case .minimalDark, .minimalLight, .paperTexture, .elegantSerif:
-            return "NewYork-Regular"
-        case .gradientWarm, .gradientCool, .natureBlur:
-            return "NewYork-Medium"
-        case .modernSans:
-            return "SFProDisplay-Regular"
+    private func makeQuoteFont(size: CGFloat, typography: TypographySettings) -> NSFont {
+        switch typography.fontFamily {
+        case .serif:
+            if let descriptor = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif) {
+                return NSFont(descriptor: descriptor, size: size) ?? NSFont.systemFont(ofSize: size)
+            }
+            return NSFont.systemFont(ofSize: size)
+        case .sansSerif:
+            return NSFont.systemFont(ofSize: size)
+        case .classic:
+            return NSFont(name: "Palatino-Roman", size: size)
+                ?? NSFont(name: "Palatino", size: size)
+                ?? NSFont.systemFont(ofSize: size)
+        case .monospace:
+            return NSFont.monospacedSystemFont(ofSize: size, weight: .regular)
         }
+    }
+
+    private func shadowColor(for style: WallpaperStyle, typography: TypographySettings) -> NSColor {
+        let lightBackground: Bool
+        if let hex = typography.backgroundStartColorHex, let c = NSColor(hex: hex) {
+            var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+            c.getRed(&r, green: &g, blue: &b, alpha: &a)
+            lightBackground = (0.299 * r + 0.587 * g + 0.114 * b) > 0.5
+        } else {
+            lightBackground = (style == .minimalLight || style == .paperTexture)
+        }
+        return lightBackground
+            ? NSColor.black.withAlphaComponent(0.50)
+            : NSColor.white.withAlphaComponent(0.30)
     }
 }
 

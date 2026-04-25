@@ -11,12 +11,15 @@ struct StylePickerView: View {
     var body: some View {
         LazyVGrid(columns: columns, spacing: 12) {
             ForEach(WallpaperStyle.allCases) { style in
-                StyleCard(style: style, isSelected: selectedStyle == style)
-                    .onTapGesture {
-                        withAnimation(.spring(duration: 0.3)) {
-                            selectedStyle = style
-                        }
+                Button {
+                    withAnimation(.spring(duration: 0.3)) {
+                        selectedStyle = style
                     }
+                } label: {
+                    StyleCard(style: style, isSelected: selectedStyle == style)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(style.displayName)
             }
         }
     }
@@ -27,6 +30,7 @@ struct StylePickerView: View {
 struct StyleCard: View {
     let style: WallpaperStyle
     let isSelected: Bool
+    @State private var isHovered = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -76,12 +80,20 @@ struct StyleCard: View {
         .padding(8)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
+                .fill(cardBackground)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
                 .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
         )
+        .onHover { isHovered = $0 }
+        .animation(.easeInOut(duration: 0.15), value: isHovered)
+    }
+
+    private var cardBackground: Color {
+        if isSelected { return Color.accentColor.opacity(0.1) }
+        if isHovered { return Color(nsColor: .quaternaryLabelColor) }
+        return .clear
     }
 
     private var previewGradient: LinearGradient {

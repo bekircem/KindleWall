@@ -36,7 +36,7 @@ final class LibraryViewModel {
             if dict[c.bookTitle] == nil {
                 dict[c.bookTitle] = (c.author, [c])
             } else {
-                dict[c.bookTitle]!.clippings.append(c)
+                dict[c.bookTitle]?.clippings.append(c)
             }
         }
         return dict.map { key, value in

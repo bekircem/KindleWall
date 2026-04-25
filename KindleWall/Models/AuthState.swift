@@ -6,7 +6,7 @@ import Observation
 @Observable
 final class AuthState {
     /// The current authentication status.
-    var status: Status = .unknown
+    var status: Status = .unauthenticated
 
     /// Whether a credential check or sign-in is in progress.
     var isCheckingCredential: Bool = false

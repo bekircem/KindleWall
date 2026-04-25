@@ -7,7 +7,7 @@ enum Constants {
     enum App {
         static let name = "KindleWall"
         static let bundleIdentifier = "com.kindlewall.app"
-        static let version = "1.0.0"
+        static let version = "1.1.0"
     }
 
     /// Directory and file paths
@@ -34,6 +34,7 @@ enum Constants {
         static let decorativeQuoteFontSize: CGFloat = 120
         static let decorativeQuoteOpacity: CGFloat = 0.15
         static let metaFontSizeRange: ClosedRange<CGFloat> = 16...20
+
     }
 
     /// Storage keys for UserDefaults

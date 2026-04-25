@@ -42,14 +42,17 @@ struct BookDetailView: View {
                         Button("Wallpaper Yap") {
                             onApplyClipping(clipping)
                         }
+                        .keyboardShortcut(.return, modifiers: .command)
                         Divider()
                         Button(vm.isFavorite(clipping) ? "Favorilerden Çıkar" : "Favorilere Ekle") {
                             vm.toggleFavorite(clipping)
                         }
+                        .keyboardShortcut("d", modifiers: .command)
                         Button("Kopyala") {
                             NSPasteboard.general.clearContents()
                             NSPasteboard.general.setString(clipping.text, forType: .string)
                         }
+                        .keyboardShortcut("c", modifiers: .command)
                     }
             }
         }

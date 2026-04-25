@@ -4,12 +4,33 @@ import Foundation
 struct TypographySettings: Codable, Equatable {
 
     /// Which decorative element to draw above the quote text.
-    enum DecorationStyle: String, Codable, CaseIterable {
+    enum DecorationStyle: String, Codable, CaseIterable, Identifiable {
+        var id: String { rawValue }
         case classicQuote   // Large " typographic open-quote mark (default)
         case minimalDots    // Original dots + bars design
         case line           // Simple thin horizontal rule
         case none           // No decoration
     }
+
+    /// Font family used for the quote text.
+    enum FontFamily: String, Codable, CaseIterable, Identifiable {
+        var id: String { rawValue }
+        case serif      // New York — literary, warm
+        case sansSerif  // SF Pro — clean, modern
+        case classic    // Palatino — elegant, high-contrast humanist serif
+        case monospace  // SF Mono — technical, precise
+
+        var displayName: String {
+            switch self {
+            case .serif:     return "Serif"
+            case .sansSerif: return "Sans"
+            case .classic:   return "Klasik"
+            case .monospace: return "Mono"
+            }
+        }
+    }
+
+    // MARK: - Basic settings
 
     /// Font size multiplier (0.6 = small, 1.0 = default, 1.4 = large).
     var fontScale: Double = 1.0
@@ -31,6 +52,23 @@ struct TypographySettings: Codable, Equatable {
 
     /// Custom background gradient end color as hex string. nil = use style default.
     var backgroundEndColorHex: String? = nil
+
+    // MARK: - Advanced settings
+
+    /// Font family for the quote text.
+    var fontFamily: FontFamily = .serif
+
+    /// Whether to draw a drop shadow behind the quote text.
+    var shadowEnabled: Bool = false
+
+    /// Shadow blur radius in points (1–20). Only used when shadowEnabled is true.
+    var shadowRadius: Double = 4.0
+
+    /// Additional letter spacing in points. 0 = default, positive = wider, negative = tighter.
+    var letterSpacing: Double = 0.0
+
+    /// Quote text opacity (0.3–1.0). Lower values create a translucent/ghosted effect.
+    var textOpacity: Double = 1.0
 
     static let `default` = TypographySettings()
 }

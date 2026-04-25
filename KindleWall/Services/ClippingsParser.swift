@@ -28,13 +28,13 @@ final class ClippingsParser: ClippingsParserProtocol {
     private static let separator = "=========="
 
     // Regex patterns for metadata line
-    private static let highlightPattern = /- Your Highlight on(?: page (\d+))?\s*\|?\s*(?:location (\d+(?:-\d+)?))?\s*\|?\s*Added on (.+)/
-    private static let notePattern = /- Your Note on(?: page (\d+))?\s*\|?\s*(?:location (\d+(?:-\d+)?))?\s*\|?\s*Added on (.+)/
-    private static let bookmarkPattern = /- Your Bookmark on(?: page (\d+))?\s*\|?\s*(?:location (\d+(?:-\d+)?))?\s*\|?\s*Added on (.+)/
+    private static let highlightPattern = /- Your Highlight on(?: [Pp]age (\d+))?\s*\|?\s*(?:[Ll]ocation (\d+(?:-\d+)?))?\s*\|?\s*Added on (.+)/
+    private static let notePattern = /- Your Note on(?: [Pp]age (\d+))?\s*\|?\s*(?:[Ll]ocation (\d+(?:-\d+)?))?\s*\|?\s*Added on (.+)/
+    private static let bookmarkPattern = /- Your Bookmark on(?: [Pp]age (\d+))?\s*\|?\s*(?:[Ll]ocation (\d+(?:-\d+)?))?\s*\|?\s*Added on (.+)/
 
     // Turkish equivalents
-    private static let highlightPatternTR = /- (\d+)\. sayfadaki vurgulama.+Eklenme Tarihi: (.+)/
-    private static let notePatternTR = /- (\d+)\. sayfadaki not.+Eklenme Tarihi: (.+)/
+    private static let highlightPatternTR = /- (\d+)\. sayfadaki vurgulama(?:\s*\|\s*konum (\d+(?:-\d+)?))?.+Eklenme Tarihi: (.+)/
+    private static let notePatternTR = /- (\d+)\. sayfadaki not(?:\s*\|\s*konum (\d+(?:-\d+)?))?.+Eklenme Tarihi: (.+)/
 
     func parse(fileURL: URL) throws -> [Clipping] {
         let content: String
@@ -198,8 +198,8 @@ final class ClippingsParser: ClippingsParserProtocol {
             return EntryMetadata(
                 type: .highlight,
                 page: String(match.1),
-                location: nil,
-                date: parseDate(String(match.2))
+                location: match.2.map(String.init),
+                date: parseDate(String(match.3))
             )
         }
 
@@ -208,8 +208,8 @@ final class ClippingsParser: ClippingsParserProtocol {
             return EntryMetadata(
                 type: .note,
                 page: String(match.1),
-                location: nil,
-                date: parseDate(String(match.2))
+                location: match.2.map(String.init),
+                date: parseDate(String(match.3))
             )
         }
 

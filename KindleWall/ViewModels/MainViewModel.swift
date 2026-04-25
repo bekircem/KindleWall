@@ -11,8 +11,11 @@ final class MainViewModel {
     var selectedStyle: WallpaperStyle
     var typography: TypographySettings = .default
     var isLoading: Bool = false
+    var isApplying: Bool = false
+    var applySuccess: Bool = false
     var errorMessage: String?
     var clippings: [Clipping] = []
+    var pinnedBookTitles: Set<String> = []
     private(set) var isSchedulerPaused: Bool = false
 
     // MARK: - Dependencies
@@ -29,6 +32,7 @@ final class MainViewModel {
 
     private var previewTask: Task<Void, Never>?
     private var previewGeneration: Int = 0
+    private var typographyUpdateTask: Task<Void, Never>?
 
     // MARK: - Import task management
 
@@ -52,6 +56,7 @@ final class MainViewModel {
         self.notificationService = notificationService
         self.selectedStyle = storage.selectedStyle
         self.typography = storage.typography
+        self.pinnedBookTitles = Set(storage.pinnedBookTitles)
         self.importState = importState
 
         if let wm = wallpaperManager {
@@ -189,16 +194,16 @@ final class MainViewModel {
     private func selectAllRandom() {
         var shownIDs = storage.shownClippingIDs
         let unshown = clippings.filter { !shownIDs.contains($0.id) }
-        let selected: Clipping
         if let next = unshown.randomElement() {
-            selected = next
+            currentClipping = next
+            shownIDs.insert(next.id)
         } else {
             shownIDs.removeAll()
             storage.shownClippingIDs = shownIDs
-            selected = clippings.randomElement()!
+            guard let selected = clippings.randomElement() else { return }
+            currentClipping = selected
+            shownIDs.insert(selected.id)
         }
-        currentClipping = selected
-        shownIDs.insert(selected.id)
         storage.shownClippingIDs = shownIDs
     }
 
@@ -251,7 +256,7 @@ final class MainViewModel {
 
     /// Selects a clipping from user-pinned books only, cycling without repeat within that pool.
     private func selectFromPinnedBooks() {
-        let pinnedTitles = Set(storage.pinnedBookTitles)
+        let pinnedTitles = pinnedBookTitles
         guard !pinnedTitles.isEmpty else {
             errorMessage = "Sabitlenmiş kitap yok. Lütfen Ayarlar'dan kitap seçin."
             selectAllRandom()
@@ -268,18 +273,18 @@ final class MainViewModel {
         var shownIDs = storage.shownClippingIDs
         let unshown = pinnedClippings.filter { !shownIDs.contains($0.id) }
 
-        let selected: Clipping
         if let next = unshown.randomElement() {
-            selected = next
+            currentClipping = next
+            shownIDs.insert(next.id)
         } else {
             // All pinned clippings shown — reset only within the pinned pool
             let pinnedIDs = Set(pinnedClippings.map(\.id))
             shownIDs.subtract(pinnedIDs)
             storage.shownClippingIDs = shownIDs
-            selected = pinnedClippings.randomElement()!
+            guard let selected = pinnedClippings.randomElement() else { return }
+            currentClipping = selected
+            shownIDs.insert(selected.id)
         }
-        currentClipping = selected
-        shownIDs.insert(selected.id)
         storage.shownClippingIDs = shownIDs
     }
 
@@ -324,10 +329,14 @@ final class MainViewModel {
     /// Applies the wallpaper to the desktop at full Retina resolution.
     func applyWallpaper() {
         guard let clipping = currentClipping else { return }
+        guard !isApplying else { return }
         guard let screen = NSScreen.main else {
             errorMessage = KindleWallError.screenNotAvailable.errorDescription
             return
         }
+
+        isApplying = true
+        errorMessage = nil
 
         let fullSize = screen.frame.size * screen.backingScaleFactor
         let displayClipping = clippingWithOverride(clipping)
@@ -339,6 +348,7 @@ final class MainViewModel {
             screenSize: fullSize,
             typography: typography
         ) else {
+            isApplying = false
             errorMessage = KindleWallError.wallpaperGenerationFailed(reason: "Render başarısız").errorDescription
             return
         }
@@ -348,7 +358,14 @@ final class MainViewModel {
             if storage.showNotifications {
                 notificationService.sendWallpaperChangedNotification(clipping: displayClipping)
             }
+            isApplying = false
+            applySuccess = true
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(1.5))
+                applySuccess = false
+            }
         } catch {
+            isApplying = false
             errorMessage = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
         }
     }
@@ -376,16 +393,29 @@ final class MainViewModel {
     }
 
     /// Updates typography settings, persists them, and regenerates the preview.
+    /// Debounced 250ms so rapid slider changes don't flood the render pipeline.
     func updateTypography(_ settings: TypographySettings) {
         typography = settings
         storage.typography = settings
-        generatePreview()
+        typographyUpdateTask?.cancel()
+        typographyUpdateTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled else { return }
+            self?.generatePreview()
+        }
     }
 
     /// Updates the rotation mode and clears bookByBook state so the next selection starts fresh.
     func updateRotationMode(_ mode: RotationMode) {
         storage.rotationMode = mode
         storage.currentBookTitle = nil
+    }
+
+    /// Updates the in-memory pinned book titles and persists them.
+    /// Called via callback whenever the user toggles a book in SettingsView.
+    func updatePinnedBooks(_ titles: Set<String>) {
+        pinnedBookTitles = titles
+        storage.pinnedBookTitles = Array(titles).sorted()
     }
 
     /// Sorted list of unique books (title + first found author) from loaded clippings.

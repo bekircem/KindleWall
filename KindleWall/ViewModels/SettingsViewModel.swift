@@ -40,8 +40,8 @@ final class SettingsViewModel {
         self.clippingsFilePath = storage.resolveClippingsFileURL()?.path
         let t = storage.typography
         self.decorativeStyle = t.decorativeStyle
-        self.backgroundStartColor = t.backgroundStartColorHex.flatMap { Color(hex: $0) } ?? Color(hex: "667EEA")!
-        self.backgroundEndColor   = t.backgroundEndColorHex.flatMap   { Color(hex: $0) } ?? Color(hex: "764BA2")!
+        self.backgroundStartColor = t.backgroundStartColorHex.flatMap { Color(hex: $0) } ?? Color(hex: "667EEA") ?? .purple
+        self.backgroundEndColor   = t.backgroundEndColorHex.flatMap   { Color(hex: $0) } ?? Color(hex: "764BA2") ?? .indigo
         self.rotationMode = storage.rotationMode
         self.pinnedBookTitles = Set(storage.pinnedBookTitles)
         self.storage.launchAtLogin = isRegistered  // UserDefaults'u gerçek SMAppService durumuna hizala
@@ -90,8 +90,8 @@ final class SettingsViewModel {
         t.backgroundStartColorHex = nil
         t.backgroundEndColorHex   = nil
         storage.typography = t
-        backgroundStartColor = Color(hex: "667EEA")!
-        backgroundEndColor   = Color(hex: "764BA2")!
+        backgroundStartColor = Color(hex: "667EEA") ?? .purple
+        backgroundEndColor   = Color(hex: "764BA2") ?? .indigo
     }
 
     /// Updates the schedule interval.
