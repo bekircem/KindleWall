@@ -27,19 +27,17 @@ final class GlobalHotkeyManager {
         let s = StorageService()
         currentKeyCode   = UInt16(s.hotkeyKeyCode)
         currentModifiers = NSEvent.ModifierFlags(rawValue: UInt(bitPattern: s.hotkeyModifiers))
+        // Monitors are always registered. addGlobalMonitorForEvents for .keyDown silently
+        // does nothing without Accessibility — no crash, just no global events.
         registerMonitors()
-        // addGlobalMonitorForEvents for .keyDown silently does nothing without Accessibility.
-        // Trigger the system permission dialog proactively so the user isn't left wondering.
-        promptForAccessibilityIfNeeded()
     }
 
-    /// Triggers the system Accessibility permission dialog (if not yet granted).
-    /// macOS adds the app to System Settings → Accessibility and opens settings.
-    /// Safe to call multiple times — no-op when permission is already granted.
-    func promptForAccessibilityIfNeeded() {
-        guard !AXIsProcessTrusted() else { return }
-        let opts = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true] as CFDictionary
-        AXIsProcessTrustedWithOptions(opts)
+    /// Opens System Settings → Accessibility directly so the user can grant permission.
+    /// Called from Settings UI; never called automatically to avoid unwanted popups.
+    func openAccessibilitySettings() {
+        NSWorkspace.shared.open(
+            URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
+        )
     }
 
     func stop() {
@@ -169,16 +167,14 @@ final class GlobalHotkeyManager {
         let alert = NSAlert()
         alert.messageText = "Erişilebilirlik İzni Gerekli"
         alert.informativeText = """
-            KindleWall'ın \(hotkeyLabel) kısayoluyla seçili metni okuyabilmesi için \
+            \(hotkeyLabel) kısayoluyla metin yakalayabilmek için \
             Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik'te \
-            KindleWall'a izin vermen gerekiyor.
+            KindleWall'a izin ver, ardından uygulamayı yeniden başlat.
             """
-        alert.addButton(withTitle: "Ayarlara Git")
+        alert.addButton(withTitle: "Sistem Ayarlarını Aç")
         alert.addButton(withTitle: "İptal")
         if alert.runModal() == .alertFirstButtonReturn {
-            NSWorkspace.shared.open(
-                URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
-            )
+            openAccessibilitySettings()
         }
     }
 

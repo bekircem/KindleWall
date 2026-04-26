@@ -218,29 +218,34 @@ struct SettingsView: View {
                     }
 
                     // Accessibility status indicator
-                    HStack(spacing: 6) {
-                        if accessibilityGranted {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
-                            Text("Erişilebilirlik izni var — kısayol aktif")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        } else {
-                            Image(systemName: "exclamationmark.circle.fill")
-                                .foregroundStyle(.orange)
-                            Text("Erişilebilirlik izni yok — kısayol yalnızca KindleWall aktifken çalışır")
-                                .font(.caption)
-                                .foregroundStyle(.orange)
-                            Button("İzin Ver") {
-                                GlobalHotkeyManager.shared.promptForAccessibilityIfNeeded()
-                                // Re-check after a short delay (system dialog takes time)
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                    accessibilityGranted = AXIsProcessTrusted()
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 6) {
+                            if accessibilityGranted {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                                Text("Erişilebilirlik izni var — global kısayol aktif")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Image(systemName: "exclamationmark.circle.fill")
+                                    .foregroundStyle(.orange)
+                                Text("Erişilebilirlik izni yok — kısayol sadece KindleWall aktifken çalışır")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                                Spacer()
+                                Button("Sistem Ayarlarını Aç") {
+                                    GlobalHotkeyManager.shared.openAccessibilitySettings()
                                 }
+                                .font(.caption)
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
                             }
-                            .font(.caption)
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.small)
+                        }
+
+                        if !accessibilityGranted {
+                            Text("İzin verdikten sonra uygulamayı yeniden başlat.")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
                         }
                     }
                     .onAppear { accessibilityGranted = AXIsProcessTrusted() }

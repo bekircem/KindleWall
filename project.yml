@@ -13,6 +13,9 @@ settings:
     GENERATE_INFOPLIST_FILE: false
     CODE_SIGN_IDENTITY: "-"
     CODE_SIGNING_REQUIRED: "NO"
+    # Fixed output dir so the .app path never changes between builds.
+    # Stable path = Accessibility permission survives rebuilds (no re-grant needed).
+    SYMROOT: $(PROJECT_DIR)/.build
 
 targets:
   KindleWall:
