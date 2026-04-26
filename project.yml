@@ -11,7 +11,7 @@ settings:
     SWIFT_VERSION: "5.9"
     MACOSX_DEPLOYMENT_TARGET: "14.0"
     GENERATE_INFOPLIST_FILE: false
-    CODE_SIGN_IDENTITY: "KindleWall Dev"
+    CODE_SIGN_IDENTITY: "-"
     CODE_SIGNING_REQUIRED: "NO"
     # Fixed output path so .app location never changes between builds.
     SYMROOT: $(PROJECT_DIR)/.build
