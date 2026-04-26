@@ -11,10 +11,7 @@ settings:
     SWIFT_VERSION: "5.9"
     MACOSX_DEPLOYMENT_TARGET: "14.0"
     GENERATE_INFOPLIST_FILE: false
-    # Self-signed cert: TCC tracks permission by cert identity, not binary hash.
-    # Create "KindleWall Dev" cert once in Keychain Access → Certificate Assistant
-    # → Create a Certificate → Code Signing → Self-Signed Root.
-    CODE_SIGN_IDENTITY: "KindleWall Dev"
+    CODE_SIGN_IDENTITY: "-"
     CODE_SIGNING_REQUIRED: "NO"
     # Fixed output path so .app location never changes between builds.
     SYMROOT: $(PROJECT_DIR)/.build
