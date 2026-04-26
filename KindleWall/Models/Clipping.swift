@@ -11,6 +11,8 @@ struct Clipping: Identifiable, Codable, Hashable {
     let location: String?
     let dateAdded: Date?
     let type: ClippingType
+    /// true for clippings added manually by the user (not parsed from My Clippings.txt).
+    let isManualEntry: Bool
 
     init(
         id: UUID = UUID(),
@@ -20,7 +22,8 @@ struct Clipping: Identifiable, Codable, Hashable {
         page: String? = nil,
         location: String? = nil,
         dateAdded: Date? = nil,
-        type: ClippingType = .highlight
+        type: ClippingType = .highlight,
+        isManualEntry: Bool = false
     ) {
         self.id = id
         self.bookTitle = bookTitle
@@ -30,6 +33,7 @@ struct Clipping: Identifiable, Codable, Hashable {
         self.location = location
         self.dateAdded = dateAdded
         self.type = type
+        self.isManualEntry = isManualEntry
     }
 
     /// Generates a deterministic UUID from book title + text content.

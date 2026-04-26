@@ -141,8 +141,10 @@ final class MainViewModel {
 
         let newClippings = incoming.filter { !knownIDs.contains($0.id) }
 
-        clippings = incoming
-        storage.persistedClippingIDs = Set(incoming.map(\.id))
+        let manual = storage.manualClippings
+        let combined = incoming + manual
+        clippings = combined
+        storage.persistedClippingIDs = Set(combined.map(\.id))
 
         let newBookTitles = Set(newClippings.map(\.bookTitle)).subtracting(existingBookTitles)
 
@@ -165,6 +167,11 @@ final class MainViewModel {
 
     /// Loads clippings from the stored file bookmark.
     func loadClippings() {
+        // Pre-populate with manual clippings so they show even when no Kindle file is set
+        let manual = storage.manualClippings
+        if !manual.isEmpty && clippings.isEmpty {
+            clippings = manual
+        }
         importClippings()
     }
 
@@ -442,6 +449,53 @@ final class MainViewModel {
         if let date = customDate {
             scheduler.customDate = date
             storage.customScheduleDate = date
+        }
+    }
+
+    // MARK: - Manual Clipping CRUD
+
+    func addManualClipping(bookTitle: String, author: String?, text: String, page: String?) {
+        let id = Clipping.deterministicID(bookTitle: bookTitle, text: text)
+        guard !clippings.contains(where: { $0.id == id }) else { return }
+        let clipping = Clipping(
+            id: id,
+            bookTitle: bookTitle,
+            author: author.flatMap { $0.isEmpty ? nil : $0 },
+            text: text,
+            page: page.flatMap { $0.isEmpty ? nil : $0 },
+            dateAdded: Date(),
+            isManualEntry: true
+        )
+        var manual = storage.manualClippings
+        manual.append(clipping)
+        storage.manualClippings = manual
+        clippings.append(clipping)
+        storage.persistedClippingIDs.insert(clipping.id)
+    }
+
+    func updateManualClipping(_ updated: Clipping) {
+        var manual = storage.manualClippings
+        guard let idx = manual.firstIndex(where: { $0.id == updated.id }) else { return }
+        manual[idx] = updated
+        storage.manualClippings = manual
+        if let listIdx = clippings.firstIndex(where: { $0.id == updated.id }) {
+            clippings[listIdx] = updated
+        }
+        if currentClipping?.id == updated.id {
+            currentClipping = updated
+            generatePreview()
+        }
+    }
+
+    func deleteManualClipping(_ clipping: Clipping) {
+        storage.manualClippings.removeAll { $0.id == clipping.id }
+        clippings.removeAll { $0.id == clipping.id }
+        storage.persistedClippingIDs.remove(clipping.id)
+        storage.favoriteClippingIDs.remove(clipping.id)
+        storage.shownClippingIDs.remove(clipping.id)
+        if currentClipping?.id == clipping.id {
+            currentClipping = clippings.first
+            generatePreview()
         }
     }
 

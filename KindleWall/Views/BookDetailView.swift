@@ -9,9 +9,16 @@ struct BookDetailView: View {
     var existingOverride: BookMetadataOverride? = nil
     var onSave: (BookMetadataOverride) -> Void = { _ in }
     var onReset: () -> Void = {}
+    var onAddManualClipping: (String, String?, String, String?) -> Void = { _, _, _, _ in }
+    var onDeleteManualClipping: (Clipping) -> Void = { _ in }
+    var onUpdateManualClipping: (Clipping) -> Void = { _ in }
+    var existingBooks: [(title: String, author: String?)] = []
 
     @State private var vm = LibraryViewModel()
     @State private var showEditSheet = false
+    @State private var showAddClippingForm = false
+    @State private var clippingToEdit: Clipping? = nil
+    @State private var clippingToDelete: Clipping? = nil
     @State private var currentOverride: BookMetadataOverride?
 
     /// Book with the current (possibly just-saved) override applied for reactive display.
@@ -27,7 +34,12 @@ struct BookDetailView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            BookDetailHeader(book: displayBook, coverImage: coverImage, onEdit: { showEditSheet = true })
+            BookDetailHeader(
+                book: displayBook,
+                coverImage: coverImage,
+                onEdit: { showEditSheet = true },
+                onAdd: { showAddClippingForm = true }
+            )
 
             Divider()
 
@@ -53,11 +65,36 @@ struct BookDetailView: View {
                             NSPasteboard.general.setString(clipping.text, forType: .string)
                         }
                         .keyboardShortcut("c", modifiers: .command)
+
+                        if clipping.isManualEntry {
+                            Divider()
+                            Button("Düzenle") {
+                                clippingToEdit = clipping
+                            }
+                            Button("Sil", role: .destructive) {
+                                clippingToDelete = clipping
+                            }
+                        }
                     }
             }
         }
         .navigationTitle(displayBook.displayTitle)
         .onAppear { currentOverride = existingOverride }
+        .confirmationDialog(
+            "Bu alıntıyı silmek istediğine emin misin?",
+            isPresented: Binding(
+                get: { clippingToDelete != nil },
+                set: { if !$0 { clippingToDelete = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("Sil", role: .destructive) {
+                if let c = clippingToDelete {
+                    onDeleteManualClipping(c)
+                    clippingToDelete = nil
+                }
+            }
+        }
         .sheet(isPresented: $showEditSheet) {
             BookMetadataEditView(
                 book: book,
@@ -72,6 +109,38 @@ struct BookDetailView: View {
                 }
             )
         }
+        .sheet(isPresented: $showAddClippingForm) {
+            ManualClippingFormView(
+                prefilledBookTitle: book.title,
+                existingBooks: existingBooks,
+                onSave: { title, author, text, page in
+                    onAddManualClipping(title, author, text, page)
+                    showAddClippingForm = false
+                },
+                onCancel: { showAddClippingForm = false }
+            )
+        }
+        .sheet(item: $clippingToEdit) { clipping in
+            ManualClippingFormView(
+                clippingToEdit: clipping,
+                existingBooks: existingBooks,
+                onSave: { title, author, text, page in
+                    let updated = Clipping(
+                        id: clipping.id,
+                        bookTitle: title,
+                        author: author,
+                        text: text,
+                        page: page,
+                        location: clipping.location,
+                        dateAdded: clipping.dateAdded,
+                        isManualEntry: true
+                    )
+                    onUpdateManualClipping(updated)
+                    clippingToEdit = nil
+                },
+                onCancel: { clippingToEdit = nil }
+            )
+        }
     }
 }
 
@@ -81,6 +150,7 @@ private struct BookDetailHeader: View {
     let book: Book
     let coverImage: NSImage?
     var onEdit: () -> Void = {}
+    var onAdd: () -> Void = {}
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
@@ -115,6 +185,15 @@ private struct BookDetailHeader: View {
             }
 
             Spacer(minLength: 0)
+
+            Button(action: onAdd) {
+                Image(systemName: "plus.circle")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .help("Bu kitaba manuel alıntı ekle")
 
             Button(action: onEdit) {
                 Image(systemName: "pencil.circle.fill")

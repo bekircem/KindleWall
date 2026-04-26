@@ -119,8 +119,8 @@ final class SchedulerService: SchedulerServiceProtocol {
         let now = Date()
         var target = customDate
         // If the target time has passed today, schedule for tomorrow
-        if target <= now {
-            target = Calendar.current.date(byAdding: .day, value: 1, to: target) ?? target
+        while target <= now {
+            target = Calendar.current.date(byAdding: .day, value: 1, to: target) ?? target.addingTimeInterval(86400)
         }
 
         let delay = target.timeIntervalSince(now)

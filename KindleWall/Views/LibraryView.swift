@@ -6,10 +6,14 @@ struct LibraryView: View {
     let clippings: [Clipping]
     var onSelectClipping: (Clipping) -> Void
     var onApplyClipping: (Clipping) -> Void = { _ in }
+    var onAddManualClipping: (String, String?, String, String?) -> Void = { _, _, _, _ in }
+    var onDeleteManualClipping: (Clipping) -> Void = { _ in }
+    var onUpdateManualClipping: (Clipping) -> Void = { _ in }
 
     @State private var viewModel = LibraryViewModel()
     @State private var coverService = BookCoverService()
     @State private var bookToEdit: Book? = nil
+    @State private var showAddClippingForm = false
 
     private var filteredBooks: [Book] { viewModel.filteredBooks(from: clippings) }
 
@@ -86,7 +90,11 @@ struct LibraryView: View {
                         onApplyClipping: onApplyClipping,
                         existingOverride: viewModel.metadataOverrides[book.title],
                         onSave: { override in viewModel.saveMetadataOverride(override) },
-                        onReset: { viewModel.removeMetadataOverride(forTitle: book.title) }
+                        onReset: { viewModel.removeMetadataOverride(forTitle: book.title) },
+                        onAddManualClipping: onAddManualClipping,
+                        onDeleteManualClipping: onDeleteManualClipping,
+                        onUpdateManualClipping: onUpdateManualClipping,
+                        existingBooks: uniqueBooks(from: clippings)
                     )
                 }
             } else {
@@ -121,12 +129,27 @@ struct LibraryView: View {
                         onApplyClipping: onApplyClipping,
                         existingOverride: viewModel.metadataOverrides[book.title],
                         onSave: { override in viewModel.saveMetadataOverride(override) },
-                        onReset: { viewModel.removeMetadataOverride(forTitle: book.title) }
+                        onReset: { viewModel.removeMetadataOverride(forTitle: book.title) },
+                        onAddManualClipping: onAddManualClipping,
+                        onDeleteManualClipping: onDeleteManualClipping,
+                        onUpdateManualClipping: onUpdateManualClipping,
+                        existingBooks: uniqueBooks(from: clippings)
                     )
                 }
             }
         }
         .navigationTitle("Kütüphane")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showAddClippingForm = true
+                } label: {
+                    Label("Alıntı Ekle", systemImage: "plus")
+                }
+                .help("Manuel alıntı ekle (⇧⌘N)")
+                .keyboardShortcut("n", modifiers: [.command, .shift])
+            }
+        }
         .sheet(item: $bookToEdit) { book in
             BookMetadataEditView(
                 book: book,
@@ -135,6 +158,25 @@ struct LibraryView: View {
                 onReset: { viewModel.removeMetadataOverride(forTitle: book.title) }
             )
         }
+        .sheet(isPresented: $showAddClippingForm) {
+            ManualClippingFormView(
+                existingBooks: uniqueBooks(from: clippings),
+                onSave: { title, author, text, page in
+                    onAddManualClipping(title, author, text, page)
+                    showAddClippingForm = false
+                },
+                onCancel: { showAddClippingForm = false }
+            )
+        }
+    }
+
+    private func uniqueBooks(from clippings: [Clipping]) -> [(title: String, author: String?)] {
+        var seen = Set<String>()
+        return clippings.compactMap { c in
+            guard !seen.contains(c.bookTitle) else { return nil }
+            seen.insert(c.bookTitle)
+            return (title: c.bookTitle, author: c.author)
+        }.sorted { $0.title < $1.title }
     }
 }
 

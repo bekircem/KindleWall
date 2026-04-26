@@ -49,6 +49,9 @@ protocol StorageServiceProtocol {
     /// IDs of all clippings seen across imports (for incremental merge detection).
     var persistedClippingIDs: Set<UUID> { get set }
 
+    /// Manually entered clippings (not parsed from My Clippings.txt).
+    var manualClippings: [Clipping] { get set }
+
     /// The active rotation mode for clipping selection.
     var rotationMode: RotationMode { get set }
 
@@ -235,6 +238,22 @@ final class StorageService: StorageServiceProtocol {
         }
         set {
             defaults.set(Array(newValue.map { $0.uuidString }), forKey: Constants.StorageKeys.persistedClippingIDs)
+        }
+    }
+
+    // MARK: - Manual Clippings
+
+    var manualClippings: [Clipping] {
+        get {
+            guard let data = defaults.data(forKey: Constants.StorageKeys.manualClippings),
+                  let clippings = try? JSONDecoder().decode([Clipping].self, from: data)
+            else { return [] }
+            return clippings
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                defaults.set(data, forKey: Constants.StorageKeys.manualClippings)
+            }
         }
     }
 

@@ -57,6 +57,7 @@ enum Constants {
         static let rotationMode         = "rotationMode"
         static let currentBookTitle     = "currentBookTitle"
         static let pinnedBookTitles     = "pinnedBookTitles"
+        static let manualClippings      = "manualClippings"
     }
 
     /// Menu bar icon name (SF Symbols)

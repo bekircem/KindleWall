@@ -47,7 +47,13 @@ struct MainView: View {
                         onApplyClipping: { clipping in
                             viewModel.selectAndApply(clipping)
                             selectedTab = .currentQuote
-                        }
+                        },
+                        onAddManualClipping: { title, author, text, page in
+                            viewModel.addManualClipping(bookTitle: title, author: author,
+                                                        text: text, page: page)
+                        },
+                        onDeleteManualClipping: { viewModel.deleteManualClipping($0) },
+                        onUpdateManualClipping: { viewModel.updateManualClipping($0) }
                     )
                 }
             case .settings:
@@ -75,6 +81,10 @@ struct MainView: View {
                     },
                     onRestorePreviousWallpaper: {
                         viewModel.restorePreviousWallpaper()
+                    },
+                    onApplyNow: {
+                        viewModel.selectRandomClipping()
+                        viewModel.applyWallpaper()
                     }
                 )
             case .account:

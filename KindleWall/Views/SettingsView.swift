@@ -12,6 +12,7 @@ struct SettingsView: View {
     var onRotationModeChanged: ((RotationMode) -> Void)? = nil
     var onPinnedBooksChanged: ((Set<String>) -> Void)? = nil
     var onRestorePreviousWallpaper: () -> Void = {}
+    var onApplyNow: () -> Void = {}
 
     @State private var viewModel = SettingsViewModel()
 
@@ -79,6 +80,16 @@ struct SettingsView: View {
 
                     if viewModel.scheduleInterval == .custom {
                         DatePicker("Özel Zaman", selection: $viewModel.customScheduleDate, displayedComponents: .hourAndMinute)
+                    }
+
+                    HStack {
+                        Spacer()
+                        Button {
+                            onApplyNow()
+                        } label: {
+                            Label("Şimdi Değiştir", systemImage: "arrow.clockwise.circle")
+                        }
+                        .help("Mevcut döngü moduna göre yeni alıntı seçer ve wallpaper olarak uygular")
                     }
                 }
 
