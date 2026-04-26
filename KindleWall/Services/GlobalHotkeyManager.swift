@@ -20,11 +20,26 @@ final class GlobalHotkeyManager {
 
     // MARK: - Lifecycle
 
+    /// Whether the app currently has Accessibility permission.
+    var isAccessibilityGranted: Bool { AXIsProcessTrusted() }
+
     func start() {
         let s = StorageService()
         currentKeyCode   = UInt16(s.hotkeyKeyCode)
         currentModifiers = NSEvent.ModifierFlags(rawValue: UInt(bitPattern: s.hotkeyModifiers))
         registerMonitors()
+        // addGlobalMonitorForEvents for .keyDown silently does nothing without Accessibility.
+        // Trigger the system permission dialog proactively so the user isn't left wondering.
+        promptForAccessibilityIfNeeded()
+    }
+
+    /// Triggers the system Accessibility permission dialog (if not yet granted).
+    /// macOS adds the app to System Settings → Accessibility and opens settings.
+    /// Safe to call multiple times — no-op when permission is already granted.
+    func promptForAccessibilityIfNeeded() {
+        guard !AXIsProcessTrusted() else { return }
+        let opts = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true] as CFDictionary
+        AXIsProcessTrustedWithOptions(opts)
     }
 
     func stop() {

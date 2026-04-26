@@ -15,6 +15,7 @@ struct SettingsView: View {
     var onApplyNow: () -> Void = {}
 
     @State private var viewModel = SettingsViewModel()
+    @State private var accessibilityGranted = AXIsProcessTrusted()
 
     var body: some View {
         ScrollView {
@@ -215,6 +216,34 @@ struct SettingsView: View {
                         Spacer()
                         HotkeyRecorderButton()
                     }
+
+                    // Accessibility status indicator
+                    HStack(spacing: 6) {
+                        if accessibilityGranted {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                            Text("Erişilebilirlik izni var — kısayol aktif")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .foregroundStyle(.orange)
+                            Text("Erişilebilirlik izni yok — kısayol yalnızca KindleWall aktifken çalışır")
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                            Button("İzin Ver") {
+                                GlobalHotkeyManager.shared.promptForAccessibilityIfNeeded()
+                                // Re-check after a short delay (system dialog takes time)
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                    accessibilityGranted = AXIsProcessTrusted()
+                                }
+                            }
+                            .font(.caption)
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.small)
+                        }
+                    }
+                    .onAppear { accessibilityGranted = AXIsProcessTrusted() }
                 }
 
                 // MARK: - Hakkında
