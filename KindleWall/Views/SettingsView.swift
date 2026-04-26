@@ -217,35 +217,21 @@ struct SettingsView: View {
                         HotkeyRecorderButton()
                     }
 
-                    // Accessibility status indicator
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(spacing: 6) {
-                            if accessibilityGranted {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
-                                Text("Erişilebilirlik izni var — global kısayol aktif")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            } else {
-                                Image(systemName: "exclamationmark.circle.fill")
-                                    .foregroundStyle(.orange)
-                                Text("Erişilebilirlik izni yok — kısayol sadece KindleWall aktifken çalışır")
-                                    .font(.caption)
-                                    .foregroundStyle(.orange)
-                                Spacer()
-                                Button("Sistem Ayarlarını Aç") {
-                                    GlobalHotkeyManager.shared.openAccessibilitySettings()
-                                }
-                                .font(.caption)
-                                .buttonStyle(.borderedProminent)
-                                .controlSize(.small)
+                    // Accessibility — optional enhancement for selected text pre-fill
+                    HStack(spacing: 6) {
+                        if accessibilityGranted {
+                            Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                            Text("Erişilebilirlik izni var — seçili metin otomatik doldurulur")
+                                .font(.caption).foregroundStyle(.secondary)
+                        } else {
+                            Image(systemName: "info.circle").foregroundStyle(.secondary)
+                            Text("Opsiyonel: Erişilebilirlik izni verilirse seçili metin panele otomatik gelir")
+                                .font(.caption).foregroundStyle(.secondary)
+                            Spacer()
+                            Button("İzin Ver") {
+                                GlobalHotkeyManager.shared.openAccessibilitySettings()
                             }
-                        }
-
-                        if !accessibilityGranted {
-                            Text("İzin verdikten sonra uygulamayı yeniden başlat.")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+                            .font(.caption).buttonStyle(.bordered).controlSize(.small)
                         }
                     }
                     .onAppear { accessibilityGranted = AXIsProcessTrusted() }

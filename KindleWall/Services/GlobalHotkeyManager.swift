@@ -1,116 +1,123 @@
 import AppKit
 import ApplicationServices
+import Carbon.HIToolbox
 import SwiftUI
 
-/// Listens for a configurable global hotkey and shows a floating QuickCapturePanel
-/// pre-filled with the selected text from the frontmost application.
-/// Requires Accessibility permission; prompts the user on first use.
-/// Default hotkey: ⌃⌥K (configurable via Ayarlar → Klavye Kısayolları).
+/// Registers a configurable global hotkey using the Carbon RegisterEventHotKey API.
+/// Unlike NSEvent.addGlobalMonitorForEvents, Carbon hotkeys require NO Accessibility permission
+/// and work in any app context. Accessibility is used only to pre-fill selected text (optional).
 final class GlobalHotkeyManager {
     static let shared = GlobalHotkeyManager()
 
-    private var globalMonitor: Any?
-    private var localMonitor: Any?
+    private var hotKeyRef: EventHotKeyRef?
+    private var eventHandlerRef: EventHandlerRef?
     private var capturePanel: NSPanel?
 
     private var currentKeyCode: UInt16 = 40
     private var currentModifiers: NSEvent.ModifierFlags = [.control, .option]
 
+    // Unique four-char signature to identify our hotkey event ("KWLL")
+    private static let signature: UInt32 = 0x4B574C4C
+    private static let eventID: UInt32 = 1
+
+    var isAccessibilityGranted: Bool { AXIsProcessTrusted() }
+
     private init() {}
 
     // MARK: - Lifecycle
-
-    /// Whether the app currently has Accessibility permission.
-    var isAccessibilityGranted: Bool { AXIsProcessTrusted() }
 
     func start() {
         let s = StorageService()
         currentKeyCode   = UInt16(s.hotkeyKeyCode)
         currentModifiers = NSEvent.ModifierFlags(rawValue: UInt(bitPattern: s.hotkeyModifiers))
-        // Monitors are always registered. addGlobalMonitorForEvents for .keyDown silently
-        // does nothing without Accessibility — no crash, just no global events.
-        registerMonitors()
+        installCarbonHandler()
+        registerHotKey()
     }
 
-    /// Opens System Settings → Accessibility directly so the user can grant permission.
-    /// Called from Settings UI; never called automatically to avoid unwanted popups.
+    func stop() {
+        unregisterHotKey()
+        if let h = eventHandlerRef { RemoveEventHandler(h); eventHandlerRef = nil }
+    }
+
+    /// Hot-reloads the hotkey binding without restarting the event handler.
+    func updateHotkey(keyCode: UInt16, modifiers: NSEvent.ModifierFlags) {
+        unregisterHotKey()
+        currentKeyCode   = keyCode
+        currentModifiers = modifiers
+        registerHotKey()
+    }
+
+    /// Shows the QuickCapturePanel. Called from MenuBar button or programmatically.
+    func showCapture(prefilledText: String = "") {
+        showCapturePanel(prefilledText: prefilledText)
+    }
+
     func openAccessibilitySettings() {
         NSWorkspace.shared.open(
             URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
         )
     }
 
-    func stop() {
-        stopMonitors()
-    }
-
-    /// Updates the active hotkey and immediately restarts the event monitors.
-    func updateHotkey(keyCode: UInt16, modifiers: NSEvent.ModifierFlags) {
-        stopMonitors()
-        currentKeyCode   = keyCode
-        currentModifiers = modifiers
-        registerMonitors()
-    }
-
-    /// Shows the QuickCapturePanel with optional pre-filled text.
-    /// Called from the menu bar button (no selected text) or programmatically.
-    func showCapture(prefilledText: String = "") {
-        showCapturePanel(prefilledText: prefilledText)
-    }
-
-    // MARK: - Monitor management
-
-    private func registerMonitors() {
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard self?.isHotkeyEvent(event) == true else { return }
-            DispatchQueue.main.async { self?.handleHotkey() }
-        }
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard self?.isHotkeyEvent(event) == true else { return event }
-            DispatchQueue.main.async { self?.handleHotkey() }
-            return nil
-        }
-    }
-
-    private func stopMonitors() {
-        if let m = globalMonitor { NSEvent.removeMonitor(m); globalMonitor = nil }
-        if let m = localMonitor  { NSEvent.removeMonitor(m); localMonitor  = nil }
-    }
-
-    // MARK: - Hotkey detection
-
-    private func isHotkeyEvent(_ event: NSEvent) -> Bool {
-        event.modifierFlags.intersection(.deviceIndependentFlagsMask) == currentModifiers
-            && event.keyCode == currentKeyCode
-    }
-
-    // MARK: - Capture flow
-
-    private func handleHotkey() {
-        guard AXIsProcessTrusted() else {
-            requestAccessibilityPermission()
-            return
-        }
-        let text = selectedTextFromFrontApp() ?? ""
+    /// Called by the Carbon C callback when the hotkey fires.
+    func handleHotkeyFired() {
+        // Selected text is best-effort — works only when Accessibility is granted.
+        let text = AXIsProcessTrusted() ? (selectedTextFromFrontApp() ?? "") : ""
         showCapturePanel(prefilledText: text)
     }
+
+    // MARK: - Carbon registration
+
+    private func installCarbonHandler() {
+        var spec = EventTypeSpec(
+            eventClass: OSType(kEventClassKeyboard),
+            eventKind: UInt32(kEventHotKeyPressed)
+        )
+        InstallEventHandler(
+            GetApplicationEventTarget(),
+            globalHotkeyEventCallback,
+            1, &spec,
+            nil, &eventHandlerRef
+        )
+    }
+
+    private func registerHotKey() {
+        var hkID = EventHotKeyID(signature: Self.signature, id: Self.eventID)
+        RegisterEventHotKey(
+            UInt32(currentKeyCode),
+            carbonModifiers(from: currentModifiers),
+            hkID,
+            GetApplicationEventTarget(),
+            0, &hotKeyRef
+        )
+    }
+
+    private func unregisterHotKey() {
+        if let ref = hotKeyRef { UnregisterEventHotKey(ref); hotKeyRef = nil }
+    }
+
+    private func carbonModifiers(from flags: NSEvent.ModifierFlags) -> UInt32 {
+        var mods: UInt32 = 0
+        if flags.contains(.control) { mods |= UInt32(controlKey) }
+        if flags.contains(.option)  { mods |= UInt32(optionKey)  }
+        if flags.contains(.shift)   { mods |= UInt32(shiftKey)   }
+        if flags.contains(.command) { mods |= UInt32(cmdKey)     }
+        return mods
+    }
+
+    // MARK: - Selected text (Accessibility, optional)
 
     private func selectedTextFromFrontApp() -> String? {
         let system = AXUIElementCreateSystemWide()
         var focusedRef: CFTypeRef?
         guard AXUIElementCopyAttributeValue(
-            system,
-            kAXFocusedUIElementAttribute as CFString,
-            &focusedRef
-        ) == .success, let ref = focusedRef, CFGetTypeID(ref) == AXUIElementGetTypeID() else {
-            return nil
-        }
+            system, kAXFocusedUIElementAttribute as CFString, &focusedRef
+        ) == .success,
+              let ref = focusedRef,
+              CFGetTypeID(ref) == AXUIElementGetTypeID() else { return nil }
         let focused = ref as! AXUIElement
         var selectedRef: CFTypeRef?
         guard AXUIElementCopyAttributeValue(
-            focused,
-            kAXSelectedTextAttribute as CFString,
-            &selectedRef
+            focused, kAXSelectedTextAttribute as CFString, &selectedRef
         ) == .success else { return nil }
         return selectedRef as? String
     }
@@ -133,8 +140,7 @@ final class GlobalHotkeyManager {
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 440, height: 320),
             styleMask: [.titled, .closable, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false
+            backing: .buffered, defer: false
         )
         panel.title = "KindleWall — Alıntı Yakala"
         panel.level = .floating
@@ -151,34 +157,33 @@ final class GlobalHotkeyManager {
                 )
                 panel?.close()
             },
-            onCancel: { [weak panel] in
-                panel?.close()
-            }
+            onCancel: { [weak panel] in panel?.close() }
         )
         panel.contentView = NSHostingView(rootView: view)
         panel.makeKeyAndOrderFront(nil)
         self.capturePanel = panel
     }
+}
 
-    // MARK: - Accessibility permission
+// MARK: - Carbon C callback (file-scope so it can serve as a function pointer)
 
-    private func requestAccessibilityPermission() {
-        let hotkeyLabel = hotkeyDisplayString()
-        let alert = NSAlert()
-        alert.messageText = "Erişilebilirlik İzni Gerekli"
-        alert.informativeText = """
-            \(hotkeyLabel) kısayoluyla metin yakalayabilmek için \
-            Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik'te \
-            KindleWall'a izin ver, ardından uygulamayı yeniden başlat.
-            """
-        alert.addButton(withTitle: "Sistem Ayarlarını Aç")
-        alert.addButton(withTitle: "İptal")
-        if alert.runModal() == .alertFirstButtonReturn {
-            openAccessibilitySettings()
-        }
+private func globalHotkeyEventCallback(
+    _ nextHandler: EventHandlerCallRef?,
+    _ event: EventRef?,
+    _ userData: UnsafeMutableRawPointer?
+) -> OSStatus {
+    var hkID = EventHotKeyID()
+    GetEventParameter(
+        event,
+        EventParamName(kEventParamDirectObject),
+        EventParamType(typeEventHotKeyID),
+        nil,
+        MemoryLayout<EventHotKeyID>.size,
+        nil,
+        &hkID
+    )
+    if hkID.signature == 0x4B574C4C {
+        DispatchQueue.main.async { GlobalHotkeyManager.shared.handleHotkeyFired() }
     }
-
-    private func hotkeyDisplayString() -> String {
-        HotkeyRecorderButton.formatHotkey(keyCode: currentKeyCode, modifiers: currentModifiers)
-    }
+    return noErr
 }
