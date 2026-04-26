@@ -17,6 +17,7 @@ final class MainViewModel {
     var clippings: [Clipping] = []
     var pinnedBookTitles: Set<String> = []
     private(set) var isSchedulerPaused: Bool = false
+    var pendingCaptureText: String? = nil
 
     // MARK: - Dependencies
 
@@ -69,6 +70,15 @@ final class MainViewModel {
         self.scheduler.interval = storage.scheduleInterval
         if let customDate = storage.customScheduleDate {
             self.scheduler.customDate = customDate
+        }
+
+        // Listen for text captured via Services menu or global hotkey
+        NotificationCenter.default.addObserver(
+            forName: Constants.Notifications.captureText,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            self?.pendingCaptureText = notification.userInfo?["text"] as? String
         }
     }
 

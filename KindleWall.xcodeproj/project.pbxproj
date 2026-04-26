@@ -10,6 +10,7 @@
 		059F30BF6A1FA8B0F328B920 /* MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD04AC0B2940E7CE8B550B11 /* MainViewModel.swift */; };
 		0C3EBFFDCCB5B78BA11CB442 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E05954DFC26A7E224ED7FACF /* LibraryView.swift */; };
 		0CAF0D4FAB7D966FFA8B8918 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD59AD4685A430F949932A4 /* KeychainService.swift */; };
+		0DACA0B86B619962478734DC /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDC1F001F90D87F490B1FF3 /* AppEnvironment.swift */; };
 		1170409B5F34DDE6772C8749 /* ClippingsParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8143673FE823CDFA4DAABFAD /* ClippingsParser.swift */; };
 		141AB4F848CA72135E3562E9 /* GradientPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C059FD58A32763D85E34EC /* GradientPicker.swift */; };
 		1747284BE18E7A9E4E62C122 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 089C02597E57C2DF2EEA9DFA /* SettingsView.swift */; };
@@ -31,6 +32,7 @@
 		4698C60F322D48D5422AF12C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFFF4DE309F9E7D0FBC4B71F /* AppDelegate.swift */; };
 		47669560FF987FD908EB319E /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72CB9726895A48D845E749C /* MenuBarView.swift */; };
 		47BCE0DAAFECA271BE891C24 /* WallpaperGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4558BCC5328980AB09CF0F0A /* WallpaperGenerator.swift */; };
+		48A443F601C5B7F826C9BABD /* QuickCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C99A62B30D7B8B2984E22E46 /* QuickCaptureView.swift */; };
 		495D15A66F975706773D4941 /* NSImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 888C3196CA00FA1B394FD26C /* NSImage+Extensions.swift */; };
 		4A321972B8E820C3A89345A3 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39044C3B85F912C8DA715912 /* Constants.swift */; };
 		5B805C695839745A6B830206 /* QuoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C63B599395E9CA97BEFDDEC /* QuoteView.swift */; };
@@ -42,6 +44,7 @@
 		7D51CE4F5A5460C8B457975A /* KindleWallApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30563F762B62B9440A7A5F20 /* KindleWallApp.swift */; };
 		83428CC80EF2475795300C80 /* BookMetadataOverride.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5772E1FA5C94F11086188F5 /* BookMetadataOverride.swift */; };
 		8967018B00039DB44F400CFB /* Color+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85ABC4DE882DD80453CAADE /* Color+Extensions.swift */; };
+		8D4147AB392F1A89ACE154B7 /* GlobalHotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B6DE6C86743B83C676D7CF /* GlobalHotkeyManager.swift */; };
 		94526E695FD2F54B501DDE54 /* BookCoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6912F0FE5249E086AD30831D /* BookCoverView.swift */; };
 		9651EB08A73B52831A149DA0 /* SchedulerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960F9C40AEAD0DFA2A98BB65 /* SchedulerService.swift */; };
 		A5C08C1977C2EB95151FC087 /* ManualClippingFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08544AB0ED3C57DE9712136 /* ManualClippingFormView.swift */; };
@@ -100,11 +103,14 @@
 		B1651C641E93F65D094CE096 /* StylePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StylePickerView.swift; sourceTree = "<group>"; };
 		B3E1115261839C71F99D5A65 /* BookCoverService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookCoverService.swift; sourceTree = "<group>"; };
 		B5772E1FA5C94F11086188F5 /* BookMetadataOverride.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMetadataOverride.swift; sourceTree = "<group>"; };
+		BEDC1F001F90D87F490B1FF3 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		C08C08DD38C5C63EFCF3D337 /* Book.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Book.swift; sourceTree = "<group>"; };
+		C99A62B30D7B8B2984E22E46 /* QuickCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCaptureView.swift; sourceTree = "<group>"; };
 		CD04AC0B2940E7CE8B550B11 /* MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewModel.swift; sourceTree = "<group>"; };
 		CFFF4DE309F9E7D0FBC4B71F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D72CB9726895A48D845E749C /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		D9692B0E282F04AFDCA0FF3D /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
+		D9B6DE6C86743B83C676D7CF /* GlobalHotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotkeyManager.swift; sourceTree = "<group>"; };
 		D9BC1AC3AB1D70358AAA494F /* RotationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotationMode.swift; sourceTree = "<group>"; };
 		E05954DFC26A7E224ED7FACF /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		E37D518982D3991558473A69 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
@@ -233,6 +239,7 @@
 			isa = PBXGroup;
 			children = (
 				CFFF4DE309F9E7D0FBC4B71F /* AppDelegate.swift */,
+				BEDC1F001F90D87F490B1FF3 /* AppEnvironment.swift */,
 				30563F762B62B9440A7A5F20 /* KindleWallApp.swift */,
 			);
 			path = App;
@@ -243,6 +250,7 @@
 			children = (
 				B3E1115261839C71F99D5A65 /* BookCoverService.swift */,
 				8143673FE823CDFA4DAABFAD /* ClippingsParser.swift */,
+				D9B6DE6C86743B83C676D7CF /* GlobalHotkeyManager.swift */,
 				2AD59AD4685A430F949932A4 /* KeychainService.swift */,
 				5F807E37E844B4E5AF428D11 /* NotificationService.swift */,
 				960F9C40AEAD0DFA2A98BB65 /* SchedulerService.swift */,
@@ -273,6 +281,7 @@
 				F08544AB0ED3C57DE9712136 /* ManualClippingFormView.swift */,
 				D72CB9726895A48D845E749C /* MenuBarView.swift */,
 				45AAAB1873D99B68FFE40196 /* OnboardingView.swift */,
+				C99A62B30D7B8B2984E22E46 /* QuickCaptureView.swift */,
 				089C02597E57C2DF2EEA9DFA /* SettingsView.swift */,
 				B1651C641E93F65D094CE096 /* StylePickerView.swift */,
 				30C80015B7338D2C54BE388B /* WallpaperPreviewView.swift */,
@@ -351,6 +360,7 @@
 			files = (
 				EEA6AFCE1699E43EAA1F01F9 /* AccountView.swift in Sources */,
 				4698C60F322D48D5422AF12C /* AppDelegate.swift in Sources */,
+				0DACA0B86B619962478734DC /* AppEnvironment.swift in Sources */,
 				F0261402E1C041EC4FF62E15 /* AuthState.swift in Sources */,
 				24FB700AC7A58C0CCEEF8D47 /* Book.swift in Sources */,
 				17C2DEB2D45D93DFD94A95D7 /* BookCoverService.swift in Sources */,
@@ -365,6 +375,7 @@
 				8967018B00039DB44F400CFB /* Color+Extensions.swift in Sources */,
 				4A321972B8E820C3A89345A3 /* Constants.swift in Sources */,
 				3A4318DFE6E02DB154C6A25B /* CurrentQuoteView.swift in Sources */,
+				8D4147AB392F1A89ACE154B7 /* GlobalHotkeyManager.swift in Sources */,
 				141AB4F848CA72135E3562E9 /* GradientPicker.swift in Sources */,
 				D250054AF0ED5F8EB10AF5F5 /* ImportProgressBanner.swift in Sources */,
 				EA59F1A90173E25AB7E1010B /* ImportState.swift in Sources */,
@@ -382,6 +393,7 @@
 				44421BDC470FFA8C17F44D6F /* NotificationService.swift in Sources */,
 				1E24A9B6C3A9CD34EE96805D /* OnboardingView.swift in Sources */,
 				EA8A308D527C16AE2F4478E3 /* PinnedBooksSectionView.swift in Sources */,
+				48A443F601C5B7F826C9BABD /* QuickCaptureView.swift in Sources */,
 				5B805C695839745A6B830206 /* QuoteView.swift in Sources */,
 				73DD1E958ACF6F7249921FCF /* RotationMode.swift in Sources */,
 				2E8656739C0CDAD9F2762721 /* ScheduleInterval.swift in Sources */,

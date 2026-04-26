@@ -26,6 +26,7 @@ struct ManualClippingFormView: View {
     init(
         clippingToEdit: Clipping? = nil,
         prefilledBookTitle: String = "",
+        prefilledText: String = "",
         existingBooks: [(title: String, author: String?)] = [],
         onSave: @escaping (String, String?, String, String?) -> Void,
         onCancel: @escaping () -> Void
@@ -44,7 +45,7 @@ struct ManualClippingFormView: View {
         } else {
             _bookTitle = State(initialValue: prefilledBookTitle)
             _author    = State(initialValue: "")
-            _text      = State(initialValue: "")
+            _text      = State(initialValue: prefilledText)
             _page      = State(initialValue: "")
         }
     }

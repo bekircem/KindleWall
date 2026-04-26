@@ -42,6 +42,7 @@ struct KindleWallApp: App {
                     .environment(authState)
                     .onAppear {
                         viewModel.startScheduler()
+                        AppEnvironment.shared.mainViewModel = viewModel
                     }
             }
         }

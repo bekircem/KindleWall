@@ -60,9 +60,15 @@ enum Constants {
         static let manualClippings      = "manualClippings"
     }
 
+    /// Internal notification names
+    enum Notifications {
+        static let captureText = Notification.Name("kindlewall.captureText")
+    }
+
     /// Menu bar icon name (SF Symbols)
     enum Icons {
-        static let menuBarIcon = "text.quote"
+        static let menuBarIcon  = "text.quote"
+        static let captureIcon  = "text.badge.plus"
         static let newQuote = "dice"
         static let favorite = "heart"
         static let favoriteFilled = "heart.fill"

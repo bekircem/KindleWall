@@ -99,12 +99,35 @@ struct MainView: View {
                 .padding(.horizontal, 16)
                 .frame(maxWidth: 420)
         }
+        .sheet(isPresented: Binding(
+            get: { viewModel.pendingCaptureText != nil },
+            set: { if !$0 { viewModel.pendingCaptureText = nil } }
+        )) {
+            ManualClippingFormView(
+                prefilledText: viewModel.pendingCaptureText ?? "",
+                existingBooks: captureExistingBooks,
+                onSave: { title, author, text, page in
+                    viewModel.addManualClipping(bookTitle: title, author: author, text: text, page: page)
+                    viewModel.pendingCaptureText = nil
+                },
+                onCancel: { viewModel.pendingCaptureText = nil }
+            )
+        }
         .onAppear {
             viewModel.loadClippings()
             if viewModel.currentClipping == nil && !viewModel.clippings.isEmpty {
                 viewModel.selectRandomClipping()
             }
         }
+    }
+
+    private var captureExistingBooks: [(title: String, author: String?)] {
+        var seen = Set<String>()
+        return viewModel.clippings.compactMap { c in
+            guard !seen.contains(c.bookTitle) else { return nil }
+            seen.insert(c.bookTitle)
+            return (title: c.bookTitle, author: c.author)
+        }.sorted { $0.title < $1.title }
     }
 }
 

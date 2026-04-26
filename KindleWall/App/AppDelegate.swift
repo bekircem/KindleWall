@@ -16,6 +16,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         Task {
             _ = await NotificationService().requestAuthorization()
         }
+
+        // Start listening for the global ⌃⌥K hotkey
+        GlobalHotkeyManager.shared.start()
+
+        // Register Services menu so macOS discovers this handler
+        NSApplication.shared.servicesProvider = self
+        NSUpdateDynamicServices()
+    }
+
+    // MARK: - macOS Services Menu
+
+    /// Invoked when the user selects "KindleWall'a Alıntı Ekle" from the Services menu.
+    /// macOS passes the selected text via `pasteboard`.
+    @objc func addClippingFromService(
+        _ pasteboard: NSPasteboard,
+        userData: String?,
+        error: AutoreleasingUnsafeMutablePointer<NSString?>
+    ) {
+        guard let text = pasteboard.string(forType: .string), !text.isEmpty else { return }
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        if let window = NSApplication.shared.windows.first(where: { !($0 is NSPanel) }) {
+            window.makeKeyAndOrderFront(nil)
+        }
+        // Brief delay so the window is visible before the sheet presents
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            NotificationCenter.default.post(
+                name: Constants.Notifications.captureText,
+                object: nil,
+                userInfo: ["text": text]
+            )
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

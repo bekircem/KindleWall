@@ -25,6 +25,14 @@ targets:
           - "Resources/KindleWall.entitlements"
     info:
       path: KindleWall/Resources/Info.plist
+      properties:
+        NSAccessibilityUsageDescription: "Herhangi bir uygulamada seçtiğin metni KindleWall'a alıntı olarak eklemek için kullanılır."
+        NSServices:
+          - NSMenuItem:
+              default: "KindleWall'a Alıntı Ekle"
+            NSMessage: addClippingFromService
+            NSSendTypes:
+              - NSStringPboardType
     entitlements:
       path: KindleWall/Resources/KindleWall.entitlements
     settings:
