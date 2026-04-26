@@ -25,6 +25,7 @@
 		31B910262E7F04F9464AF857 /* LibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D5E30DC05F026C1E649A53 /* LibraryViewModel.swift */; };
 		344706C2926BAB6CB998A58A /* StylePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1651C641E93F65D094CE096 /* StylePickerView.swift */; };
 		345372D699AF55DB7B054DF5 /* WallpaperStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F1349888334E25C72261CE /* WallpaperStyle.swift */; };
+		3870C4F66328E42B28ABE06F /* HotkeyRecorderButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15ED09A5691424B720CBDF26 /* HotkeyRecorderButton.swift */; };
 		3A4318DFE6E02DB154C6A25B /* CurrentQuoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 666760574F0185C2595696EF /* CurrentQuoteView.swift */; };
 		4272505441027870853C9F2D /* ClippingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6C0418233969592799EC2E /* ClippingCard.swift */; };
 		442FA96082B056A8A51F92CA /* KindleWallError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E77A0B0FE97E55C4326EE31 /* KindleWallError.swift */; };
@@ -70,6 +71,7 @@
 		0E3DD25C894EF516D25F2473 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		0F04A2A0B130D7F286B3CCEC /* BookMetadataEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMetadataEditView.swift; sourceTree = "<group>"; };
 		12C059FD58A32763D85E34EC /* GradientPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientPicker.swift; sourceTree = "<group>"; };
+		15ED09A5691424B720CBDF26 /* HotkeyRecorderButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyRecorderButton.swift; sourceTree = "<group>"; };
 		1F9733AA9E3A8A2D3F79AA5B /* WallpaperManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperManager.swift; sourceTree = "<group>"; };
 		2AD59AD4685A430F949932A4 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		2E77A0B0FE97E55C4326EE31 /* KindleWallError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KindleWallError.swift; sourceTree = "<group>"; };
@@ -276,6 +278,7 @@
 				4998D9FDFE0CCA5977A85336 /* BookDetailView.swift */,
 				0F04A2A0B130D7F286B3CCEC /* BookMetadataEditView.swift */,
 				666760574F0185C2595696EF /* CurrentQuoteView.swift */,
+				15ED09A5691424B720CBDF26 /* HotkeyRecorderButton.swift */,
 				E05954DFC26A7E224ED7FACF /* LibraryView.swift */,
 				900B234036250560FF1ABDD8 /* MainView.swift */,
 				F08544AB0ED3C57DE9712136 /* ManualClippingFormView.swift */,
@@ -377,6 +380,7 @@
 				3A4318DFE6E02DB154C6A25B /* CurrentQuoteView.swift in Sources */,
 				8D4147AB392F1A89ACE154B7 /* GlobalHotkeyManager.swift in Sources */,
 				141AB4F848CA72135E3562E9 /* GradientPicker.swift in Sources */,
+				3870C4F66328E42B28ABE06F /* HotkeyRecorderButton.swift in Sources */,
 				D250054AF0ED5F8EB10AF5F5 /* ImportProgressBanner.swift in Sources */,
 				EA59F1A90173E25AB7E1010B /* ImportState.swift in Sources */,
 				0CAF0D4FAB7D966FFA8B8918 /* KeychainService.swift in Sources */,

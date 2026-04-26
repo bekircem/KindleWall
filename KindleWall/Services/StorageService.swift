@@ -61,6 +61,12 @@ protocol StorageServiceProtocol {
     /// Raw book titles pinned by the user for pinnedBooks mode.
     var pinnedBookTitles: [String] { get set }
 
+    /// Key code for the global text-capture hotkey (default: 40 = K).
+    var hotkeyKeyCode: Int { get set }
+
+    /// Raw modifier flags for the global text-capture hotkey (default: ⌃⌥ = 786432).
+    var hotkeyModifiers: Int { get set }
+
     /// Resolves the security-scoped bookmark to a file URL.
     /// - Returns: The resolved file URL, or nil if resolution fails.
     func resolveClippingsFileURL() -> URL?
@@ -280,6 +286,22 @@ final class StorageService: StorageServiceProtocol {
     var pinnedBookTitles: [String] {
         get { defaults.stringArray(forKey: Constants.StorageKeys.pinnedBookTitles) ?? [] }
         set { defaults.set(newValue, forKey: Constants.StorageKeys.pinnedBookTitles) }
+    }
+
+    // MARK: - Global Hotkey
+
+    var hotkeyKeyCode: Int {
+        get { defaults.object(forKey: Constants.StorageKeys.hotkeyKeyCode) != nil
+                ? defaults.integer(forKey: Constants.StorageKeys.hotkeyKeyCode)
+                : 40 }
+        set { defaults.set(newValue, forKey: Constants.StorageKeys.hotkeyKeyCode) }
+    }
+
+    var hotkeyModifiers: Int {
+        get { defaults.object(forKey: Constants.StorageKeys.hotkeyModifiers) != nil
+                ? defaults.integer(forKey: Constants.StorageKeys.hotkeyModifiers)
+                : 786432 /* NSEvent.ModifierFlags([.control, .option]).rawValue */ }
+        set { defaults.set(newValue, forKey: Constants.StorageKeys.hotkeyModifiers) }
     }
 
     // MARK: - Typography

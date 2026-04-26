@@ -84,24 +84,34 @@ struct MenuBarView: View {
     // MARK: - Action Row
 
     private var actionRow: some View {
-        HStack(spacing: 8) {
-            Button {
-                viewModel.selectRandomClipping()
-                viewModel.applyWallpaper()
-            } label: {
-                Label("Yeni Alıntı", systemImage: Constants.Icons.newQuote)
-                    .frame(maxWidth: .infinity)
+        VStack(spacing: 8) {
+            HStack(spacing: 8) {
+                Button {
+                    viewModel.selectRandomClipping()
+                    viewModel.applyWallpaper()
+                } label: {
+                    Label("Yeni Alıntı", systemImage: Constants.Icons.newQuote)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+
+                Button {
+                    viewModel.applyWallpaper()
+                } label: {
+                    Label("Uygula", systemImage: Constants.Icons.wallpaper)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .disabled(viewModel.currentClipping == nil)
             }
-            .buttonStyle(.bordered)
 
             Button {
-                viewModel.applyWallpaper()
+                GlobalHotkeyManager.shared.showCapture()
             } label: {
-                Label("Uygula", systemImage: Constants.Icons.wallpaper)
+                Label("Manuel Alıntı Ekle", systemImage: Constants.Icons.captureIcon)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
-            .disabled(viewModel.currentClipping == nil)
         }
     }
 

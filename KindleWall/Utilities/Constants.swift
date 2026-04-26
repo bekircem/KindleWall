@@ -58,6 +58,8 @@ enum Constants {
         static let currentBookTitle     = "currentBookTitle"
         static let pinnedBookTitles     = "pinnedBookTitles"
         static let manualClippings      = "manualClippings"
+        static let hotkeyKeyCode        = "hotkeyKeyCode"
+        static let hotkeyModifiers      = "hotkeyModifiers"
     }
 
     /// Internal notification names

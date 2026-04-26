@@ -201,6 +201,22 @@ struct SettingsView: View {
                         : "Henüz değiştirilmiş bir duvar kağıdı yok")
                 }
 
+                // MARK: - Klavye Kısayolları
+                settingsSection("Klavye Kısayolları") {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Metin Yakalama")
+                                .font(.headline)
+                            Text("Herhangi bir uygulamada metin seçip kısayola basınca QuickCapture paneli açılır.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer()
+                        HotkeyRecorderButton()
+                    }
+                }
+
                 // MARK: - Hakkında
                 settingsSection("Hakkında") {
                     HStack {

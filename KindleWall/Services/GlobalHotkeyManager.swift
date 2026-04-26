@@ -2,9 +2,10 @@ import AppKit
 import ApplicationServices
 import SwiftUI
 
-/// Listens for the global hotkey (⌃⌥K) and shows a floating QuickCapturePanel
+/// Listens for a configurable global hotkey and shows a floating QuickCapturePanel
 /// pre-filled with the selected text from the frontmost application.
 /// Requires Accessibility permission; prompts the user on first use.
+/// Default hotkey: ⌃⌥K (configurable via Ayarlar → Klavye Kısayolları).
 final class GlobalHotkeyManager {
     static let shared = GlobalHotkeyManager()
 
@@ -12,11 +13,41 @@ final class GlobalHotkeyManager {
     private var localMonitor: Any?
     private var capturePanel: NSPanel?
 
+    private var currentKeyCode: UInt16 = 40
+    private var currentModifiers: NSEvent.ModifierFlags = [.control, .option]
+
     private init() {}
 
     // MARK: - Lifecycle
 
     func start() {
+        let s = StorageService()
+        currentKeyCode   = UInt16(s.hotkeyKeyCode)
+        currentModifiers = NSEvent.ModifierFlags(rawValue: UInt(bitPattern: s.hotkeyModifiers))
+        registerMonitors()
+    }
+
+    func stop() {
+        stopMonitors()
+    }
+
+    /// Updates the active hotkey and immediately restarts the event monitors.
+    func updateHotkey(keyCode: UInt16, modifiers: NSEvent.ModifierFlags) {
+        stopMonitors()
+        currentKeyCode   = keyCode
+        currentModifiers = modifiers
+        registerMonitors()
+    }
+
+    /// Shows the QuickCapturePanel with optional pre-filled text.
+    /// Called from the menu bar button (no selected text) or programmatically.
+    func showCapture(prefilledText: String = "") {
+        showCapturePanel(prefilledText: prefilledText)
+    }
+
+    // MARK: - Monitor management
+
+    private func registerMonitors() {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard self?.isHotkeyEvent(event) == true else { return }
             DispatchQueue.main.async { self?.handleHotkey() }
@@ -24,21 +55,20 @@ final class GlobalHotkeyManager {
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard self?.isHotkeyEvent(event) == true else { return event }
             DispatchQueue.main.async { self?.handleHotkey() }
-            return nil // consume so the app doesn't also handle it
+            return nil
         }
     }
 
-    func stop() {
+    private func stopMonitors() {
         if let m = globalMonitor { NSEvent.removeMonitor(m); globalMonitor = nil }
         if let m = localMonitor  { NSEvent.removeMonitor(m); localMonitor  = nil }
     }
 
     // MARK: - Hotkey detection
 
-    // keyCode 40 = K on all keyboard layouts
     private func isHotkeyEvent(_ event: NSEvent) -> Bool {
-        event.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.control, .option]
-            && event.keyCode == 40
+        event.modifierFlags.intersection(.deviceIndependentFlagsMask) == currentModifiers
+            && event.keyCode == currentKeyCode
     }
 
     // MARK: - Capture flow
@@ -75,7 +105,6 @@ final class GlobalHotkeyManager {
     // MARK: - Panel
 
     private func showCapturePanel(prefilledText: String) {
-        // Close any previously open panel
         capturePanel?.close()
 
         let books: [(title: String, author: String?)] = {
@@ -121,10 +150,11 @@ final class GlobalHotkeyManager {
     // MARK: - Accessibility permission
 
     private func requestAccessibilityPermission() {
+        let hotkeyLabel = hotkeyDisplayString()
         let alert = NSAlert()
         alert.messageText = "Erişilebilirlik İzni Gerekli"
         alert.informativeText = """
-            KindleWall'ın ⌃⌥K kısayoluyla seçili metni okuyabilmesi için \
+            KindleWall'ın \(hotkeyLabel) kısayoluyla seçili metni okuyabilmesi için \
             Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik'te \
             KindleWall'a izin vermen gerekiyor.
             """
@@ -135,5 +165,9 @@ final class GlobalHotkeyManager {
                 URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
             )
         }
+    }
+
+    private func hotkeyDisplayString() -> String {
+        HotkeyRecorderButton.formatHotkey(keyCode: currentKeyCode, modifiers: currentModifiers)
     }
 }
