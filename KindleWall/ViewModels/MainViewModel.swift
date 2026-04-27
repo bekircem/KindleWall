@@ -39,6 +39,10 @@ final class MainViewModel {
 
     private var importTask: Task<Void, Never>?
 
+    // MARK: - Notification observers
+
+    private var captureTextObserver: NSObjectProtocol?
+
     // MARK: - Init
 
     init(
@@ -73,12 +77,18 @@ final class MainViewModel {
         }
 
         // Listen for text captured via Services menu or global hotkey
-        NotificationCenter.default.addObserver(
+        captureTextObserver = NotificationCenter.default.addObserver(
             forName: Constants.Notifications.captureText,
             object: nil,
             queue: .main
         ) { [weak self] notification in
             self?.pendingCaptureText = notification.userInfo?["text"] as? String
+        }
+    }
+
+    deinit {
+        if let observer = captureTextObserver {
+            NotificationCenter.default.removeObserver(observer)
         }
     }
 
