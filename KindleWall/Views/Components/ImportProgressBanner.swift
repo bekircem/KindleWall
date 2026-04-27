@@ -33,7 +33,7 @@ struct ImportProgressBanner: View {
             if case .completed = importState.phase {
                 try? await Task.sleep(for: .seconds(6))
                 guard !Task.isCancelled else { return }
-                withAnimation {
+                withAnimation(.spring(duration: 0.35)) {
                     importState.phase = .idle
                     importState.summary = nil
                 }
@@ -94,7 +94,7 @@ struct ImportProgressBanner: View {
             Spacer()
 
             Button {
-                withAnimation {
+                withAnimation(.spring(duration: 0.35)) {
                     importState.phase = .idle
                     importState.summary = nil
                 }
@@ -131,7 +131,7 @@ struct ImportProgressBanner: View {
             Spacer()
 
             Button {
-                withAnimation {
+                withAnimation(.spring(duration: 0.35)) {
                     importState.phase = .idle
                 }
             } label: {
