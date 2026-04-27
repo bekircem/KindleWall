@@ -25,6 +25,9 @@ profile
 *.xccheckout
 *.xcscmblueprint
 
+# Agent runtime directories (not project assets)
+.agents/
+
 # Claude Code tooling (local only)
 .claude/TODO.md
 .claude/settings.local.json
