@@ -49,6 +49,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         }
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        GlobalHotkeyManager.shared.stop()
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         // Keep the app running in menu bar even when the window is closed
         return false
