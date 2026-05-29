@@ -70,6 +70,8 @@ final class MainViewModel {
             self.wallpaperManager = WallpaperManager(storageService: storage)
         }
 
+        AppEnvironment.shared.mainViewModel = self
+
         // Restore stored schedule interval so the scheduler fires at the user's configured cadence
         self.scheduler.interval = storage.scheduleInterval
         if let customDate = storage.customScheduleDate {
@@ -208,26 +210,42 @@ final class MainViewModel {
             errorMessage = "Yüklü alıntı yok."
             return
         }
+        let pool = filteredClippings()
+        guard !pool.isEmpty else {
+            errorMessage = "Filtreye uyan alıntı yok. Uzun alıntı eşiğini yükseltin."
+            return
+        }
         errorMessage = nil
         switch storage.rotationMode {
-        case .allRandom:   selectAllRandom()
-        case .bookByBook:  selectBookByBook()
-        case .pinnedBooks: selectFromPinnedBooks()
+        case .allRandom:   selectAllRandom(pool: pool)
+        case .bookByBook:  selectBookByBook(pool: pool)
+        case .pinnedBooks: selectFromPinnedBooks(pool: pool)
+        case .favorites:   selectFromFavorites(pool: pool)
         }
         generatePreview()
     }
 
-    /// Selects a random clipping from all loaded clippings, cycling without repeat.
-    private func selectAllRandom() {
+    /// Returns clippings that pass the optional long-quote skip filter.
+    private func filteredClippings() -> [Clipping] {
+        let settings = storage.longQuote
+        guard settings.skipEnabled else { return clippings }
+        let threshold = settings.skipThreshold
+        return clippings.filter { settings.skipUnit.measure($0.text) <= threshold }
+    }
+
+    /// Selects a random clipping from the pool, cycling without repeat.
+    private func selectAllRandom(pool: [Clipping]) {
         var shownIDs = storage.shownClippingIDs
-        let unshown = clippings.filter { !shownIDs.contains($0.id) }
+        let unshown = pool.filter { !shownIDs.contains($0.id) }
         if let next = unshown.randomElement() {
             currentClipping = next
             shownIDs.insert(next.id)
         } else {
-            shownIDs.removeAll()
+            // Reset shown IDs only within the current pool to preserve filtered-out state.
+            let poolIDs = Set(pool.map(\.id))
+            shownIDs.subtract(poolIDs)
             storage.shownClippingIDs = shownIDs
-            guard let selected = clippings.randomElement() else { return }
+            guard let selected = pool.randomElement() else { return }
             currentClipping = selected
             shownIDs.insert(selected.id)
         }
@@ -235,22 +253,22 @@ final class MainViewModel {
     }
 
     /// Selects a clipping book-by-book, exhausting all quotes in a book before moving on.
-    private func selectBookByBook() {
+    private func selectBookByBook(pool: [Clipping]) {
         var shownIDs = storage.shownClippingIDs
 
-        // Determine active book; pick randomly if none stored or book no longer exists
+        // Determine active book from pool; pick randomly if none stored or book no longer present.
         let activeBookTitle: String
         if let stored = storage.currentBookTitle,
-           clippings.contains(where: { $0.bookTitle == stored }) {
+           pool.contains(where: { $0.bookTitle == stored }) {
             activeBookTitle = stored
         } else {
-            let allTitles = Array(Set(clippings.map(\.bookTitle)))
+            let allTitles = Array(Set(pool.map(\.bookTitle)))
             guard let picked = allTitles.randomElement() else { return }
             activeBookTitle = picked
             storage.currentBookTitle = picked
         }
 
-        let bookClippings = clippings.filter { $0.bookTitle == activeBookTitle }
+        let bookClippings = pool.filter { $0.bookTitle == activeBookTitle }
         let unshown = bookClippings.filter { !shownIDs.contains($0.id) }
 
         if let selected = unshown.randomElement() {
@@ -259,8 +277,8 @@ final class MainViewModel {
             shownIDs.insert(selected.id)
             storage.shownClippingIDs = shownIDs
         } else {
-            // Book exhausted — pick a new one
-            let allTitles = Array(Set(clippings.map(\.bookTitle)))
+            // Book exhausted — pick a new one from the pool
+            let allTitles = Array(Set(pool.map(\.bookTitle)))
             let candidates = allTitles.count > 1
                 ? allTitles.filter { $0 != activeBookTitle }
                 : allTitles
@@ -269,11 +287,11 @@ final class MainViewModel {
             storage.currentBookTitle = newTitle
 
             // Clear shown IDs only for the new book's clippings; preserve other books
-            let newBookIDs = Set(clippings.filter { $0.bookTitle == newTitle }.map(\.id))
+            let newBookIDs = Set(pool.filter { $0.bookTitle == newTitle }.map(\.id))
             shownIDs.subtract(newBookIDs)
             storage.shownClippingIDs = shownIDs
 
-            let newBookClippings = clippings.filter { $0.bookTitle == newTitle }
+            let newBookClippings = pool.filter { $0.bookTitle == newTitle }
             guard let selected = newBookClippings.randomElement() else { return }
             currentClipping = selected
             shownIDs.insert(selected.id)
@@ -281,19 +299,53 @@ final class MainViewModel {
         }
     }
 
-    /// Selects a clipping from user-pinned books only, cycling without repeat within that pool.
-    private func selectFromPinnedBooks() {
-        let pinnedTitles = pinnedBookTitles
-        guard !pinnedTitles.isEmpty else {
-            errorMessage = "Sabitlenmiş kitap yok. Lütfen Ayarlar'dan kitap seçin."
-            selectAllRandom()
+    /// Selects a clipping from favorited quotes only, cycling without repeat within that pool.
+    private func selectFromFavorites(pool: [Clipping]) {
+        let favoriteIDs = storage.favoriteClippingIDs
+        guard !favoriteIDs.isEmpty else {
+            errorMessage = "Favori alıntı yok. Kütüphaneden kalp ekleyin."
+            selectAllRandom(pool: pool)
             return
         }
 
-        let pinnedClippings = clippings.filter { pinnedTitles.contains($0.bookTitle) }
+        let favoriteClippings = pool.filter { favoriteIDs.contains($0.id) }
+        guard !favoriteClippings.isEmpty else {
+            errorMessage = "Favori alıntılar bu filtreyle uyumsuz."
+            selectAllRandom(pool: pool)
+            return
+        }
+
+        var shownIDs = storage.shownClippingIDs
+        let unshown = favoriteClippings.filter { !shownIDs.contains($0.id) }
+
+        if let next = unshown.randomElement() {
+            currentClipping = next
+            shownIDs.insert(next.id)
+        } else {
+            // All favorites shown — reset only within the favorites pool
+            let favPoolIDs = Set(favoriteClippings.map(\.id))
+            shownIDs.subtract(favPoolIDs)
+            storage.shownClippingIDs = shownIDs
+            guard let selected = favoriteClippings.randomElement() else { return }
+            currentClipping = selected
+            shownIDs.insert(selected.id)
+        }
+        storage.shownClippingIDs = shownIDs
+    }
+
+    /// Selects a clipping from user-pinned books only, cycling without repeat within that pool.
+    private func selectFromPinnedBooks(pool: [Clipping]) {
+        let pinnedTitles = pinnedBookTitles
+        guard !pinnedTitles.isEmpty else {
+            errorMessage = "Sabitlenmiş kitap yok. Lütfen Ayarlar'dan kitap seçin."
+            selectAllRandom(pool: pool)
+            return
+        }
+
+        let pinnedClippings = pool.filter { pinnedTitles.contains($0.bookTitle) }
         guard !pinnedClippings.isEmpty else {
             errorMessage = "Seçili kitaplarda alıntı bulunamadı."
-            selectAllRandom()
+            selectAllRandom(pool: pool)
             return
         }
 
@@ -332,12 +384,14 @@ final class MainViewModel {
         let previewSize = screen.frame.size
         let displayClipping = clippingWithOverride(clipping)
 
+        let longQuote = storage.longQuote
         previewTask = Task.detached { [generator, selectedStyle, typography] in
             let image = generator.generateWallpaper(
                 clipping: displayClipping,
                 style: selectedStyle,
                 screenSize: previewSize,
-                typography: typography
+                typography: typography,
+                longQuote: longQuote
             )
             await MainActor.run { [weak self] in
                 guard let self, self.previewGeneration == generation else { return }
@@ -353,7 +407,7 @@ final class MainViewModel {
         applyWallpaper()
     }
 
-    /// Applies the wallpaper to the desktop at full Retina resolution.
+    /// Applies the wallpaper to the desktop.
     func applyWallpaper() {
         guard let clipping = currentClipping else { return }
         guard !isApplying else { return }
@@ -373,7 +427,8 @@ final class MainViewModel {
             clipping: displayClipping,
             style: selectedStyle,
             screenSize: fullSize,
-            typography: typography
+            typography: typography,
+            longQuote: storage.longQuote
         ) else {
             isApplying = false
             errorMessage = KindleWallError.wallpaperGenerationFailed(reason: "Render başarısız").errorDescription

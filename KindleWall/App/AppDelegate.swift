@@ -1,4 +1,5 @@
 import AppKit
+import CloudKit
 import ServiceManagement
 import UserNotifications
 
@@ -23,6 +24,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         // Register Services menu so macOS discovers this handler
         NSApplication.shared.servicesProvider = self
         NSUpdateDynamicServices()
+
+        // Register for silent CloudKit push notifications (CKDatabaseSubscription).
+        NSApplication.shared.registerForRemoteNotifications()
+    }
+
+    // MARK: - Remote notifications (CloudKit silent push)
+
+    func application(_ application: NSApplication, didReceiveRemoteNotification userInfo: [String: Any]) {
+        guard CKNotification(fromRemoteNotificationDictionary: userInfo) != nil else { return }
+        NotificationCenter.default.post(name: Constants.Notifications.cloudKitRemotePush, object: nil)
+    }
+
+    func application(_ application: NSApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        // Sync gracefully degrades to manual + launch-only without push.
+        // No-op: CloudKitSyncService will still work via syncNow() and full pull on launch.
     }
 
     // MARK: - macOS Services Menu

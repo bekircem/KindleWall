@@ -1,0 +1,89 @@
+import SwiftUI
+
+/// A grouped, rounded container for settings rows on the dark canvas.
+///
+/// Reserves Liquid Glass for chrome — content cards use a solid elevated surface so dense
+/// text stays legible (glass-on-text reduces contrast). Optional `title` renders an uppercased
+/// section header above the card; `footnote` renders explanatory text below it.
+struct SettingsCard<Content: View>: View {
+    var title: String? = nil
+    var footnote: String? = nil
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+            if let title {
+                Text(title.uppercased())
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.leading, Theme.Spacing.xs)
+            }
+
+            VStack(spacing: 0) {
+                content
+            }
+            .background(
+                Theme.Palette.cardFill,
+                in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
+                    .strokeBorder(Theme.Palette.cardStroke, lineWidth: 1)
+            )
+
+            if let footnote {
+                Text(footnote)
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .padding(.horizontal, Theme.Spacing.xs)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+/// Uppercased section header that matches `SettingsCard`'s own title treatment.
+///
+/// For content that lives outside a card (a grid, a custom control) but still needs the
+/// same header rhythm as carded sections. The string is uppercased here, so callers pass
+/// normal-case text.
+struct SectionHeader: View {
+    let title: String
+
+    init(_ title: String) {
+        self.title = title
+    }
+
+    var body: some View {
+        Text(title.uppercased())
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .padding(.leading, Theme.Spacing.xs)
+    }
+}
+
+/// Inset hairline divider between rows inside a `SettingsCard`, aligned past the icon tile.
+struct RowDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(Theme.Palette.rowDivider)
+            .frame(height: 1)
+            .padding(.leading, Theme.Spacing.l + Theme.tileSize + Theme.Spacing.m)
+    }
+}
+
+#Preview {
+    SettingsCard(title: "Zamanlama", footnote: "Duvar kağıdının ne sıklıkla değişeceğini seçin.") {
+        SettingsRow(icon: "clock.fill", iconColor: .blue, title: "Değişim Sıklığı") {
+            Text("1 saat").foregroundStyle(.secondary)
+        }
+        RowDivider()
+        SettingsRow(icon: "shuffle", iconColor: .green, title: "Döngü Modu",
+                    subtitle: "Rastgele alıntı seçer") {
+            Image(systemName: "chevron.right").foregroundStyle(.tertiary).font(.caption)
+        }
+    }
+    .padding(24)
+    .frame(width: 420)
+    .preferredColorScheme(.dark)
+}

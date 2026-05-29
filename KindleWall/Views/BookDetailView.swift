@@ -194,6 +194,7 @@ private struct BookDetailHeader: View {
             }
             .buttonStyle(.plain)
             .help("Bu kitaba manuel alıntı ekle")
+            .accessibilityLabel("Manuel alıntı ekle")
 
             Button(action: onEdit) {
                 Image(systemName: "pencil.circle.fill")
@@ -203,6 +204,7 @@ private struct BookDetailHeader: View {
             }
             .buttonStyle(.plain)
             .help("Metadata Düzenle")
+            .accessibilityLabel("Kitap bilgilerini düzenle")
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)

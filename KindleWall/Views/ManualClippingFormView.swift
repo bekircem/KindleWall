@@ -104,6 +104,7 @@ struct ManualClippingFormView: View {
                                         .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
+                                    .hoverHighlight(cornerRadius: 0)
 
                                     if suggestion.title != filteredSuggestions.last?.title {
                                         Divider().padding(.leading, 10)

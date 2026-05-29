@@ -27,13 +27,13 @@ struct ImportProgressBanner: View {
                 EmptyView()
             }
         }
-        .animation(.spring(duration: 0.35), value: importState.phase)
+        .animation(Theme.Motion.smooth, value: importState.phase)
         .allowsHitTesting(importState.phase != .idle)
         .task(id: importState.phase) {
             if case .completed = importState.phase {
                 try? await Task.sleep(for: .seconds(6))
                 guard !Task.isCancelled else { return }
-                withAnimation(.spring(duration: 0.35)) {
+                withAnimation(Theme.Motion.smooth) {
                     importState.phase = .idle
                     importState.summary = nil
                 }
@@ -94,7 +94,7 @@ struct ImportProgressBanner: View {
             Spacer()
 
             Button {
-                withAnimation(.spring(duration: 0.35)) {
+                withAnimation(Theme.Motion.smooth) {
                     importState.phase = .idle
                     importState.summary = nil
                 }
@@ -131,7 +131,7 @@ struct ImportProgressBanner: View {
             Spacer()
 
             Button {
-                withAnimation(.spring(duration: 0.35)) {
+                withAnimation(Theme.Motion.smooth) {
                     importState.phase = .idle
                 }
             } label: {

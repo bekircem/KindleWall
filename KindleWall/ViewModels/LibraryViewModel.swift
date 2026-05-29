@@ -1,7 +1,7 @@
 import SwiftUI
 import Observation
 
-enum LibraryViewMode {
+enum LibraryViewMode: Hashable {
     case list, card
 }
 

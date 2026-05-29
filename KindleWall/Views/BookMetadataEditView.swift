@@ -32,100 +32,107 @@ struct BookMetadataEditView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            // Title
-            Text("Metadata Düzenle")
-                .font(.title2)
-                .fontWeight(.semibold)
-
-            // Raw parsed value as read-only reference
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Dosyadan okunan:")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(rawReference)
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-                    .lineLimit(2)
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Metadata Düzenle")
+                    .font(.headline)
+                Spacer()
             }
+            .padding()
 
             Divider()
 
-            // Edit fields
-            VStack(alignment: .leading, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Kitap Adı")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    TextField("Kitap adını girin", text: $editTitle)
-                        .textFieldStyle(.roundedBorder)
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Yazar")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    TextField("Yazar adını girin", text: $editAuthor)
-                        .textFieldStyle(.roundedBorder)
-                }
-            }
-
-            // Auto-correct box
-            GroupBox {
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Button("Otomatik Düzelt") {
-                            Task { await fetchSuggestion() }
-                        }
-                        .disabled(isSuggestionLoading)
-
-                        if isSuggestionLoading {
-                            ProgressView()
-                                .scaleEffect(0.7)
-                                .padding(.leading, 4)
-                        }
-
-                        Spacer()
-                    }
-
-                    switch suggestionState {
-                    case .idle:
-                        Text("Google Books'tan başlık ve yazar önerisi alır.")
+            ScrollView {
+                VStack(alignment: .leading, spacing: Theme.Spacing.l) {
+                    // Raw parsed value as read-only reference
+                    VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                        Text("Dosyadan okunan:")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                        Text(rawReference)
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                            .lineLimit(2)
+                    }
 
-                    case .loading:
-                        EmptyView()
+                    // Edit fields
+                    VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+                        Text("Kitap Adı")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        TextField("Kitap adını girin", text: $editTitle)
+                            .textFieldStyle(.roundedBorder)
+                    }
 
-                    case .found(let sugTitle, let sugAuthor):
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Öneri:")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Text("Ad: \(sugTitle)")
-                                .font(.caption)
-                            if let a = sugAuthor {
-                                Text("Yazar: \(a)")
+                    VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+                        Text("Yazar")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        TextField("Yazar adını girin", text: $editAuthor)
+                            .textFieldStyle(.roundedBorder)
+                    }
+
+                    // Auto-correct box
+                    SettingsCard {
+                        VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+                            HStack {
+                                Button("Otomatik Düzelt") {
+                                    Task { await fetchSuggestion() }
+                                }
+                                .disabled(isSuggestionLoading)
+
+                                if isSuggestionLoading {
+                                    ProgressView()
+                                        .scaleEffect(0.7)
+                                        .padding(.leading, 4)
+                                }
+
+                                Spacer()
+                            }
+
+                            switch suggestionState {
+                            case .idle:
+                                Text("Google Books'tan başlık ve yazar önerisi alır.")
                                     .font(.caption)
+                                    .foregroundStyle(.secondary)
+
+                            case .loading:
+                                EmptyView()
+
+                            case .found(let sugTitle, let sugAuthor):
+                                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                                    Text("Öneri:")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Text("Ad: \(sugTitle)")
+                                        .font(.caption)
+                                    if let a = sugAuthor {
+                                        Text("Yazar: \(a)")
+                                            .font(.caption)
+                                    }
+                                }
+
+                                Button("Uygula") {
+                                    editTitle = sugTitle
+                                    editAuthor = sugAuthor ?? ""
+                                }
+                                .buttonStyle(.bordered)
+
+                            case .notFound:
+                                Text("Eşleşen kitap bulunamadı. Lütfen manuel düzeltin.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
                         }
-
-                        Button("Uygula") {
-                            editTitle = sugTitle
-                            editAuthor = sugAuthor ?? ""
-                        }
-                        .buttonStyle(.bordered)
-
-                    case .notFound:
-                        Text("Eşleşen kitap bulunamadı. Lütfen manuel düzeltin.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(Theme.Spacing.l)
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
             }
 
-            Spacer()
+            Divider()
 
             // Action buttons
             HStack {
@@ -157,9 +164,9 @@ struct BookMetadataEditView: View {
                 .keyboardShortcut(.defaultAction)
                 .buttonStyle(.borderedProminent)
             }
+            .padding()
         }
-        .padding(24)
-        .frame(width: 400)
+        .frame(width: 480, height: 540)
         .onAppear {
             editTitle = book.displayTitle
             editAuthor = book.displayAuthor ?? ""

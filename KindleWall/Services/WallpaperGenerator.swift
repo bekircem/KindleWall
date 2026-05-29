@@ -6,7 +6,13 @@ import Foundation
 /// Protocol for generating wallpaper images from clippings.
 protocol WallpaperGeneratorProtocol {
     /// Generates a wallpaper image from a clipping using the specified style.
-    func generateWallpaper(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize, typography: TypographySettings) -> NSImage?
+    func generateWallpaper(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize, typography: TypographySettings, longQuote: LongQuoteSettings) -> NSImage?
+}
+
+extension WallpaperGeneratorProtocol {
+    func generateWallpaper(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize, typography: TypographySettings = .default) -> NSImage? {
+        generateWallpaper(clipping: clipping, style: style, screenSize: screenSize, typography: typography, longQuote: .default)
+    }
 }
 
 // MARK: - Implementation
@@ -14,7 +20,62 @@ protocol WallpaperGeneratorProtocol {
 /// Generates visually appealing wallpaper images using Core Graphics.
 final class WallpaperGenerator: WallpaperGeneratorProtocol {
 
-    func generateWallpaper(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize, typography: TypographySettings = .default) -> NSImage? {
+    /// Length-derived rendering profile. Tightens font, line spacing, and padding
+    /// progressively for longer quotes so they don't dominate the desktop.
+    private struct LengthProfile {
+        let baseMaxFontPt: CGFloat       // before scaling
+        let minFontPt: CGFloat           // before scaling
+        let maxTextRatio: CGFloat        // fraction of screen height
+        let lineSpacingMultiplier: CGFloat
+        let paddingMultiplier: CGFloat
+    }
+
+    private static func lengthProfile(charCount: Int, tightenLength: Int, settings: LongQuoteSettings) -> LengthProfile {
+        // Original short-quote tiers — always active.
+        if charCount < 80 {
+            return LengthProfile(baseMaxFontPt: 42, minFontPt: 22, maxTextRatio: 0.25, lineSpacingMultiplier: 0.40, paddingMultiplier: 1.00)
+        }
+        if charCount < 250 {
+            return LengthProfile(baseMaxFontPt: 38, minFontPt: 20, maxTextRatio: 0.35, lineSpacingMultiplier: 0.35, paddingMultiplier: 1.00)
+        }
+
+        // Quote is "medium-long" but below the user's tighten threshold (or tightening disabled) —
+        // use the legacy ≥250 profile, no aggressive tightening.
+        guard settings.autoTightenEnabled, tightenLength >= settings.tightenThreshold else {
+            return LengthProfile(baseMaxFontPt: 32, minFontPt: 18, maxTextRatio: 0.45, lineSpacingMultiplier: 0.35, paddingMultiplier: 1.00)
+        }
+
+        // Aggressive tightening: baseMaxFontPt / maxTextRatio / paddingMultiplier scale by
+        // character length (smart defaults), but the FLOOR font size and line spacing come
+        // from user settings so the user controls exactly how small/tight things can get.
+        let userMin = CGFloat(settings.minFontPt)
+        let userLine = CGFloat(settings.lineSpacingMultiplier)
+
+        let baseMax: CGFloat
+        let textRatio: CGFloat
+        let paddingMul: CGFloat
+        if charCount < 500 {
+            baseMax = 30; textRatio = 0.45; paddingMul = 0.90
+        } else if charCount < 800 {
+            baseMax = 26; textRatio = 0.55; paddingMul = 0.85
+        } else {
+            baseMax = 22; textRatio = 0.60; paddingMul = 0.80
+        }
+
+        // Guard against the floor exceeding the base — keep base ≥ floor + 2pt headroom so
+        // the font-size search has something to step through.
+        let safeBase = max(baseMax, userMin + 2)
+
+        return LengthProfile(
+            baseMaxFontPt: safeBase,
+            minFontPt: userMin,
+            maxTextRatio: textRatio,
+            lineSpacingMultiplier: userLine,
+            paddingMultiplier: paddingMul
+        )
+    }
+
+    func generateWallpaper(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize, typography: TypographySettings = .default, longQuote: LongQuoteSettings = .default) -> NSImage? {
         return NSImage.render(size: screenSize) { context in
             let rect = CGRect(origin: .zero, size: screenSize)
 
@@ -32,37 +93,32 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
             let referenceHeight: CGFloat = 900
             let sf = rect.height / referenceHeight
 
+            // Length-adaptive profile — tightens for long quotes per user-configured threshold and floors.
+            let charCount = clipping.text.count
+            let tightenLength = longQuote.tightenUnit.measure(clipping.text)
+            let profile = Self.lengthProfile(charCount: charCount, tightenLength: tightenLength, settings: longQuote)
+
             // Apply typography settings
             let basePadding = rect.width * Constants.Wallpaper.paddingRatio
-            let padding = basePadding * typography.paddingScale
+            let padding = basePadding * typography.paddingScale * profile.paddingMultiplier
             let contentWidth = rect.width - padding * 2
             let textColor = textColor(for: style, typography: typography)
                 .withAlphaComponent(typography.textOpacity)
             let metaColor = metaColor(for: style, typography: typography)
                 .withAlphaComponent(typography.textOpacity)
-            let charCount = clipping.text.count
 
-            // Adaptive font limits based on quote length, scaled to resolution
-            let baseMaxFont: CGFloat
-            let maxTextRatio: CGFloat
-            if charCount < 80 {
-                baseMaxFont = 42 * sf; maxTextRatio = 0.25
-            } else if charCount < 250 {
-                baseMaxFont = 38 * sf; maxTextRatio = 0.35
-            } else {
-                baseMaxFont = 32 * sf; maxTextRatio = 0.45
-            }
-            let maxFont = baseMaxFont * typography.fontScale
-            let minFont = Constants.Wallpaper.minFontSize * sf * typography.fontScale
+            // Adaptive font limits based on profile, scaled to resolution and user typography.
+            let maxFont = profile.baseMaxFontPt * sf * typography.fontScale
+            let minFont = profile.minFontPt * sf * typography.fontScale
             let fontStep = max(2, round(2 * sf))
 
-            let maxTextHeight = rect.height * maxTextRatio
+            let maxTextHeight = rect.height * profile.maxTextRatio
             let sizeRect = CGRect(x: 0, y: 0, width: contentWidth, height: maxTextHeight)
-            let fontSize = calculateFontSize(for: clipping.text, in: sizeRect, typography: typography, maxSize: maxFont, minSize: minFont, step: fontStep)
+            let fontSize = calculateFontSize(for: clipping.text, in: sizeRect, typography: typography, maxSize: maxFont, minSize: minFont, step: fontStep, lineSpacingMultiplier: profile.lineSpacingMultiplier)
 
             // Quote text attributes
             let font = makeQuoteFont(size: fontSize, typography: typography)
-            let lineSpacing = fontSize * 0.35 * typography.lineSpacingScale
+            let lineSpacing = fontSize * profile.lineSpacingMultiplier * typography.lineSpacingScale
             let paragraphStyle = NSMutableParagraphStyle()
             paragraphStyle.alignment = .center
             paragraphStyle.lineSpacing = lineSpacing
@@ -403,13 +459,13 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
 
     // MARK: - Helpers
 
-    private func calculateFontSize(for text: String, in rect: CGRect, typography: TypographySettings, maxSize: CGFloat = Constants.Wallpaper.maxFontSize, minSize: CGFloat = Constants.Wallpaper.minFontSize, step: CGFloat = 2) -> CGFloat {
+    private func calculateFontSize(for text: String, in rect: CGRect, typography: TypographySettings, maxSize: CGFloat = Constants.Wallpaper.maxFontSize, minSize: CGFloat = Constants.Wallpaper.minFontSize, step: CGFloat = 2, lineSpacingMultiplier: CGFloat = 0.35) -> CGFloat {
         var fontSize = maxSize
 
         while fontSize > minSize {
             let font = makeQuoteFont(size: fontSize, typography: typography)
             let paragraphStyle = NSMutableParagraphStyle()
-            paragraphStyle.lineSpacing = fontSize * 0.35
+            paragraphStyle.lineSpacing = fontSize * lineSpacingMultiplier
 
             let attributes: [NSAttributedString.Key: Any] = [
                 .font: font,

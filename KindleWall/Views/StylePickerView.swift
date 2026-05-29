@@ -12,7 +12,7 @@ struct StylePickerView: View {
         LazyVGrid(columns: columns, spacing: 12) {
             ForEach(WallpaperStyle.allCases) { style in
                 Button {
-                    withAnimation(.spring(duration: 0.3)) {
+                    withAnimation(Theme.Motion.snappy) {
                         selectedStyle = style
                     }
                 } label: {
@@ -87,7 +87,7 @@ struct StyleCard: View {
                 .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
         )
         .onHover { isHovered = $0 }
-        .animation(.easeInOut(duration: 0.15), value: isHovered)
+        .animation(Theme.Motion.hover, value: isHovered)
     }
 
     private var cardBackground: Color {

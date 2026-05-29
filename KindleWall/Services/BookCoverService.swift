@@ -3,12 +3,15 @@ import Observation
 
 // MARK: - Protocol
 
+@MainActor
 protocol BookCoverServiceProtocol: AnyObject {
     /// Currently loaded covers keyed by book title (Book.id). Observable — UI updates automatically.
     var loadedCovers: [String: NSImage] { get }
     /// Returns a cover for the book. Loads from cache or starts a background fetch.
+    @discardableResult
     func cover(for book: Book) async -> NSImage?
     /// Bypasses all caches and re-fetches from the network.
+    @discardableResult
     func refreshCover(for book: Book) async -> NSImage?
     /// Fire-and-forget: starts background fetches for the given books (non-async).
     func prefetch(books: [Book])

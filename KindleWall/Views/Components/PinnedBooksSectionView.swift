@@ -71,31 +71,13 @@ struct PinnedBooksSectionView: View {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 4) {
                             ForEach(sorted, id: \.title) { book in
-                                Button {
+                                PinnedBookRow(
+                                    title: book.title,
+                                    author: book.author,
+                                    isPinned: viewModel.isBookPinned(book.title)
+                                ) {
                                     viewModel.togglePinnedBook(book.title)
-                                } label: {
-                                    HStack {
-                                        Image(systemName: viewModel.isBookPinned(book.title)
-                                            ? "checkmark.circle.fill" : "circle")
-                                            .foregroundStyle(viewModel.isBookPinned(book.title)
-                                                ? Color.accentColor : Color.secondary)
-                                        VStack(alignment: .leading, spacing: 1) {
-                                            Text(book.title)
-                                                .font(.callout)
-                                                .foregroundStyle(.primary)
-                                                .lineLimit(1)
-                                            if let author = book.author {
-                                                Text(author)
-                                                    .font(.caption2)
-                                                    .foregroundStyle(.secondary)
-                                                    .lineLimit(1)
-                                            }
-                                        }
-                                        Spacer()
-                                    }
-                                    .contentShape(Rectangle())
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
                     }
@@ -117,5 +99,49 @@ struct PinnedBooksSectionView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Pinned Book Row
+
+/// A single selectable book row with a hover highlight and accessibility traits.
+private struct PinnedBookRow: View {
+    let title: String
+    let author: String?
+    let isPinned: Bool
+    let action: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Image(systemName: isPinned ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isPinned ? Color.accentColor : Color.secondary)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title)
+                        .font(.callout)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                    if let author {
+                        Text(author)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 4)
+            .contentShape(Rectangle())
+            .background(
+                isHovered ? Color.primary.opacity(0.06) : Color.clear,
+                in: RoundedRectangle(cornerRadius: 6)
+            )
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+        .accessibilityLabel(title)
+        .accessibilityAddTraits(isPinned ? [.isButton, .isSelected] : .isButton)
     }
 }

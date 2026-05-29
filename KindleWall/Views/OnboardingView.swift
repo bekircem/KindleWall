@@ -5,6 +5,8 @@ struct OnboardingView: View {
     var onComplete: (URL, WallpaperStyle, ScheduleInterval) -> Void
 
     @State private var currentStep: Int = 0
+    /// Drives the slide direction of the step transition (forward = next slides in from trailing).
+    @State private var slideForward = true
     @State private var selectedFileURL: URL?
     @State private var selectedStyle: WallpaperStyle = .minimalDark
     @State private var selectedInterval: ScheduleInterval = .hourly
@@ -22,23 +24,26 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Step content
-            TabView(selection: $currentStep) {
-                welcomeStep.tag(0)
-                fileSelectStep.tag(1)
-                styleStep.tag(2)
+            // Step content — chrome-less custom pager (no OS tab bar)
+            Group {
+                switch currentStep {
+                case 0:  welcomeStep
+                case 1:  fileSelectStep
+                default: styleStep
+                }
             }
-            .tabViewStyle(.automatic)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .transition(.asymmetric(
+                insertion: .move(edge: slideForward ? .trailing : .leading).combined(with: .opacity),
+                removal:   .move(edge: slideForward ? .leading : .trailing).combined(with: .opacity)
+            ))
+            .id(currentStep)
 
             // Navigation buttons
             HStack {
                 if currentStep > 0 {
-                    Button("Geri") {
-                        withAnimation(.spring(duration: 0.3)) {
-                            currentStep -= 1
-                        }
-                    }
+                    Button("Geri", action: goBack)
+                        .keyboardShortcut("[", modifiers: .command)
                 }
 
                 Spacer()
@@ -51,20 +56,15 @@ struct OnboardingView: View {
                             .frame(width: 8, height: 8)
                     }
                 }
+                .accessibilityHidden(true)
 
                 Spacer()
 
                 if currentStep < 2 {
-                    Button("İleri") {
-                        withAnimation(.spring(duration: 0.3)) {
-                            currentStep += 1
-                        }
-                        if currentStep == 2 {
-                            loadClippingsAndPreview()
-                        }
-                    }
-                    .disabled(currentStep == 1 && selectedFileURL == nil)
-                    .buttonStyle(.borderedProminent)
+                    Button("İleri", action: goNext)
+                        .disabled(currentStep == 1 && selectedFileURL == nil)
+                        .buttonStyle(.borderedProminent)
+                        .keyboardShortcut(.defaultAction)
                 } else {
                     Button("Başla") {
                         if let url = selectedFileURL {
@@ -73,6 +73,7 @@ struct OnboardingView: View {
                     }
                     .disabled(selectedFileURL == nil)
                     .buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction)
                 }
             }
             .padding()
@@ -83,13 +84,35 @@ struct OnboardingView: View {
         }
     }
 
+    // MARK: - Navigation
+
+    private func goNext() {
+        guard currentStep < 2 else { return }
+        slideForward = true
+        let next = currentStep + 1
+        withAnimation(Theme.Motion.smooth) {
+            currentStep = next
+        }
+        if next == 2 {
+            loadClippingsAndPreview()
+        }
+    }
+
+    private func goBack() {
+        guard currentStep > 0 else { return }
+        slideForward = false
+        withAnimation(Theme.Motion.smooth) {
+            currentStep -= 1
+        }
+    }
+
     // MARK: - Steps
 
     private var welcomeStep: some View {
         VStack(spacing: 16) {
-            Image(systemName: Constants.Icons.currentQuote)
-                .font(.system(size: 64))
-                .foregroundStyle(Color.accentColor)
+            Spacer()
+
+            IconTile(symbol: "quote.bubble.fill", color: .indigo, size: 76)
 
             Text("KindleWall'a Hoş Geldiniz")
                 .font(.largeTitle)
@@ -100,12 +123,17 @@ struct OnboardingView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
+
+            Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
     }
 
     private var fileSelectStep: some View {
         VStack(spacing: 16) {
+            Spacer()
+
             Text("Dosyanızı Seçin")
                 .font(.title)
                 .fontWeight(.bold)
@@ -167,7 +195,10 @@ struct OnboardingView: View {
                 }
             }
             .buttonStyle(.bordered)
+
+            Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
     }
 

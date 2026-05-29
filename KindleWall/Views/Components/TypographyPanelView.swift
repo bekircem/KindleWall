@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Side panel with sliders for adjusting wallpaper typography.
+/// Side panel with sliders for adjusting wallpaper typography (the hero preview inspector).
 struct TypographyPanelView: View {
     @Binding var typography: TypographySettings
     var onReset: () -> Void
@@ -20,115 +20,127 @@ struct TypographyPanelView: View {
                     .foregroundStyle(.secondary)
                 }
 
-                // MARK: Temel Ayarlar
-                VStack(alignment: .leading, spacing: 16) {
-                    SliderRow(
-                        title: "Yazı Boyutu",
-                        icon: "textformat.size",
-                        value: $typography.fontScale,
-                        range: 0.6...1.6,
-                        defaultValue: 1.0
-                    )
-
-                    SliderRow(
-                        title: "Dikey Konum",
-                        icon: "arrow.up.arrow.down",
-                        value: $typography.verticalPosition,
-                        range: -0.8...0.8,
-                        defaultValue: 0.0
-                    )
-
-                    SliderRow(
-                        title: "Kenar Boşluğu",
-                        icon: "arrow.left.and.right",
-                        value: $typography.paddingScale,
-                        range: 0.5...1.8,
-                        defaultValue: 1.0
-                    )
-
-                    SliderRow(
-                        title: "Satır Aralığı",
-                        icon: "line.3.horizontal",
-                        value: $typography.lineSpacingScale,
-                        range: 0.6...1.6,
-                        defaultValue: 1.0
-                    )
-                }
-
-                // MARK: Gelişmiş Ayarlar
-                DisclosureGroup("Gelişmiş Ayarlar") {
-                    VStack(alignment: .leading, spacing: 16) {
-
-                        // Font ailesi
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Font Ailesi")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            HStack(spacing: 6) {
-                                ForEach(TypographySettings.FontFamily.allCases) { family in
-                                    FontFamilyChip(
-                                        family: family,
-                                        isSelected: typography.fontFamily == family
-                                    ) {
-                                        typography.fontFamily = family
-                                    }
-                                }
-                            }
-                        }
-                        .padding(.top, 8)
-
-                        // Metin gölgesi
-                        VStack(alignment: .leading, spacing: 10) {
-                            Toggle(isOn: $typography.shadowEnabled) {
-                                Label("Metin Gölgesi", systemImage: "shadow")
-                                    .font(.caption)
-                            }
-                            .toggleStyle(.switch)
-                            .controlSize(.small)
-
-                            if typography.shadowEnabled {
-                                SliderRow(
-                                    title: "Gölge Şiddeti",
-                                    icon: "circle.lefthalf.filled",
-                                    value: $typography.shadowRadius,
-                                    range: 1...20,
-                                    defaultValue: 4.0,
-                                    valueFormatter: { String(format: "%.0fpt", $0) }
-                                )
-                                .transition(.opacity.combined(with: .move(edge: .top)))
-                            }
-                        }
-                        .animation(.easeInOut(duration: 0.2), value: typography.shadowEnabled)
-
-                        // Harf aralığı
-                        SliderRow(
-                            title: "Harf Aralığı",
-                            icon: "character.cursor.ibeam",
-                            value: $typography.letterSpacing,
-                            range: -2...8,
-                            defaultValue: 0.0,
-                            valueFormatter: {
-                                $0 == 0 ? "0pt" : String(format: "%+.1fpt", $0)
-                            }
-                        )
-
-                        // Metin opaklığı
-                        SliderRow(
-                            title: "Metin Opaklığı",
-                            icon: "circle.dotted",
-                            value: $typography.textOpacity,
-                            range: 0.3...1.0,
-                            defaultValue: 1.0
-                        )
-                    }
-                }
-                .font(.caption)
+                TypographyControls(typography: $typography)
 
                 Spacer()
             }
             .padding()
         }
         .background(.background)
+    }
+}
+
+/// Reusable typography control stack (basic sliders + advanced disclosure) without panel chrome.
+/// Shared by the hero inspector (`TypographyPanelView`) and the "Tipografi" settings page.
+struct TypographyControls: View {
+    @Binding var typography: TypographySettings
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            // MARK: Temel Ayarlar
+            VStack(alignment: .leading, spacing: 16) {
+                SliderRow(
+                    title: "Yazı Boyutu",
+                    icon: "textformat.size",
+                    value: $typography.fontScale,
+                    range: 0.6...1.6,
+                    defaultValue: 1.0
+                )
+
+                SliderRow(
+                    title: "Dikey Konum",
+                    icon: "arrow.up.arrow.down",
+                    value: $typography.verticalPosition,
+                    range: -0.8...0.8,
+                    defaultValue: 0.0
+                )
+
+                SliderRow(
+                    title: "Kenar Boşluğu",
+                    icon: "arrow.left.and.right",
+                    value: $typography.paddingScale,
+                    range: 0.5...1.8,
+                    defaultValue: 1.0
+                )
+
+                SliderRow(
+                    title: "Satır Aralığı",
+                    icon: "line.3.horizontal",
+                    value: $typography.lineSpacingScale,
+                    range: 0.6...1.6,
+                    defaultValue: 1.0
+                )
+            }
+
+            // MARK: Gelişmiş Ayarlar
+            DisclosureGroup("Gelişmiş Ayarlar") {
+                VStack(alignment: .leading, spacing: 16) {
+
+                    // Font ailesi
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Font Ailesi")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        HStack(spacing: 6) {
+                            ForEach(TypographySettings.FontFamily.allCases) { family in
+                                FontFamilyChip(
+                                    family: family,
+                                    isSelected: typography.fontFamily == family
+                                ) {
+                                    typography.fontFamily = family
+                                }
+                            }
+                        }
+                    }
+                    .padding(.top, 8)
+
+                    // Metin gölgesi
+                    VStack(alignment: .leading, spacing: 10) {
+                        Toggle(isOn: $typography.shadowEnabled) {
+                            Label("Metin Gölgesi", systemImage: "shadow")
+                                .font(.caption)
+                        }
+                        .toggleStyle(.switch)
+                        .controlSize(.small)
+
+                        if typography.shadowEnabled {
+                            SliderRow(
+                                title: "Gölge Şiddeti",
+                                icon: "circle.lefthalf.filled",
+                                value: $typography.shadowRadius,
+                                range: 1...20,
+                                defaultValue: 4.0,
+                                valueFormatter: { String(format: "%.0fpt", $0) }
+                            )
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
+                    }
+                    .animation(Theme.Motion.smooth, value: typography.shadowEnabled)
+
+                    // Harf aralığı
+                    SliderRow(
+                        title: "Harf Aralığı",
+                        icon: "character.cursor.ibeam",
+                        value: $typography.letterSpacing,
+                        range: -2...8,
+                        defaultValue: 0.0,
+                        valueFormatter: {
+                            $0 == 0 ? "0pt" : String(format: "%+.1fpt", $0)
+                        }
+                    )
+
+                    // Metin opaklığı
+                    SliderRow(
+                        title: "Metin Opaklığı",
+                        icon: "circle.dotted",
+                        value: $typography.textOpacity,
+                        range: 0.3...1.0,
+                        defaultValue: 1.0
+                    )
+                }
+            }
+            .font(.caption)
+        }
     }
 }
 
@@ -171,6 +183,8 @@ private struct FontFamilyChip: View {
             .clipShape(RoundedRectangle(cornerRadius: 7))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(family.displayName)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 }
 

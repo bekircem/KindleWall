@@ -7,9 +7,9 @@ struct GradientPicker: View {
     @Binding var endColor: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.m) {
             // Preview
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: Theme.Radius.control)
                 .fill(
                     LinearGradient(
                         colors: [startColor, endColor],
@@ -19,22 +19,15 @@ struct GradientPicker: View {
                 )
                 .frame(height: 60)
 
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("Başlangıç")
-                        .font(.caption)
-                    ColorPicker("", selection: $startColor)
-                        .labelsHidden()
-                }
+            // Tidy label-left / swatch-right rows instead of edge-spread wells.
+            LabeledContent("Başlangıç") {
+                ColorPicker("", selection: $startColor)
+                    .labelsHidden()
+            }
 
-                Spacer()
-
-                VStack(alignment: .leading) {
-                    Text("Bitiş")
-                        .font(.caption)
-                    ColorPicker("", selection: $endColor)
-                        .labelsHidden()
-                }
+            LabeledContent("Bitiş") {
+                ColorPicker("", selection: $endColor)
+                    .labelsHidden()
             }
         }
     }

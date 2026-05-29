@@ -3,15 +3,18 @@ import SwiftUI
 /// Displays user account info when signed in, or a sign-in prompt when not.
 struct AccountView: View {
     @Environment(AuthState.self) private var authState
+    @Environment(AuthService.self) private var authService
+    @Environment(SyncState.self) private var syncState
+    @Environment(CloudKitSyncService.self) private var cloudKitSync
+    @State private var showDeleteConfirm = false
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 32) {
-                Spacer(minLength: 40)
-
+            VStack(spacing: Theme.Spacing.xl) {
                 switch authState.status {
                 case .unknown:
                     ProgressView("Kontrol ediliyor...")
+                        .padding(.top, Theme.Spacing.xxl)
 
                 case .unauthenticated:
                     signInSection
@@ -19,12 +22,11 @@ struct AccountView: View {
                 case .authenticated(let profile):
                     profileSection(profile: profile)
                 }
-
-                Spacer()
             }
             .frame(maxWidth: .infinity)
-            .padding(32)
+            .padding(Theme.Spacing.xxl)
         }
+        .scrollEdgeEffectStyle(.soft, for: .top)
         .navigationTitle("Hesap")
     }
 
@@ -46,29 +48,17 @@ struct AccountView: View {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 360)
 
-            // Placeholder — will be replaced with ASAuthorizationAppleIDButton wrapper
-            Button {} label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "apple.logo")
-                    Text("Apple ile Giriş Yap")
-                }
-                .frame(width: 240, height: 44)
+            SignInWithAppleButton {
+                authService.signIn()
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.primary)
-            .disabled(true) // Disabled until Apple Developer enrollment
-            .help("Apple Developer hesabı gerektirir")
-
-            Text("Apple Developer hesabı yapılandırıldıktan sonra aktif olacaktır.")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+            .frame(width: 240, height: 44)
         }
     }
 
     // MARK: - Profile
 
     private func profileSection(profile: UserProfile) -> some View {
-        VStack(spacing: 24) {
+        VStack(spacing: Theme.Spacing.xl) {
             // Avatar placeholder
             ZStack {
                 Circle()
@@ -99,30 +89,35 @@ struct AccountView: View {
             Divider()
                 .frame(maxWidth: 300)
 
-            // Sync status (Phase 3)
-            GroupBox {
-                HStack {
-                    Image(systemName: "arrow.triangle.2.circlepath")
-                        .foregroundStyle(.secondary)
+            // Sync status
+            SettingsCard {
+                HStack(spacing: Theme.Spacing.m) {
+                    syncStatusIcon
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Senkronizasyon")
                             .font(.subheadline)
                             .fontWeight(.medium)
-                        Text("Yakında aktif olacak")
+                        Text(syncStatusDescription)
                             .font(.caption)
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(syncStatusForeground)
                     }
                     Spacer()
+                    if case .idle = syncState.status {
+                        Button("Şimdi") {
+                            Task { await cloudKitSync.syncNow() }
+                        }
+                        .buttonStyle(.borderless)
+                        .font(.caption)
+                    }
                 }
-                .padding(.vertical, 4)
+                .padding(Theme.Spacing.l)
             }
-            .frame(maxWidth: 300)
+            .frame(maxWidth: 320)
 
             // Subscription status (Phase 5)
-            GroupBox {
-                HStack {
-                    Image(systemName: "crown")
-                        .foregroundStyle(.secondary)
+            SettingsCard {
+                HStack(spacing: Theme.Spacing.m) {
+                    IconTile(symbol: "crown.fill", color: .yellow)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Abonelik")
                             .font(.subheadline)
@@ -133,25 +128,35 @@ struct AccountView: View {
                     }
                     Spacer()
                 }
-                .padding(.vertical, 4)
+                .padding(Theme.Spacing.l)
             }
-            .frame(maxWidth: 300)
-
-            Spacer(minLength: 20)
+            .frame(maxWidth: 320)
 
             // Actions
-            VStack(spacing: 12) {
+            VStack(spacing: Theme.Spacing.m) {
                 Button("Çıkış Yap") {
-                    // Phase 1 completion: wire to AuthService.signOut()
+                    authService.signOut()
                 }
                 .foregroundStyle(.primary)
 
                 Button("Hesabı Sil") {
-                    // Phase 1 completion: wire to AuthService.deleteAccount()
+                    showDeleteConfirm = true
                 }
                 .foregroundStyle(.red)
                 .font(.caption)
             }
+        }
+        .confirmationDialog(
+            "Hesabınızı silmek istediğinize emin misiniz?",
+            isPresented: $showDeleteConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Hesabı Sil", role: .destructive) {
+                authService.deleteAccount()
+            }
+            Button("İptal", role: .cancel) {}
+        } message: {
+            Text("Bu işlem yerel oturumunuzu sonlandırır. Apple ID bağlantısını tamamen kaldırmak için appleid.apple.com adresinden uygulamayı yetkili uygulamalar listesinden çıkarabilirsiniz.")
         }
     }
 
@@ -162,5 +167,48 @@ struct AccountView: View {
         let parts = name.components(separatedBy: " ")
         let initials = parts.prefix(2).compactMap { $0.first }.map(String.init)
         return initials.joined().uppercased()
+    }
+
+    // MARK: - Sync status presentation
+
+    @ViewBuilder private var syncStatusIcon: some View {
+        switch syncState.status {
+        case .disabled:
+            Image(systemName: "icloud.slash")
+                .foregroundStyle(.secondary)
+        case .idle:
+            Image(systemName: "checkmark.icloud")
+                .foregroundStyle(.green)
+        case .syncing:
+            ProgressView()
+                .controlSize(.small)
+        case .error:
+            Image(systemName: "exclamationmark.icloud")
+                .foregroundStyle(.red)
+        }
+    }
+
+    private var syncStatusDescription: String {
+        switch syncState.status {
+        case .disabled(let reason):
+            return reason
+        case .idle:
+            if let date = syncState.lastSyncedAt {
+                let formatter = RelativeDateTimeFormatter()
+                formatter.unitsStyle = .full
+                formatter.locale = Locale(identifier: "tr_TR")
+                return "Son senkronizasyon: " + formatter.localizedString(for: date, relativeTo: Date())
+            }
+            return "Hazır"
+        case .syncing:
+            return "Senkronize ediliyor…"
+        case .error(let msg):
+            return msg
+        }
+    }
+
+    private var syncStatusForeground: HierarchicalShapeStyle {
+        if case .error = syncState.status { return .primary }
+        return .tertiary
     }
 }

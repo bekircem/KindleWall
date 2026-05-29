@@ -1,0 +1,178 @@
+import SwiftUI
+
+/// "Uzun Alıntılar" page — skip overly long quotes and/or auto-tighten their typography.
+struct LongQuoteSettingsPage: View {
+    @Bindable var settingsVM: SettingsViewModel
+    let actions: SettingsActions
+
+    var body: some View {
+        SettingsPage(title: "Uzun Alıntılar") {
+            // MARK: Skip
+            SettingsCard(
+                title: "Uzun Alıntıları Atla",
+                footnote: settingsVM.skipLongQuotesEnabled
+                    ? "Bu eşikten uzun alıntılar duvar kağıdı seçiminde atlanır."
+                    : nil
+            ) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.m) {
+                    Toggle("Uzun alıntıları görmezden gel", isOn: Binding(
+                        get: { settingsVM.skipLongQuotesEnabled },
+                        set: { newValue in
+                            settingsVM.skipLongQuotesEnabled = newValue
+                            settingsVM.updateLongQuoteSettings()
+                        }
+                    ))
+
+                    if settingsVM.skipLongQuotesEnabled {
+                        LabeledContent("Eşik") {
+                            ThresholdInput(
+                                value: Binding(
+                                    get: { settingsVM.longQuoteThreshold },
+                                    set: { newValue in
+                                        settingsVM.longQuoteThreshold = newValue
+                                        settingsVM.updateLongQuoteSettings()
+                                    }
+                                ),
+                                unit: Binding(
+                                    get: { settingsVM.longQuoteUnit },
+                                    set: { settingsVM.updateLongQuoteUnit($0) }
+                                ),
+                                range: settingsVM.longQuoteRange(for: settingsVM.longQuoteUnit),
+                                step: settingsVM.longQuoteStep(for: settingsVM.longQuoteUnit)
+                            )
+                        }
+                    }
+                }
+                .padding(Theme.Spacing.l)
+            }
+
+            // MARK: Tighten
+            SettingsCard(
+                title: "Uzun Alıntıları Daralt",
+                footnote: settingsVM.autoTightenLongQuotes
+                    ? "Eşikten uzun alıntılar, font boyutu bu değere ve satır arası bu çarpana kadar daraltılır. Çok düşük değerler okunabilirliği azaltabilir."
+                    : nil
+            ) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.m) {
+                    Toggle("Uzun alıntıları otomatik daralt", isOn: Binding(
+                        get: { settingsVM.autoTightenLongQuotes },
+                        set: { newValue in
+                            settingsVM.autoTightenLongQuotes = newValue
+                            settingsVM.updateLongQuoteSettings()
+                            actions.onTypographyChanged()
+                        }
+                    ))
+
+                    if settingsVM.autoTightenLongQuotes {
+                        LabeledContent("Şu eşikten itibaren") {
+                            ThresholdInput(
+                                value: Binding(
+                                    get: { settingsVM.tightenThreshold },
+                                    set: { newValue in
+                                        settingsVM.tightenThreshold = newValue
+                                        settingsVM.updateLongQuoteSettings()
+                                        actions.onTypographyChanged()
+                                    }
+                                ),
+                                unit: Binding(
+                                    get: { settingsVM.tightenUnit },
+                                    set: {
+                                        settingsVM.updateTightenUnit($0)
+                                        actions.onTypographyChanged()
+                                    }
+                                ),
+                                range: settingsVM.tightenThresholdRange(for: settingsVM.tightenUnit),
+                                step: settingsVM.tightenThresholdStep(for: settingsVM.tightenUnit)
+                            )
+                        }
+
+                        LabeledContent("Minimum yazı boyutu") {
+                            HStack(spacing: 8) {
+                                Slider(
+                                    value: Binding(
+                                        get: { settingsVM.tightenMinFontPt },
+                                        set: { newValue in
+                                            settingsVM.tightenMinFontPt = newValue
+                                            settingsVM.updateLongQuoteSettings()
+                                            actions.onTypographyChanged()
+                                        }
+                                    ),
+                                    in: 10...20,
+                                    step: 1
+                                )
+                                Text("\(Int(settingsVM.tightenMinFontPt)) pt")
+                                    .monospacedDigit()
+                                    .frame(width: 48, alignment: .trailing)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        LabeledContent("Satır arası") {
+                            HStack(spacing: 8) {
+                                Slider(
+                                    value: Binding(
+                                        get: { settingsVM.tightenLineSpacingMultiplier },
+                                        set: { newValue in
+                                            settingsVM.tightenLineSpacingMultiplier = newValue
+                                            settingsVM.updateLongQuoteSettings()
+                                            actions.onTypographyChanged()
+                                        }
+                                    ),
+                                    in: 0.15...0.45,
+                                    step: 0.01
+                                )
+                                Text(String(format: "%.2f×", settingsVM.tightenLineSpacingMultiplier))
+                                    .monospacedDigit()
+                                    .frame(width: 56, alignment: .trailing)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        HStack {
+                            Spacer()
+                            Button("Varsayılana Dön") {
+                                settingsVM.resetLongQuoteTypography()
+                                actions.onTypographyChanged()
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+                    }
+                }
+                .padding(Theme.Spacing.l)
+            }
+        }
+    }
+}
+
+// MARK: - Threshold Input
+
+/// Free-form numeric TextField + Stepper + unit Picker, shared by the skip and tighten thresholds.
+private struct ThresholdInput: View {
+    @Binding var value: Int
+    @Binding var unit: LengthUnit
+    let range: ClosedRange<Int>
+    let step: Int
+
+    var body: some View {
+        HStack(spacing: 8) {
+            TextField("", value: $value, format: .number)
+                .textFieldStyle(.roundedBorder)
+                .multilineTextAlignment(.trailing)
+                .frame(width: 70)
+                .monospacedDigit()
+
+            Stepper("", value: $value, in: range, step: step)
+                .labelsHidden()
+
+            Picker("", selection: $unit) {
+                ForEach(LengthUnit.allCases) { u in
+                    Text(u.displayName).tag(u)
+                }
+            }
+            .pickerStyle(.menu)
+            .labelsHidden()
+            .fixedSize()
+        }
+    }
+}

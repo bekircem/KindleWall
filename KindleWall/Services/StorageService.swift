@@ -61,6 +61,9 @@ protocol StorageServiceProtocol {
     /// Raw book titles pinned by the user for pinnedBooks mode.
     var pinnedBookTitles: [String] { get set }
 
+    /// Long-quote handling settings (auto-tighten + optional skip filter).
+    var longQuote: LongQuoteSettings { get set }
+
     /// Key code for the global text-capture hotkey (default: 40 = K).
     var hotkeyKeyCode: Int { get set }
 
@@ -85,6 +88,16 @@ final class StorageService: StorageServiceProtocol {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        Self.cleanupRemovedFeatureKeys(in: defaults)
+    }
+
+    /// Removes orphaned UserDefaults keys left over from removed features.
+    /// Idempotent — `removeObject` is a no-op when the key is absent.
+    private static func cleanupRemovedFeatureKeys(in defaults: UserDefaults) {
+        let removedKeys = ["liveWallpaperSettings"]
+        for key in removedKeys {
+            defaults.removeObject(forKey: key)
+        }
     }
 
     // MARK: - Clippings File Bookmark
@@ -135,7 +148,10 @@ final class StorageService: StorageServiceProtocol {
             }
             return style
         }
-        set { defaults.set(newValue.rawValue, forKey: Constants.StorageKeys.selectedStyle) }
+        set {
+            defaults.set(newValue.rawValue, forKey: Constants.StorageKeys.selectedStyle)
+            postUserStateChanged()
+        }
     }
 
     // MARK: - Schedule
@@ -148,12 +164,18 @@ final class StorageService: StorageServiceProtocol {
             }
             return interval
         }
-        set { defaults.set(newValue.rawValue, forKey: Constants.StorageKeys.scheduleInterval) }
+        set {
+            defaults.set(newValue.rawValue, forKey: Constants.StorageKeys.scheduleInterval)
+            postUserStateChanged()
+        }
     }
 
     var customScheduleDate: Date? {
         get { defaults.object(forKey: Constants.StorageKeys.customScheduleDate) as? Date }
-        set { defaults.set(newValue, forKey: Constants.StorageKeys.customScheduleDate) }
+        set {
+            defaults.set(newValue, forKey: Constants.StorageKeys.customScheduleDate)
+            postUserStateChanged()
+        }
     }
 
     // MARK: - Shown Clippings
@@ -165,6 +187,7 @@ final class StorageService: StorageServiceProtocol {
         }
         set {
             defaults.set(Array(newValue.map { $0.uuidString }), forKey: Constants.StorageKeys.shownClippingIDs)
+            postUserStateChanged()
         }
     }
 
@@ -177,6 +200,11 @@ final class StorageService: StorageServiceProtocol {
         }
         set {
             defaults.set(Array(newValue.map { $0.uuidString }), forKey: Constants.StorageKeys.favoriteClippingIDs)
+            // Invariant: empty favorites cannot coexist with .favorites rotation mode.
+            if newValue.isEmpty && rotationMode == .favorites {
+                rotationMode = .allRandom
+            }
+            postUserStateChanged()
         }
     }
 
@@ -194,7 +222,10 @@ final class StorageService: StorageServiceProtocol {
 
     var launchAtLogin: Bool {
         get { defaults.bool(forKey: Constants.StorageKeys.launchAtLogin) }
-        set { defaults.set(newValue, forKey: Constants.StorageKeys.launchAtLogin) }
+        set {
+            defaults.set(newValue, forKey: Constants.StorageKeys.launchAtLogin)
+            postUserStateChanged()
+        }
     }
 
     var showInMenuBar: Bool {
@@ -204,7 +235,10 @@ final class StorageService: StorageServiceProtocol {
 
     var showNotifications: Bool {
         get { defaults.object(forKey: Constants.StorageKeys.showNotifications) as? Bool ?? true }
-        set { defaults.set(newValue, forKey: Constants.StorageKeys.showNotifications) }
+        set {
+            defaults.set(newValue, forKey: Constants.StorageKeys.showNotifications)
+            postUserStateChanged()
+        }
     }
 
     var hasCompletedOnboarding: Bool {
@@ -216,7 +250,10 @@ final class StorageService: StorageServiceProtocol {
 
     var applyToAllSpaces: Bool {
         get { defaults.object(forKey: Constants.StorageKeys.applyToAllSpaces) as? Bool ?? true }
-        set { defaults.set(newValue, forKey: Constants.StorageKeys.applyToAllSpaces) }
+        set {
+            defaults.set(newValue, forKey: Constants.StorageKeys.applyToAllSpaces)
+            postUserStateChanged()
+        }
     }
 
     // MARK: - Book Metadata Overrides
@@ -232,6 +269,7 @@ final class StorageService: StorageServiceProtocol {
             if let data = try? JSONEncoder().encode(newValue) {
                 defaults.set(data, forKey: Constants.StorageKeys.bookMetadataOverrides)
             }
+            NotificationCenter.default.post(name: Constants.Notifications.bookOverridesChanged, object: nil)
         }
     }
 
@@ -244,6 +282,7 @@ final class StorageService: StorageServiceProtocol {
         }
         set {
             defaults.set(Array(newValue.map { $0.uuidString }), forKey: Constants.StorageKeys.persistedClippingIDs)
+            postUserStateChanged()
         }
     }
 
@@ -260,6 +299,7 @@ final class StorageService: StorageServiceProtocol {
             if let data = try? JSONEncoder().encode(newValue) {
                 defaults.set(data, forKey: Constants.StorageKeys.manualClippings)
             }
+            NotificationCenter.default.post(name: Constants.Notifications.manualClippingsChanged, object: nil)
         }
     }
 
@@ -271,21 +311,30 @@ final class StorageService: StorageServiceProtocol {
                   let mode = RotationMode(rawValue: raw) else { return .allRandom }
             return mode
         }
-        set { defaults.set(newValue.rawValue, forKey: Constants.StorageKeys.rotationMode) }
+        set {
+            defaults.set(newValue.rawValue, forKey: Constants.StorageKeys.rotationMode)
+            postUserStateChanged()
+        }
     }
 
     // MARK: - Current Book (bookByBook state)
 
     var currentBookTitle: String? {
         get { defaults.string(forKey: Constants.StorageKeys.currentBookTitle) }
-        set { defaults.set(newValue, forKey: Constants.StorageKeys.currentBookTitle) }
+        set {
+            defaults.set(newValue, forKey: Constants.StorageKeys.currentBookTitle)
+            postUserStateChanged()
+        }
     }
 
     // MARK: - Pinned Book Titles
 
     var pinnedBookTitles: [String] {
         get { defaults.stringArray(forKey: Constants.StorageKeys.pinnedBookTitles) ?? [] }
-        set { defaults.set(newValue, forKey: Constants.StorageKeys.pinnedBookTitles) }
+        set {
+            defaults.set(newValue, forKey: Constants.StorageKeys.pinnedBookTitles)
+            postUserStateChanged()
+        }
     }
 
     // MARK: - Global Hotkey
@@ -294,14 +343,37 @@ final class StorageService: StorageServiceProtocol {
         get { defaults.object(forKey: Constants.StorageKeys.hotkeyKeyCode) != nil
                 ? defaults.integer(forKey: Constants.StorageKeys.hotkeyKeyCode)
                 : 40 }
-        set { defaults.set(newValue, forKey: Constants.StorageKeys.hotkeyKeyCode) }
+        set {
+            defaults.set(newValue, forKey: Constants.StorageKeys.hotkeyKeyCode)
+            postUserStateChanged()
+        }
     }
 
     var hotkeyModifiers: Int {
         get { defaults.object(forKey: Constants.StorageKeys.hotkeyModifiers) != nil
                 ? defaults.integer(forKey: Constants.StorageKeys.hotkeyModifiers)
                 : 786432 /* NSEvent.ModifierFlags([.control, .option]).rawValue */ }
-        set { defaults.set(newValue, forKey: Constants.StorageKeys.hotkeyModifiers) }
+        set {
+            defaults.set(newValue, forKey: Constants.StorageKeys.hotkeyModifiers)
+            postUserStateChanged()
+        }
+    }
+
+    // MARK: - Long Quote Settings
+
+    var longQuote: LongQuoteSettings {
+        get {
+            guard let data = defaults.data(forKey: Constants.StorageKeys.longQuoteSettings),
+                  let settings = try? JSONDecoder().decode(LongQuoteSettings.self, from: data)
+            else { return .default }
+            return settings
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                defaults.set(data, forKey: Constants.StorageKeys.longQuoteSettings)
+            }
+            postUserStateChanged()
+        }
     }
 
     // MARK: - Typography
@@ -318,6 +390,13 @@ final class StorageService: StorageServiceProtocol {
             if let data = try? JSONEncoder().encode(newValue) {
                 defaults.set(data, forKey: Constants.StorageKeys.typographySettings)
             }
+            postUserStateChanged()
         }
+    }
+
+    // MARK: - Sync notifications
+
+    private func postUserStateChanged() {
+        NotificationCenter.default.post(name: Constants.Notifications.userStateChanged, object: nil)
     }
 }

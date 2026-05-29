@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Displays the current wallpaper preview with typography controls.
+/// The hero screen: a large wallpaper preview with a glass quote bar, plus a typography inspector.
 struct CurrentQuoteView: View {
     @Bindable var viewModel: MainViewModel
     @State private var showTypographyPanel = false
@@ -10,150 +10,182 @@ struct CurrentQuoteView: View {
     }
 
     var body: some View {
-        HSplitView {
-            // Left: Preview + actions (or empty state)
-            VStack(spacing: 16) {
-                if hasNoClippings {
-                    NoFileEmptyStateView {
-                        let panel = NSOpenPanel()
-                        panel.title = "My Clippings.txt Dosyasını Seçin"
-                        panel.allowedContentTypes = [.plainText]
-                        panel.allowsMultipleSelection = false
-                        if panel.runModal() == .OK, let url = panel.url {
-                            viewModel.loadClippings(from: url)
-                        }
-                    }
-                } else {
-                    // Wallpaper preview (large)
-                    Group {
-                        if let image = viewModel.currentWallpaperImage {
-                            Image(nsImage: image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 4)
-                        } else {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(.quaternary)
-                                .aspectRatio(16/10, contentMode: .fit)
-                                .overlay {
-                                    ProgressView()
-                                }
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.top, 8)
-
-                    // Quote info (below preview)
-                    if let clipping = viewModel.currentClipping {
-                        VStack(spacing: 6) {
-                            Text(clipping.text)
-                                .font(.callout)
-                                .multilineTextAlignment(.center)
-                                .lineLimit(3)
-                                .foregroundStyle(.primary)
-
-                            HStack(spacing: 4) {
-                                Text(clipping.bookTitle)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                if let author = clipping.author {
-                                    Text("— \(author)")
-                                        .font(.caption)
-                                        .italic()
-                                        .foregroundStyle(.tertiary)
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-
-                    Spacer()
-
-                    // Action buttons
-                    HStack(spacing: 10) {
-                        Button {
-                            viewModel.selectRandomClipping()
-                        } label: {
-                            Label("Yeni Alıntı", systemImage: Constants.Icons.newQuote)
-                        }
-                        .keyboardShortcut("n", modifiers: .command)
-
-                        Button {
-                            viewModel.toggleFavorite()
-                        } label: {
-                            Image(systemName: viewModel.isCurrentFavorite ? Constants.Icons.favoriteFilled : Constants.Icons.favorite)
-                        }
-                        .help("Favori")
-                        .keyboardShortcut("d", modifiers: .command)
-
-                        Picker("", selection: Binding(
-                            get: { viewModel.selectedStyle },
-                            set: { viewModel.updateStyle($0) }
-                        )) {
-                            ForEach(WallpaperStyle.allCases) { style in
-                                Text(style.displayName).tag(style)
-                            }
-                        }
-                        .frame(width: 150)
-
-                        Button {
-                            withAnimation(.spring(duration: 0.2)) {
-                                showTypographyPanel.toggle()
-                            }
-                        } label: {
-                            Image(systemName: "textformat.size")
-                        }
-                        .help("Tipografi Ayarları")
-                        .keyboardShortcut("t", modifiers: .command)
-
-                        Button {
-                            viewModel.applyWallpaper()
-                        } label: {
-                            Group {
-                                if viewModel.isApplying {
-                                    Label("Uygulanıyor...", systemImage: "arrow.clockwise")
-                                } else if viewModel.applySuccess {
-                                    Label("Uygulandı", systemImage: "checkmark.circle.fill")
-                                } else {
-                                    Label("Uygula", systemImage: Constants.Icons.wallpaper)
-                                }
-                            }
-                            .animation(.easeInOut(duration: 0.2), value: viewModel.isApplying)
-                            .animation(.easeInOut(duration: 0.2), value: viewModel.applySuccess)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(viewModel.applySuccess ? .green : .accentColor)
-                        .disabled(viewModel.isApplying)
-                        .keyboardShortcut(.return, modifiers: .command)
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom, 12)
-
-                    if let error = viewModel.errorMessage {
-                        Text(error)
-                            .foregroundStyle(.red)
-                            .font(.caption)
-                            .padding(.bottom, 4)
+        Group {
+            if hasNoClippings {
+                NoFileEmptyStateView {
+                    let panel = NSOpenPanel()
+                    panel.title = "My Clippings.txt Dosyasını Seçin"
+                    panel.allowedContentTypes = [.plainText]
+                    panel.allowsMultipleSelection = false
+                    if panel.runModal() == .OK, let url = panel.url {
+                        viewModel.loadClippings(from: url)
                     }
                 }
+            } else {
+                hero
             }
-            .frame(minWidth: 400)
+        }
+        .navigationTitle("Şu Anki Alıntı")
+        .toolbar { toolbarContent }
+        .inspector(isPresented: $showTypographyPanel) {
+            TypographyPanelView(
+                typography: Binding(
+                    get: { viewModel.typography },
+                    set: { viewModel.updateTypography($0) }
+                ),
+                onReset: { viewModel.updateTypography(.default) }
+            )
+            .inspectorColumnWidth(min: 240, ideal: 280, max: 360)
+        }
+    }
 
-            // Right: Typography panel (collapsible)
-            if showTypographyPanel {
-                TypographyPanelView(
-                    typography: Binding(
-                        get: { viewModel.typography },
-                        set: { viewModel.updateTypography($0) }
-                    ),
-                    onReset: {
-                        viewModel.updateTypography(.default)
-                    }
-                )
-                .frame(width: 220)
-                .transition(.move(edge: .trailing))
+    // MARK: - Hero
+
+    private var hero: some View {
+        VStack(spacing: Theme.Spacing.l) {
+            preview
+                .frame(maxWidth: 720)
+                .padding(.horizontal, Theme.Spacing.xxl)
+                .padding(.top, Theme.Spacing.xl)
+
+            if let clipping = viewModel.currentClipping {
+                quoteBar(for: clipping)
             }
+
+            if let error = viewModel.errorMessage {
+                Text(error)
+                    .foregroundStyle(.red)
+                    .font(.caption)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder private var preview: some View {
+        if let image = viewModel.currentWallpaperImage {
+            Image(nsImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.hero, style: .continuous))
+                .shadow(color: .black.opacity(0.45), radius: 24, x: 0, y: 12)
+        } else {
+            RoundedRectangle(cornerRadius: Theme.Radius.hero, style: .continuous)
+                .fill(.quaternary)
+                .aspectRatio(16 / 10, contentMode: .fit)
+                .overlay { ProgressView() }
+        }
+    }
+
+    /// Compact "now showing" strip: the source and metadata that the wallpaper preview
+    /// doesn't surface. Avoids duplicating the quote text already rendered in the preview.
+    private func quoteBar(for clipping: Clipping) -> some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 4) {
+                Text(clipping.bookTitle)
+                    .font(.callout)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                if let author = clipping.author {
+                    Text("— \(author)")
+                        .font(.callout)
+                        .italic()
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+
+            if let meta = metadataLine(for: clipping) {
+                Text(meta)
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .padding(.horizontal, Theme.Spacing.l)
+        .padding(.vertical, Theme.Spacing.m)
+        .frame(maxWidth: 560)
+        .glassEffect(.regular, in: .rect(cornerRadius: Theme.Radius.card))
+        .padding(.horizontal, Theme.Spacing.xl)
+    }
+
+    /// Date · page/location line for the caption strip, mirroring `ClippingCard`'s metadata.
+    private func metadataLine(for clipping: Clipping) -> String? {
+        var parts: [String] = []
+        if let date = clipping.dateAdded {
+            parts.append(date.formatted(date: .abbreviated, time: .omitted))
+        }
+        switch (clipping.page, clipping.location) {
+        case let (p?, l?): parts.append("Sayfa \(p) · Konum \(l)")
+        case let (p?, nil): parts.append("Sayfa \(p)")
+        case let (nil, l?): parts.append("Konum \(l)")
+        default: break
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: "  ·  ")
+    }
+
+    // MARK: - Toolbar
+
+    @ToolbarContentBuilder private var toolbarContent: some ToolbarContent {
+        ToolbarItemGroup(placement: .primaryAction) {
+            Button {
+                viewModel.applyWallpaper()
+            } label: {
+                Group {
+                    if viewModel.isApplying {
+                        Label("Uygulanıyor...", systemImage: "arrow.clockwise")
+                    } else if viewModel.applySuccess {
+                        Label("Uygulandı", systemImage: "checkmark.circle.fill")
+                    } else {
+                        Label("Uygula", systemImage: Constants.Icons.wallpaper)
+                    }
+                }
+                .animation(Theme.Motion.snappy, value: viewModel.isApplying)
+                .animation(Theme.Motion.snappy, value: viewModel.applySuccess)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(viewModel.applySuccess ? .green : .accentColor)
+            .disabled(viewModel.isApplying)
+            .keyboardShortcut(.return, modifiers: .command)
+        }
+
+        ToolbarItemGroup(placement: .secondaryAction) {
+            Picker("", selection: Binding(
+                get: { viewModel.selectedStyle },
+                set: { viewModel.updateStyle($0) }
+            )) {
+                ForEach(WallpaperStyle.allCases) { style in
+                    Text(style.displayName).tag(style)
+                }
+            }
+            .frame(width: 140)
+            .accessibilityLabel("Wallpaper stili")
+
+            Button {
+                showTypographyPanel.toggle()
+            } label: {
+                Image(systemName: "textformat.size")
+            }
+            .help("Tipografi Ayarları")
+            .accessibilityLabel("Tipografi ayarları")
+            .keyboardShortcut("t", modifiers: .command)
+
+            Button {
+                viewModel.toggleFavorite()
+            } label: {
+                Image(systemName: viewModel.isCurrentFavorite ? Constants.Icons.favoriteFilled : Constants.Icons.favorite)
+            }
+            .help("Favori")
+            .accessibilityLabel(viewModel.isCurrentFavorite ? "Favorilerden çıkar" : "Favorilere ekle")
+            .keyboardShortcut("d", modifiers: .command)
+
+            Button {
+                viewModel.selectRandomClipping()
+            } label: {
+                Label("Yeni Alıntı", systemImage: Constants.Icons.newQuote)
+            }
+            .keyboardShortcut("n", modifiers: .command)
         }
     }
 }

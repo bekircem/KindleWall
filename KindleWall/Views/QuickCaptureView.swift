@@ -63,6 +63,7 @@ struct QuickCaptureView: View {
                                     .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
+                            .hoverHighlight(cornerRadius: 0)
                         }
                     }
                     .background(.background)
@@ -112,5 +113,7 @@ struct QuickCaptureView: View {
             .padding()
         }
         .frame(width: 440, height: 320)
+        // Hosted in a standalone AppKit panel, so it doesn't inherit the window's scheme.
+        .preferredColorScheme(.dark)
     }
 }

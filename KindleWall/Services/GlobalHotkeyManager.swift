@@ -81,7 +81,7 @@ final class GlobalHotkeyManager {
     }
 
     private func registerHotKey() {
-        var hkID = EventHotKeyID(signature: Self.signature, id: Self.eventID)
+        let hkID = EventHotKeyID(signature: Self.signature, id: Self.eventID)
         RegisterEventHotKey(
             UInt32(currentKeyCode),
             carbonModifiers(from: currentModifiers),

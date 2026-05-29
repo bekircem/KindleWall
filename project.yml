@@ -2,19 +2,24 @@ name: KindleWall
 options:
   bundleIdPrefix: com.kindlewall
   deploymentTarget:
-    macOS: "14.0"
-  xcodeVersion: "16.0"
+    macOS: "26.0"
+  xcodeVersion: "26.0"
   generateEmptyDirectories: true
 
 settings:
   base:
     SWIFT_VERSION: "5.9"
-    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
     GENERATE_INFOPLIST_FILE: false
-    CODE_SIGN_IDENTITY: "-"
-    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGN_IDENTITY: "Apple Development"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: CB9V39VP62
     # Fixed output path so .app location never changes between builds.
     SYMROOT: $(PROJECT_DIR)/.build
+    # Xcode 15+ recommended setting — opt out of user script sandboxing
+    # (this app has no Run Script build phases, so the value is academic;
+    #  setting it explicitly silences the "Update to recommended settings" warning).
+    ENABLE_USER_SCRIPT_SANDBOXING: "NO"
 
 targets:
   KindleWall:
@@ -37,6 +42,14 @@ targets:
               - NSStringPboardType
     entitlements:
       path: KindleWall/Resources/KindleWall.entitlements
+      properties:
+        com.apple.developer.applesignin:
+          - Default
+        com.apple.developer.icloud-services:
+          - CloudKit
+        com.apple.developer.icloud-container-identifiers:
+          - iCloud.com.kindlewall.app
+        aps-environment: development
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.kindlewall.app
@@ -46,3 +59,5 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     dependencies:
       - sdk: UserNotifications.framework
+      - sdk: AuthenticationServices.framework
+      - sdk: CloudKit.framework

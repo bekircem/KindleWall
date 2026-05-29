@@ -18,47 +18,7 @@ struct LibraryView: View {
     private var filteredBooks: [Book] { viewModel.filteredBooks(from: clippings) }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Search and filter bar
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-                TextField("Kitap veya yazar ara...", text: $viewModel.searchText)
-                    .textFieldStyle(.plain)
-
-                Toggle(isOn: $viewModel.showFavoritesOnly) {
-                    Image(systemName: viewModel.showFavoritesOnly ? Constants.Icons.favoriteFilled : Constants.Icons.favorite)
-                }
-                .toggleStyle(.button)
-                .help("En az bir favorili alıntısı olan kitapları göster")
-
-                Divider().frame(height: 20)
-
-                // View mode toggle
-                HStack(spacing: 2) {
-                    Button {
-                        viewModel.viewMode = .list
-                    } label: {
-                        Image(systemName: "list.bullet").frame(width: 24, height: 24)
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(viewModel.viewMode == .list ? Color.accentColor : Color.secondary)
-                    .help("Liste görünümü")
-
-                    Button {
-                        viewModel.viewMode = .card
-                    } label: {
-                        Image(systemName: "square.grid.2x2").frame(width: 24, height: 24)
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(viewModel.viewMode == .card ? Color.accentColor : Color.secondary)
-                    .help("Kart görünümü")
-                }
-            }
-            .padding()
-
-            Divider()
-
+        Group {
             if filteredBooks.isEmpty {
                 ContentUnavailableView(
                     clippings.isEmpty ? "Kitap bulunamadı" : "Sonuç yok",
@@ -79,7 +39,7 @@ struct LibraryView: View {
                         )
                     }
                     .task(id: book.id) {
-                        await coverService.cover(for: book)
+                        _ = await coverService.cover(for: book)
                     }
                 }
                 .navigationDestination(for: Book.self) { book in
@@ -115,7 +75,7 @@ struct LibraryView: View {
                             }
                             .buttonStyle(.plain)
                             .task(id: book.id) {
-                                await coverService.cover(for: book)
+                                _ = await coverService.cover(for: book)
                             }
                         }
                     }
@@ -149,7 +109,24 @@ struct LibraryView: View {
                 .help("Manuel alıntı ekle (⇧⌘N)")
                 .keyboardShortcut("n", modifiers: [.command, .shift])
             }
+
+            ToolbarItemGroup(placement: .secondaryAction) {
+                // View mode toggle
+                Picker("Görünüm", selection: $viewModel.viewMode) {
+                    Image(systemName: "list.bullet").tag(LibraryViewMode.list)
+                    Image(systemName: "square.grid.2x2").tag(LibraryViewMode.card)
+                }
+                .pickerStyle(.segmented)
+                .help("Görünüm modunu değiştir")
+
+                Toggle(isOn: $viewModel.showFavoritesOnly) {
+                    Image(systemName: viewModel.showFavoritesOnly ? Constants.Icons.favoriteFilled : Constants.Icons.favorite)
+                }
+                .toggleStyle(.button)
+                .help("Favorili kitapları göster")
+            }
         }
+        .searchable(text: $viewModel.searchText, prompt: "Kitap ara…")
         .sheet(item: $bookToEdit) { book in
             BookMetadataEditView(
                 book: book,

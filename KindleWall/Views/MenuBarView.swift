@@ -9,16 +9,16 @@ struct MenuBarView: View {
         VStack(alignment: .leading, spacing: 0) {
             thumbnailSection
             quoteSection
-            Divider().padding(.vertical, 8)
+            Divider().padding(.vertical, Theme.Spacing.s)
             actionRow
-            Divider().padding(.vertical, 8)
+            Divider().padding(.vertical, Theme.Spacing.s)
             stylePicker
-            Divider().padding(.vertical, 8)
+            Divider().padding(.vertical, Theme.Spacing.s)
             schedulerRow
-            Divider().padding(.vertical, 8)
+            Divider().padding(.vertical, Theme.Spacing.s)
             systemActions
         }
-        .padding(12)
+        .padding(Theme.Spacing.m)
         .frame(width: 280)
     }
 
@@ -30,10 +30,10 @@ struct MenuBarView: View {
                 Image(nsImage: image)
                     .resizable()
                     .aspectRatio(16 / 10, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control))
                     .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
             } else {
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: Theme.Radius.control)
                     .fill(.quaternary)
                     .aspectRatio(16 / 10, contentMode: .fit)
                     .overlay {
@@ -76,6 +76,7 @@ struct MenuBarView: View {
                 }
                 .buttonStyle(.plain)
                 .help(viewModel.isCurrentFavorite ? "Favoriden Çıkar" : "Favoriye Ekle")
+                .accessibilityLabel(viewModel.isCurrentFavorite ? "Favorilerden çıkar" : "Favorilere ekle")
             }
         }
         .padding(.bottom, 2)
@@ -101,7 +102,7 @@ struct MenuBarView: View {
                     Label("Uygula", systemImage: Constants.Icons.wallpaper)
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.borderedProminent)
                 .disabled(viewModel.currentClipping == nil)
             }
 
@@ -142,8 +143,13 @@ struct MenuBarView: View {
                         ? Constants.Icons.play
                         : Constants.Icons.pause
                 )
+                .padding(.horizontal, Theme.Spacing.s)
+                .padding(.vertical, 5)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .hoverHighlight()
+            .accessibilityLabel(viewModel.isSchedulerPaused ? "Zamanlayıcıyı devam ettir" : "Zamanlayıcıyı durdur")
 
             Spacer()
 
@@ -158,22 +164,32 @@ struct MenuBarView: View {
     // MARK: - System Actions
 
     private var systemActions: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 2) {
             Button {
                 onOpenWindow()
             } label: {
                 Label("Pencereyi Aç", systemImage: "macwindow")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, Theme.Spacing.s)
+                    .padding(.vertical, 5)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .hoverHighlight()
+            .accessibilityLabel("Pencereyi aç")
 
             Button(role: .destructive) {
                 NSApplication.shared.terminate(nil)
             } label: {
                 Label("Çıkış", systemImage: "xmark.circle")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, Theme.Spacing.s)
+                    .padding(.vertical, 5)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .hoverHighlight()
+            .accessibilityLabel("Uygulamadan çık")
         }
     }
 

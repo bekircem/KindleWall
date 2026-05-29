@@ -88,5 +88,6 @@ extension KeychainService {
         static let appleUserIdentifier = "appleUserIdentifier"
         static let appleUserName = "appleUserName"
         static let appleUserEmail = "appleUserEmail"
+        static let appleUserCreatedAt = "appleUserCreatedAt"
     }
 }
