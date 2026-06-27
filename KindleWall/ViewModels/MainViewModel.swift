@@ -35,6 +35,11 @@ final class MainViewModel {
     private var previewGeneration: Int = 0
     private var typographyUpdateTask: Task<Void, Never>?
 
+    // MARK: - Apply task management
+
+    private var applyTask: Task<Void, Never>?
+    private var applyGeneration: Int = 0
+
     // MARK: - Import task management
 
     private var importTask: Task<Void, Never>?
@@ -401,6 +406,11 @@ final class MainViewModel {
     }
 
     /// Selects a clipping, updates the preview, and immediately applies the wallpaper.
+    ///
+    /// Preview and apply render independently on purpose: after the exact-pixel render change
+    /// the preview is ~4× cheaper and already detached, so deriving the applied wallpaper from
+    /// the preview image would couple two pipelines (different target sizes, lifetimes, and
+    /// cancellation) for no real saving. Kept separate deliberately.
     func selectAndApply(_ clipping: Clipping) {
         currentClipping = clipping
         generatePreview()
@@ -408,47 +418,80 @@ final class MainViewModel {
     }
 
     /// Applies the wallpaper to the desktop.
+    ///
+    /// Full-resolution render + PNG encode + disk write now run on a detached task (mirroring
+    /// `generatePreview`) so the main thread never blocks — the window stays responsive while a
+    /// wallpaper is applied, including on every scheduler tick. Only the actual desktop swap
+    /// (`NSWorkspace`, which must stay on the main actor) and the success/error UI run on main.
     func applyWallpaper() {
         guard let clipping = currentClipping else { return }
-        guard !isApplying else { return }
         guard let screen = NSScreen.main else {
             errorMessage = KindleWallError.screenNotAvailable.errorDescription
             return
         }
 
+        // Latest-wins. The old synchronous body could not re-enter, so `guard !isApplying`
+        // sufficed. Now that the render runs off-main we instead supersede any in-flight apply
+        // by generation: a newer request (or scheduler tick) must not be dropped, and a slow
+        // earlier render must never overwrite a newer wallpaper.
+        applyTask?.cancel()
+        applyGeneration &+= 1
+        let generation = applyGeneration
+
         isApplying = true
         errorMessage = nil
 
+        // Snapshot every input on the main actor before crossing to the background task.
         let fullSize = screen.frame.size * screen.backingScaleFactor
         let displayClipping = clippingWithOverride(clipping)
+        let style = selectedStyle
+        let typographySnapshot = typography
+        let longQuote = storage.longQuote
+        let notify = storage.showNotifications
 
-        // Render at full resolution for actual wallpaper
-        guard let fullImage = generator.generateWallpaper(
-            clipping: displayClipping,
-            style: selectedStyle,
-            screenSize: fullSize,
-            typography: typography,
-            longQuote: storage.longQuote
-        ) else {
-            isApplying = false
-            errorMessage = KindleWallError.wallpaperGenerationFailed(reason: "Render başarısız").errorDescription
-            return
-        }
+        applyTask = Task.detached { [generator, wallpaperManager] in
+            // Render + encode + write off-main. The NSImage never crosses actors — only the
+            // resulting file URL does.
+            let url: URL
+            do {
+                guard let fullImage = generator.generateWallpaper(
+                    clipping: displayClipping,
+                    style: style,
+                    screenSize: fullSize,
+                    typography: typographySnapshot,
+                    longQuote: longQuote
+                ) else {
+                    throw KindleWallError.wallpaperGenerationFailed(reason: "Render başarısız")
+                }
+                url = try wallpaperManager.writeWallpaperPNG(image: fullImage)
+            } catch {
+                await MainActor.run { [weak self] in
+                    guard let self, self.applyGeneration == generation else { return }
+                    self.isApplying = false
+                    self.errorMessage = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
+                }
+                return
+            }
 
-        do {
-            try wallpaperManager.setWallpaper(image: fullImage)
-            if storage.showNotifications {
-                notificationService.sendWallpaperChangedNotification(clipping: displayClipping)
+            await MainActor.run { [weak self] in
+                guard let self, self.applyGeneration == generation else { return }
+                do {
+                    // NSWorkspace swap + captureCurrentWallpaper stay on the main actor.
+                    try self.wallpaperManager.setWallpaper(fileURL: url)
+                    if notify {
+                        self.notificationService.sendWallpaperChangedNotification(clipping: displayClipping)
+                    }
+                    self.applySuccess = true
+                    self.isApplying = false
+                    Task { @MainActor [weak self] in
+                        try? await Task.sleep(for: .seconds(1.5))
+                        self?.applySuccess = false
+                    }
+                } catch {
+                    self.errorMessage = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
+                    self.isApplying = false
+                }
             }
-            isApplying = false
-            applySuccess = true
-            Task { @MainActor in
-                try? await Task.sleep(for: .seconds(1.5))
-                applySuccess = false
-            }
-        } catch {
-            isApplying = false
-            errorMessage = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
         }
     }
 

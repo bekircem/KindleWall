@@ -5,6 +5,14 @@ import Foundation
 
 /// Protocol for applying wallpaper images to the desktop.
 protocol WallpaperManagerProtocol {
+    /// Renders the wallpaper image to a PNG on disk and returns its file URL, without
+    /// applying it. Safe to call off the main actor — touches no instance state, only the
+    /// filesystem — so the expensive PNG encode + write can run on a background task.
+    /// - Parameter image: The wallpaper image to encode.
+    /// - Returns: The URL of the written PNG.
+    /// - Throws: KindleWallError if the image cannot be encoded or written.
+    func writeWallpaperPNG(image: NSImage) throws -> URL
+
     /// Sets the desktop wallpaper from an NSImage on all screens.
     /// - Parameter image: The wallpaper image to apply.
     /// - Throws: KindleWallError if the wallpaper cannot be applied.
@@ -49,13 +57,20 @@ final class WallpaperManager: WallpaperManagerProtocol {
         )
     }
 
-    func setWallpaper(image: NSImage) throws {
-        // Save image to disk first
+    func writeWallpaperPNG(image: NSImage) throws -> URL {
         let fileName = "kindlewall_\(UUID().uuidString).png"
         let fileURL = Constants.Paths.wallpapersDirectory.appendingPathComponent(fileName)
 
         try ensureWallpaperDirectoryExists()
         try image.savePNG(to: fileURL)
+        return fileURL
+    }
+
+    func setWallpaper(image: NSImage) throws {
+        // Save image to disk first, then apply. (For the async apply path in MainViewModel
+        // the encode/write half is `writeWallpaperPNG` run off-main; this convenience keeps
+        // the synchronous one-shot callers — e.g. onboarding — working unchanged.)
+        let fileURL = try writeWallpaperPNG(image: image)
         try setWallpaper(fileURL: fileURL)
     }
 
