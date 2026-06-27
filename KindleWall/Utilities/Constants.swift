@@ -36,6 +36,9 @@ enum Constants {
         static let decorativeQuoteOpacity: CGFloat = 0.15
         static let metaFontSizeRange: ClosedRange<CGFloat> = 16...20
 
+        /// Paper-texture overlay flushes accumulated cell rects to `CGContext.fill(_:)`
+        /// in batches of this many, instead of one fill call per cell.
+        static let textureFillBatchSize = 4096
     }
 
     /// Storage keys for UserDefaults

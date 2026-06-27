@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import OSLog
 
 // MARK: - Protocol
 
@@ -310,16 +311,34 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
         context.setFillColor(NSColor(white: 0.5, alpha: 0.03).cgColor)
         let step: CGFloat = 4
         var rng = SeededRNG(seed: seed)
+
+        // The textured cells form a disjoint grid (each cell is exactly step×step, the grid
+        // pitch), so filling them as batched rect arrays is PIXEL-IDENTICAL to one fill per
+        // cell — non-overlapping rects never double up the 0.03 alpha — while collapsing
+        // hundreds of thousands of CGContext.fill calls into a handful. The RNG draw order and
+        // step are unchanged, so the chosen cells are exactly the same.
+        //
+        // Rejected alternative: a resolution-independent noise function would change the visual
+        // output (different grain at different resolutions) — a visual-parity risk we avoid.
+        var batch: [CGRect] = []
+        batch.reserveCapacity(Constants.Wallpaper.textureFillBatchSize)
         var y: CGFloat = 0
         while y < rect.height {
             var x: CGFloat = 0
             while x < rect.width {
                 if rng.next() % 3 == 0 {
-                    context.fill(CGRect(x: x, y: y, width: step, height: step))
+                    batch.append(CGRect(x: x, y: y, width: step, height: step))
+                    if batch.count == Constants.Wallpaper.textureFillBatchSize {
+                        context.fill(batch)
+                        batch.removeAll(keepingCapacity: true)
+                    }
                 }
                 x += step
             }
             y += step
+        }
+        if !batch.isEmpty {
+            context.fill(batch)
         }
     }
 
@@ -460,10 +479,9 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
     // MARK: - Helpers
 
     private func calculateFontSize(for text: String, in rect: CGRect, typography: TypographySettings, maxSize: CGFloat = Constants.Wallpaper.maxFontSize, minSize: CGFloat = Constants.Wallpaper.minFontSize, step: CGFloat = 2, lineSpacingMultiplier: CGFloat = 0.35) -> CGFloat {
-        var fontSize = maxSize
-
-        while fontSize > minSize {
-            let font = makeQuoteFont(size: fontSize, typography: typography)
+        // Whether `text` fits within `rect.height` when typeset at `fontSize`.
+        let fits: (CGFloat) -> Bool = { fontSize in
+            let font = self.makeQuoteFont(size: fontSize, typography: typography)
             let paragraphStyle = NSMutableParagraphStyle()
             paragraphStyle.lineSpacing = fontSize * lineSpacingMultiplier
 
@@ -477,14 +495,55 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
                 options: [.usesLineFragmentOrigin],
                 attributes: attributes
             )
-
-            if boundingRect.height <= rect.height {
-                return fontSize
-            }
-            fontSize -= step
+            return boundingRect.height <= rect.height
         }
 
-        return minSize
+        // Search the SAME discrete grid as the original linear scan — candidate sizes
+        // g_k = maxSize - k*step for every k whose g_k is still > minSize. Typeset height is
+        // monotonic in font size, so `fits` is a monotonic step over k (not-fit… then fit…
+        // as the size shrinks). Binary-search the smallest fitting k, i.e. the largest fitting
+        // size, falling back to minSize when nothing fits. ~4 layout measurements vs ~10-15.
+        let span = maxSize - minSize
+        let result: CGFloat
+        if span <= 0 {
+            result = minSize
+        } else {
+            let maxK = Int(ceil(span / step)) - 1   // largest k with maxSize - k*step > minSize
+            if maxK < 0 {
+                result = minSize
+            } else {
+                var lo = 0, hi = maxK
+                var bestK: Int? = nil
+                while lo <= hi {
+                    let mid = (lo + hi) / 2
+                    if fits(maxSize - CGFloat(mid) * step) {
+                        bestK = mid
+                        hi = mid - 1
+                    } else {
+                        lo = mid + 1
+                    }
+                }
+                result = bestK.map { maxSize - CGFloat($0) * step } ?? minSize
+            }
+        }
+
+        #if DEBUG
+        // Prove the monotonicity assumption against the original linear scan. A mismatch of a
+        // full grid step or more means `fits` was non-monotonic for this input — should never
+        // fire; if it does, the binary search is unsafe for that case.
+        var legacy = maxSize
+        var legacyResult = minSize
+        while legacy > minSize {
+            if fits(legacy) { legacyResult = legacy; break }
+            legacy -= step
+        }
+        if abs(legacyResult - result) >= step {
+            Logger(subsystem: Constants.App.bundleIdentifier, category: "perf")
+                .warning("calculateFontSize binary/linear mismatch: binary=\(Double(result)) linear=\(Double(legacyResult)) textLen=\(text.count)")
+        }
+        #endif
+
+        return result
     }
 
     private func textColor(for style: WallpaperStyle, typography: TypographySettings) -> NSColor {
