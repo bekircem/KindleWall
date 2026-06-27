@@ -36,16 +36,25 @@ final class CloudKitSyncService {
     /// Guards against re-broadcasting notifications while applying remote changes.
     private var isApplyingRemoteChanges = false
     /// Guards against infinite recursion if a token-reset re-pull also reports
-    /// `changeTokenExpired`. Flipped during the recovery `pullChanges()` call.
+    /// `changeTokenExpired`. Flipped during the recovery `performPull()` call.
     private var isRecoveringFromExpiredToken = false
     /// Categories that need to push on next flush.
     private var pendingDirty: Set<DirtyCategory> = []
+
+    /// Serializes sync cycles. A trigger that arrives mid-cycle sets `rerunRequested`
+    /// so exactly one follow-up runs after the current cycle finishes — no overlapping
+    /// push/pull, no status thrash.
+    private var isSyncing = false
+    private var rerunRequested = false
 
     private enum DirtyCategory: Hashable {
         case userState
         case manualClippings
         case bookOverrides
     }
+
+    /// A unit of work in a sync cycle. Order within `runSync([...])` is significant.
+    private enum SyncOp { case push, pull }
 
     /// Snapshot of "what we last synced with cloud" — drives deletion diffs and
     /// LWW-Element-Set semantics for the singleton UserState record's set fields.
@@ -57,6 +66,9 @@ final class CloudKitSyncService {
         var shownClippingIDs: Set<String> = []
         var persistedClippingIDs: Set<String> = []
         var pinnedBookTitles: Set<String> = []
+        /// Hash of the singleton UserState payload at last successful sync. Lets a push
+        /// skip a no-op re-save (which would otherwise bounce a silent push back to us).
+        var userStateSignature: String = ""
     }
 
     // MARK: - Init
@@ -101,11 +113,10 @@ final class CloudKitSyncService {
         syncState.status = .disabled(reason: "Çıkış yapıldı")
     }
 
-    /// User-initiated sync. Pushes any pending changes then pulls remote updates.
+    /// User-initiated sync. Pushes any pending changes then pulls remote updates,
+    /// as a single cycle (one `.syncing` → one `.idle`).
     func syncNow() async {
-        guard isRunning else { return }
-        await flushPendingPushes()
-        await pullChanges()
+        await runSync([.push, .pull])
     }
 
     // MARK: - Bootstrap
@@ -146,10 +157,11 @@ final class CloudKitSyncService {
             return
         }
 
-        await pullChanges()
-        // After initial pull, push anything local that's newer (best effort).
+        // One cycle: pull remote state first, then push only genuinely-diverged local
+        // data. The push methods skip no-op writes, so a device already in sync makes no
+        // server change (and therefore receives no self-addressed silent push back).
         pendingDirty = [.userState, .manualClippings, .bookOverrides]
-        await flushPendingPushes()
+        await runSync([.pull, .push])
     }
 
     private func bootstrapZoneIfNeeded() async throws {
@@ -198,23 +210,50 @@ final class CloudKitSyncService {
     }
 
     @objc private func handleRemotePush() {
-        Task { await pullChanges() }
+        Task { await runSync([.pull]) }
     }
 
     private func schedulePush() {
         pendingPushTimer?.invalidate()
         pendingPushTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
             Task { @MainActor [weak self] in
-                await self?.flushPendingPushes()
+                await self?.runSync([.push])
             }
         }
     }
 
-    private func flushPendingPushes() async {
+    /// Runs one serialized sync cycle: a single `.syncing` at the start and a single
+    /// `markIdle()` at the end. Triggers that arrive mid-cycle are coalesced into one
+    /// follow-up run via `rerunRequested`, so push/pull never overlap or thrash status.
+    private func runSync(_ ops: [SyncOp]) async {
+        guard isRunning else { return }
+        guard !isSyncing else { rerunRequested = true; return }
+        isSyncing = true
+        defer {
+            isSyncing = false
+            if rerunRequested {
+                rerunRequested = false
+                Task { await self.runSync([.push, .pull]) }
+            }
+        }
+
+        syncState.status = .syncing
+        for op in ops {
+            switch op {
+            case .push: await performPendingPushes()
+            case .pull: await performPull()
+            }
+            if case .error = syncState.status { return }   // surface failure, skip markIdle
+        }
+        markIdle()
+    }
+
+    /// Pushes any dirty categories. Does not own `syncState.status` (only records a
+    /// failure); `runSync` owns the syncing/idle transitions.
+    private func performPendingPushes() async {
         guard isRunning, !pendingDirty.isEmpty else { return }
         let toPush = pendingDirty
         pendingDirty.removeAll()
-        syncState.status = .syncing
         do {
             if toPush.contains(.userState) { try await pushUserState() }
             if toPush.contains(.manualClippings) { try await pushManualClippings() }
@@ -222,7 +261,6 @@ final class CloudKitSyncService {
             // After a successful push, our local state matches cloud — record
             // the snapshot so the next push can compute correct deletion diffs.
             saveSnapshotFromLocal()
-            markIdle()
         } catch {
             syncState.status = .error(error.localizedDescription)
         }
@@ -238,8 +276,14 @@ final class CloudKitSyncService {
     // MARK: - Push: UserState (singleton)
 
     private func pushUserState() async throws {
-        let recordID = CKRecord.ID(recordName: SyncSchema.userStateRecordName, zoneID: zoneID)
         let snapshot = loadSnapshot()
+
+        // Skip a no-op re-save: if local UserState is unchanged since the last sync, saving
+        // would still bump the record's change-tag and bounce a silent push back to this very
+        // device via the CKDatabaseSubscription — the sync feedback loop. Nothing to push.
+        if computeUserStateSignature() == snapshot.userStateSignature { return }
+
+        let recordID = CKRecord.ID(recordName: SyncSchema.userStateRecordName, zoneID: zoneID)
 
         // Fetch server's copy to compute LWW-Element-Set merges and capture the change tag.
         let serverRecord: CKRecord
@@ -414,9 +458,10 @@ final class CloudKitSyncService {
 
     // MARK: - Pull
 
-    private func pullChanges() async {
+    /// Fetches and applies remote changes. Does not own `syncState.status` (only records a
+    /// failure); `runSync` owns the syncing/idle transitions.
+    private func performPull() async {
         guard isRunning else { return }
-        syncState.status = .syncing
 
         let token = loadChangeToken()
         let zoneConfig = CKFetchRecordZoneChangesOperation.ZoneConfiguration(
@@ -471,7 +516,7 @@ final class CloudKitSyncService {
                 return
             }
             isRecoveringFromExpiredToken = true
-            await pullChanges()
+            await performPull()
             isRecoveringFromExpiredToken = false
             return
         } catch {
@@ -483,7 +528,6 @@ final class CloudKitSyncService {
         if let newToken { saveChangeToken(newToken) }
         // After applying remote changes, our local state matches cloud.
         saveSnapshotFromLocal()
-        markIdle()
     }
 
     private func applyRemoteChanges(records: [CKRecord], deletions: [(CKRecord.ID, CKRecord.RecordType)]) {
@@ -636,10 +680,43 @@ final class CloudKitSyncService {
             favoriteClippingIDs: Set(storage.favoriteClippingIDs.map { $0.uuidString }),
             shownClippingIDs: Set(storage.shownClippingIDs.map { $0.uuidString }),
             persistedClippingIDs: Set(storage.persistedClippingIDs.map { $0.uuidString }),
-            pinnedBookTitles: Set(storage.pinnedBookTitles)
+            pinnedBookTitles: Set(storage.pinnedBookTitles),
+            userStateSignature: computeUserStateSignature()
         )
         guard let data = try? JSONEncoder().encode(snap) else { return }
         UserDefaults.standard.set(data, forKey: Constants.StorageKeys.cloudKitSyncSnapshot)
+    }
+
+    /// Deterministic hash of the singleton UserState payload (scalars + Codable structs +
+    /// sorted set fields). Lets `pushUserState` skip a no-op re-save so an unchanged device
+    /// makes no server change — which is what stops the self-addressed silent-push loop.
+    private func computeUserStateSignature() -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        func json<T: Encodable>(_ value: T) -> String {
+            (try? encoder.encode(value)).map { String(decoding: $0, as: UTF8.self) } ?? ""
+        }
+
+        let parts: [String] = [
+            storage.selectedStyle.rawValue,
+            storage.scheduleInterval.rawValue,
+            storage.customScheduleDate.map { String($0.timeIntervalSince1970) } ?? "·",
+            storage.rotationMode.rawValue,
+            storage.currentBookTitle ?? "·",
+            storage.launchAtLogin ? "1" : "0",
+            storage.showNotifications ? "1" : "0",
+            storage.applyToAllSpaces ? "1" : "0",
+            String(storage.hotkeyKeyCode),
+            String(storage.hotkeyModifiers),
+            json(storage.typography),
+            json(storage.longQuote),
+            storage.favoriteClippingIDs.map { $0.uuidString }.sorted().joined(separator: ","),
+            storage.shownClippingIDs.map { $0.uuidString }.sorted().joined(separator: ","),
+            storage.persistedClippingIDs.map { $0.uuidString }.sorted().joined(separator: ","),
+            storage.pinnedBookTitles.sorted().joined(separator: ",")
+        ]
+        let digest = SHA256.hash(data: Data(parts.joined(separator: "|").utf8))
+        return digest.map { String(format: "%02x", $0) }.joined()
     }
 
     // MARK: - Change token persistence

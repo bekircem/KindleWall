@@ -15,17 +15,17 @@ enum SidebarSection: String, CaseIterable, Identifiable {
 enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
     case currentQuote, library
     case style, typography, background
-    case schedule, rotation, longQuotes, sourceFile
+    case behavior
     case general, shortcuts, account, about
 
     var id: String { rawValue }
 
     var section: SidebarSection {
         switch self {
-        case .currentQuote, .library:                       return .general
-        case .style, .typography, .background:              return .appearance
-        case .schedule, .rotation, .longQuotes, .sourceFile: return .behavior
-        case .general, .shortcuts, .account, .about:        return .app
+        case .currentQuote, .library:                return .general
+        case .style, .typography, .background:       return .appearance
+        case .behavior:                              return .behavior
+        case .general, .shortcuts, .account, .about: return .app
         }
     }
 
@@ -36,10 +36,7 @@ enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
         case .style:        return "Stil"
         case .typography:   return "Tipografi"
         case .background:   return "Arka Plan"
-        case .schedule:     return "Zamanlama"
-        case .rotation:     return "Döngü Modu"
-        case .longQuotes:   return "Uzun Alıntılar"
-        case .sourceFile:   return "Kaynak Dosya"
+        case .behavior:     return "Davranış"
         case .general:      return "Genel"
         case .shortcuts:    return "Kısayollar"
         case .account:      return "Hesap"
@@ -54,10 +51,7 @@ enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
         case .style:        return "paintpalette.fill"
         case .typography:   return "textformat"
         case .background:   return "drop.fill"
-        case .schedule:     return "clock.fill"
-        case .rotation:     return "shuffle"
-        case .longQuotes:   return "text.alignleft"
-        case .sourceFile:   return "doc.text.fill"
+        case .behavior:     return "slider.horizontal.3"
         case .general:      return "gearshape.fill"
         case .shortcuts:    return "keyboard.fill"
         case .account:      return "person.crop.circle.fill"
@@ -72,10 +66,7 @@ enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
         case .style:        return .purple
         case .typography:   return .pink
         case .background:   return .teal
-        case .schedule:     return .blue
-        case .rotation:     return .green
-        case .longQuotes:   return .brown
-        case .sourceFile:   return Color(.systemGray)
+        case .behavior:     return .blue
         case .general:      return Color(.systemGray)
         case .shortcuts:    return .indigo
         case .account:      return .cyan

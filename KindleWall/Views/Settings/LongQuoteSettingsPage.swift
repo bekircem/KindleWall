@@ -1,12 +1,13 @@
 import SwiftUI
 
-/// "Uzun Alıntılar" page — skip overly long quotes and/or auto-tighten their typography.
-struct LongQuoteSettingsPage: View {
+/// "Uzun Alıntılar" section — skip overly long quotes and/or auto-tighten their typography.
+/// A section of the consolidated `BehaviorSettingsPage`.
+struct LongQuoteSection: View {
     @Bindable var settingsVM: SettingsViewModel
     let actions: SettingsActions
 
     var body: some View {
-        SettingsPage(title: "Uzun Alıntılar") {
+        VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             // MARK: Skip
             SettingsCard(
                 title: "Uzun Alıntıları Atla",
@@ -14,36 +15,40 @@ struct LongQuoteSettingsPage: View {
                     ? "Bu eşikten uzun alıntılar duvar kağıdı seçiminde atlanır."
                     : nil
             ) {
-                VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                    Toggle("Uzun alıntıları görmezden gel", isOn: Binding(
+                SettingsRow(icon: "arrow.forward.to.line", iconColor: .orange,
+                            title: "Uzun alıntıları görmezden gel") {
+                    Toggle("", isOn: Binding(
                         get: { settingsVM.skipLongQuotesEnabled },
                         set: { newValue in
                             settingsVM.skipLongQuotesEnabled = newValue
                             settingsVM.updateLongQuoteSettings()
                         }
                     ))
-
-                    if settingsVM.skipLongQuotesEnabled {
-                        LabeledContent("Eşik") {
-                            ThresholdInput(
-                                value: Binding(
-                                    get: { settingsVM.longQuoteThreshold },
-                                    set: { newValue in
-                                        settingsVM.longQuoteThreshold = newValue
-                                        settingsVM.updateLongQuoteSettings()
-                                    }
-                                ),
-                                unit: Binding(
-                                    get: { settingsVM.longQuoteUnit },
-                                    set: { settingsVM.updateLongQuoteUnit($0) }
-                                ),
-                                range: settingsVM.longQuoteRange(for: settingsVM.longQuoteUnit),
-                                step: settingsVM.longQuoteStep(for: settingsVM.longQuoteUnit)
-                            )
-                        }
-                    }
+                    .labelsHidden()
                 }
-                .padding(Theme.Spacing.l)
+
+                if settingsVM.skipLongQuotesEnabled {
+                    RowDivider()
+                    LabeledContent("Eşik") {
+                        ThresholdInput(
+                            value: Binding(
+                                get: { settingsVM.longQuoteThreshold },
+                                set: { newValue in
+                                    settingsVM.longQuoteThreshold = newValue
+                                    settingsVM.updateLongQuoteSettings()
+                                }
+                            ),
+                            unit: Binding(
+                                get: { settingsVM.longQuoteUnit },
+                                set: { settingsVM.updateLongQuoteUnit($0) }
+                            ),
+                            range: settingsVM.longQuoteRange(for: settingsVM.longQuoteUnit),
+                            step: settingsVM.longQuoteStep(for: settingsVM.longQuoteUnit)
+                        )
+                    }
+                    .padding(.horizontal, Theme.Spacing.l)
+                    .padding(.vertical, Theme.Spacing.m)
+                }
             }
 
             // MARK: Tighten
@@ -53,8 +58,9 @@ struct LongQuoteSettingsPage: View {
                     ? "Eşikten uzun alıntılar, font boyutu bu değere ve satır arası bu çarpana kadar daraltılır. Çok düşük değerler okunabilirliği azaltabilir."
                     : nil
             ) {
-                VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                    Toggle("Uzun alıntıları otomatik daralt", isOn: Binding(
+                SettingsRow(icon: "textformat.size.smaller", iconColor: .orange,
+                            title: "Uzun alıntıları otomatik daralt") {
+                    Toggle("", isOn: Binding(
                         get: { settingsVM.autoTightenLongQuotes },
                         set: { newValue in
                             settingsVM.autoTightenLongQuotes = newValue
@@ -62,8 +68,12 @@ struct LongQuoteSettingsPage: View {
                             actions.onTypographyChanged()
                         }
                     ))
+                    .labelsHidden()
+                }
 
-                    if settingsVM.autoTightenLongQuotes {
+                if settingsVM.autoTightenLongQuotes {
+                    RowDivider()
+                    VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                         LabeledContent("Şu eşikten itibaren") {
                             ThresholdInput(
                                 value: Binding(
@@ -138,8 +148,8 @@ struct LongQuoteSettingsPage: View {
                             .controlSize(.small)
                         }
                     }
+                    .padding(Theme.Spacing.l)
                 }
-                .padding(Theme.Spacing.l)
             }
         }
     }

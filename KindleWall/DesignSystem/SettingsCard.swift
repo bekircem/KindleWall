@@ -22,6 +22,9 @@ struct SettingsCard<Content: View>: View {
             VStack(spacing: 0) {
                 content
             }
+            // Fill the column so every card is the same width regardless of its content's
+            // intrinsic size (a segmented picker / toggle would otherwise shrink the card).
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 Theme.Palette.cardFill,
                 in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)

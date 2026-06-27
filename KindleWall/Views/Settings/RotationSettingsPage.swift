@@ -6,7 +6,7 @@ import SwiftUI
 /// a "Mod" card (picker only) and a "Kapsam" card whose content adapts to the selected mode.
 /// This avoids the abrupt resize that happened when the pinned-books list lived inside the
 /// picker card, and fills the page with meaningful per-mode context.
-struct RotationSettingsPage: View {
+struct RotationSection: View {
     @Bindable var settingsVM: SettingsViewModel
     let availableBooks: [(title: String, author: String?)]
     let totalQuoteCount: Int
@@ -14,9 +14,9 @@ struct RotationSettingsPage: View {
     let actions: SettingsActions
 
     var body: some View {
-        SettingsPage(title: "Döngü Modu") {
+        VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             // MARK: Mode picker — constant height across all modes.
-            SettingsCard(title: "Mod", footnote: modeFootnote) {
+            SettingsCard(footnote: modeFootnote) {
                 Picker("Mod", selection: Binding(
                     get: { settingsVM.rotationMode },
                     set: {
@@ -30,6 +30,7 @@ struct RotationSettingsPage: View {
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
+                .frame(maxWidth: .infinity)
                 .padding(Theme.Spacing.l)
             }
 

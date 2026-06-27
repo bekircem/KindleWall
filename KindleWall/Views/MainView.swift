@@ -96,32 +96,18 @@ struct MainView: View {
 
         case .style:
             StyleSettingsPage(settingsVM: settingsVM, actions: actions)
+                .livePreviewInspector(viewModel: viewModel)
 
         case .typography:
             TypographySettingsPage(viewModel: viewModel, settingsVM: settingsVM, actions: actions)
+                .livePreviewInspector(viewModel: viewModel)
 
         case .background:
             BackgroundSettingsPage(settingsVM: settingsVM, actions: actions)
+                .livePreviewInspector(viewModel: viewModel)
 
-        case .schedule:
-            ScheduleSettingsPage(settingsVM: settingsVM, actions: actions)
-
-        case .rotation:
-            RotationSettingsPage(
-                settingsVM: settingsVM,
-                availableBooks: viewModel.availableBooks,
-                totalQuoteCount: viewModel.clippings.count,
-                pinnedQuoteCount: viewModel.clippings.filter {
-                    settingsVM.pinnedBookTitles.contains($0.bookTitle)
-                }.count,
-                actions: actions
-            )
-
-        case .longQuotes:
-            LongQuoteSettingsPage(settingsVM: settingsVM, actions: actions)
-
-        case .sourceFile:
-            SourceFileSettingsPage(settingsVM: settingsVM, clippingsCount: viewModel.clippings.count, actions: actions)
+        case .behavior:
+            BehaviorSettingsPage(viewModel: viewModel, settingsVM: settingsVM, actions: actions)
 
         case .general:
             GeneralSettingsPage(settingsVM: settingsVM, canRestorePreviousWallpaper: viewModel.canRestorePreviousWallpaper, actions: actions)

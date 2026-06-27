@@ -193,13 +193,16 @@ struct AccountView: View {
         case .disabled(let reason):
             return reason
         case .idle:
-            if let date = syncState.lastSyncedAt {
-                let formatter = RelativeDateTimeFormatter()
-                formatter.unitsStyle = .full
-                formatter.locale = Locale(identifier: "tr_TR")
-                return "Son senkronizasyon: " + formatter.localizedString(for: date, relativeTo: Date())
+            guard let date = syncState.lastSyncedAt else { return "Hazır" }
+            // A just-completed sync reads as "az önce". RelativeDateTimeFormatter would
+            // otherwise render the near-now instant as the nonsensical "0 saniye sonra".
+            if Date().timeIntervalSince(date) < 10 {
+                return "Son senkronizasyon: az önce"
             }
-            return "Hazır"
+            let formatter = RelativeDateTimeFormatter()
+            formatter.unitsStyle = .full
+            formatter.locale = Locale(identifier: "tr_TR")
+            return "Son senkronizasyon: " + formatter.localizedString(for: date, relativeTo: Date())
         case .syncing:
             return "Senkronize ediliyor…"
         case .error(let msg):

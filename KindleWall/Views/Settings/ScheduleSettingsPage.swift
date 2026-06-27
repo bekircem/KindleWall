@@ -1,14 +1,14 @@
 import SwiftUI
 
-/// "Zamanlama" page — how often the wallpaper changes, plus a manual "change now" action.
-struct ScheduleSettingsPage: View {
+/// "Zamanlama" section — how often the wallpaper changes, plus a manual "change now" action.
+/// A section of the consolidated `BehaviorSettingsPage` (no `SettingsPage` chrome of its own).
+struct ScheduleSection: View {
     @Bindable var settingsVM: SettingsViewModel
     let actions: SettingsActions
 
     var body: some View {
-        SettingsPage(title: "Zamanlama") {
+        VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             SettingsCard(
-                title: "Değişim Sıklığı",
                 footnote: "Duvar kağıdının otomatik olarak ne sıklıkla değişeceğini seç."
             ) {
                 VStack(alignment: .leading, spacing: Theme.Spacing.m) {
@@ -25,6 +25,7 @@ struct ScheduleSettingsPage: View {
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
+                    .frame(maxWidth: .infinity)
 
                     if settingsVM.scheduleInterval == .custom {
                         DatePicker(

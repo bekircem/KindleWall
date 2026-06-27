@@ -512,9 +512,16 @@ final class MainViewModel {
 
     /// Re-reads typography from storage and regenerates the preview.
     /// Called when SettingsView changes decoration style or gradient colors.
+    /// Debounced 200ms (reusing `typographyUpdateTask`) so continuous gradient color-picker
+    /// drags don't flood the render pipeline now that the preview is visible on these pages.
     func reloadTypography() {
         typography = storage.typography
-        generatePreview()
+        typographyUpdateTask?.cancel()
+        typographyUpdateTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(200))
+            guard !Task.isCancelled else { return }
+            self?.generatePreview()
+        }
     }
 
     /// Updates the scheduler interval (and optional custom date) from SettingsView.

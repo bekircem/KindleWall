@@ -1,15 +1,15 @@
 import SwiftUI
 
-/// "Kaynak Dosya" page — choose / reload the Kindle My Clippings.txt source file.
-struct SourceFileSettingsPage: View {
+/// "Kaynak Dosya" section — choose / reload the Kindle My Clippings.txt source file.
+/// A section of the consolidated `BehaviorSettingsPage`.
+struct SourceFileSection: View {
     @Bindable var settingsVM: SettingsViewModel
     let clippingsCount: Int
     let actions: SettingsActions
 
     var body: some View {
-        SettingsPage(title: "Kaynak Dosya") {
+        VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             SettingsCard(
-                title: "My Clippings.txt",
                 footnote: "Kindle'ından aldığın My Clippings.txt dosyası. Aynı dosyanın güncel hâlini tekrar seçersen yalnızca yeni alıntılar eklenir; favori ve gösterim durumları korunur."
             ) {
                 VStack(alignment: .leading, spacing: Theme.Spacing.m) {

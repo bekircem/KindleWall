@@ -13,7 +13,7 @@ final class LibraryViewModel {
     var searchText: String = ""
     var showFavoritesOnly: Bool = false
     var selectedClipping: Clipping?
-    var viewMode: LibraryViewMode = .list
+    var viewMode: LibraryViewMode = .card
 
     /// In-memory cache of user metadata overrides (keyed by original title).
     var metadataOverrides: [String: BookMetadataOverride] = [:]

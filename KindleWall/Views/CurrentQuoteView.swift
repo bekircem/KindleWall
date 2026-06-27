@@ -42,25 +42,41 @@ struct CurrentQuoteView: View {
     // MARK: - Hero
 
     private var hero: some View {
-        VStack(spacing: Theme.Spacing.l) {
-            preview
-                .frame(maxWidth: 720)
-                .padding(.horizontal, Theme.Spacing.xxl)
-                .padding(.top, Theme.Spacing.xl)
+        // Wrapped in a ScrollView so a long quote text never overflows the window vertically.
+        ScrollView {
+            VStack(spacing: Theme.Spacing.l) {
+                preview
+                    .frame(maxWidth: 720)
+                    .padding(.horizontal, Theme.Spacing.xxl)
+                    .padding(.top, Theme.Spacing.xl)
 
-            if let clipping = viewModel.currentClipping {
-                quoteBar(for: clipping)
+                if let clipping = viewModel.currentClipping {
+                    quoteText(for: clipping)
+                    quoteBar(for: clipping)
+                }
+
+                if let error = viewModel.errorMessage {
+                    Text(error)
+                        .foregroundStyle(.red)
+                        .font(.caption)
+                }
             }
-
-            if let error = viewModel.errorMessage {
-                Text(error)
-                    .foregroundStyle(.red)
-                    .font(.caption)
-            }
-
-            Spacer(minLength: 0)
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, Theme.Spacing.xl)
         }
-        .frame(maxWidth: .infinity)
+    }
+
+    /// The full quote text, shown as readable, selectable text beneath the preview.
+    private func quoteText(for clipping: Clipping) -> some View {
+        Text(clipping.text)
+            .font(.system(.title3, design: .serif))
+            .foregroundStyle(.primary)
+            .multilineTextAlignment(.center)
+            .lineSpacing(5)
+            .textSelection(.enabled)
+            .frame(maxWidth: 620)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, Theme.Spacing.xl)
     }
 
     @ViewBuilder private var preview: some View {
@@ -78,8 +94,7 @@ struct CurrentQuoteView: View {
         }
     }
 
-    /// Compact "now showing" strip: the source and metadata that the wallpaper preview
-    /// doesn't surface. Avoids duplicating the quote text already rendered in the preview.
+    /// Compact source strip beneath the quote text: book · author plus date/page metadata.
     private func quoteBar(for clipping: Clipping) -> some View {
         VStack(spacing: 4) {
             HStack(spacing: 4) {
@@ -144,10 +159,13 @@ struct CurrentQuoteView: View {
                 .animation(Theme.Motion.snappy, value: viewModel.isApplying)
                 .animation(Theme.Motion.snappy, value: viewModel.applySuccess)
             }
+            .labelStyle(.titleAndIcon)
             .buttonStyle(.borderedProminent)
             .tint(viewModel.applySuccess ? .green : .accentColor)
             .disabled(viewModel.isApplying)
             .keyboardShortcut(.return, modifiers: .command)
+            .help("Bu alıntıyı masaüstü duvar kağıdı olarak uygula")
+            .accessibilityLabel("Duvar kağıdı olarak uygula")
         }
 
         ToolbarItemGroup(placement: .secondaryAction) {

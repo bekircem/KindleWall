@@ -63,6 +63,9 @@ enum Constants {
         static let hotkeyModifiers      = "hotkeyModifiers"
         static let longQuoteSettings    = "longQuoteSettings"
 
+        /// UI-only preference: whether the live preview inspector on the appearance pages is open.
+        static let appearancePreviewVisible = "appearancePreviewVisible"
+
         // CloudKit sync engine state (not synced — bookkeeping only)
         static let cloudKitChangeToken          = "cloudKitChangeToken"
         static let cloudKitZoneCreated          = "cloudKitZoneCreated"
