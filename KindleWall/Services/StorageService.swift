@@ -43,6 +43,9 @@ protocol StorageServiceProtocol {
     /// Whether to apply wallpaper to all Mission Control spaces (not just the active one).
     var applyToAllSpaces: Bool { get set }
 
+    /// Whether wallpapers are written as time-of-day dynamic HEICs instead of a single PNG.
+    var dynamicWallpaperEnabled: Bool { get set }
+
     /// User-supplied metadata corrections keyed by original parsed book title.
     var bookMetadataOverrides: [String: BookMetadataOverride] { get set }
 
@@ -254,6 +257,18 @@ final class StorageService: StorageServiceProtocol {
         get { defaults.object(forKey: Constants.StorageKeys.applyToAllSpaces) as? Bool ?? true }
         set {
             defaults.set(newValue, forKey: Constants.StorageKeys.applyToAllSpaces)
+            postUserStateChanged()
+        }
+    }
+
+    // MARK: - Dynamic Wallpaper
+
+    var dynamicWallpaperEnabled: Bool {
+        // Defaults to off: the static path is what every existing user already has, and a
+        // wallpaper that starts shifting colour unannounced would read as a bug.
+        get { defaults.object(forKey: Constants.StorageKeys.dynamicWallpaperEnabled) as? Bool ?? false }
+        set {
+            defaults.set(newValue, forKey: Constants.StorageKeys.dynamicWallpaperEnabled)
             postUserStateChanged()
         }
     }

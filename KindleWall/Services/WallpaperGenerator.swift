@@ -8,6 +8,14 @@ import OSLog
 protocol WallpaperGeneratorProtocol {
     /// Generates a wallpaper image from a clipping using the specified style.
     func generateWallpaper(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize, typography: TypographySettings, longQuote: LongQuoteSettings) -> NSImage?
+
+    /// Renders only the background layer, for dynamic-wallpaper compositing.
+    func renderBackgroundLayer(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize,
+                               typography: TypographySettings) -> NSImage?
+
+    /// Renders only the quote, decoration and byline over transparency.
+    func renderTextLayer(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize,
+                         typography: TypographySettings, longQuote: LongQuoteSettings) -> NSImage?
 }
 
 extension WallpaperGeneratorProtocol {

@@ -37,6 +37,9 @@ final class MainViewModel {
     private var scheduler: SchedulerServiceProtocol
     private var storage: StorageServiceProtocol
     private let notificationService: NotificationServiceProtocol
+    private let sunCalculator: SunCalculatorProtocol
+    private let composer: DynamicWallpaperComposerProtocol
+    private let heicEncoder: HEICWallpaperEncoderProtocol
     let importState: ImportState
 
     // MARK: - Preview task management
@@ -68,13 +71,19 @@ final class MainViewModel {
         scheduler: SchedulerServiceProtocol = SchedulerService(),
         storage: StorageServiceProtocol = StorageService(),
         importState: ImportState = ImportState(),
-        notificationService: NotificationServiceProtocol = NotificationService()
+        notificationService: NotificationServiceProtocol = NotificationService(),
+        sunCalculator: SunCalculatorProtocol = SunCalculator(),
+        composer: DynamicWallpaperComposerProtocol = DynamicWallpaperComposer(),
+        heicEncoder: HEICWallpaperEncoderProtocol = HEICWallpaperEncoder()
     ) {
         self.parser = parser
         self.generator = generator
         self.storage = storage
         self.scheduler = scheduler
         self.notificationService = notificationService
+        self.sunCalculator = sunCalculator
+        self.composer = composer
+        self.heicEncoder = heicEncoder
         self.selectedStyle = storage.selectedStyle
         self.typography = storage.typography
         self.pinnedBookTitles = Set(storage.pinnedBookTitles)
@@ -460,21 +469,38 @@ final class MainViewModel {
         let longQuote = storage.longQuote
         let notify = storage.showNotifications
 
-        applyTask = Task.detached { [generator, wallpaperManager] in
+        let dynamicEnabled = storage.dynamicWallpaperEnabled
+
+        applyTask = Task.detached { [generator, wallpaperManager, sunCalculator, composer, heicEncoder] in
             // Render + encode + write off-main. The NSImage never crosses actors — only the
             // resulting file URL does.
             let url: URL
+            var fellBackToStatic = false
             do {
-                guard let fullImage = generator.generateWallpaper(
-                    clipping: displayClipping,
-                    style: style,
-                    screenSize: fullSize,
-                    typography: typographySnapshot,
-                    longQuote: longQuote
-                ) else {
-                    throw KindleWallError.wallpaperGenerationFailed(reason: "Render başarısız")
+                if dynamicEnabled,
+                   let dynamicURL = Self.renderDynamicWallpaper(
+                       clipping: displayClipping, style: style, screenSize: fullSize,
+                       typography: typographySnapshot, longQuote: longQuote,
+                       generator: generator, sunCalculator: sunCalculator,
+                       composer: composer, encoder: heicEncoder, manager: wallpaperManager
+                   ) {
+                    url = dynamicURL
+                } else {
+                    // Either dynamic is off, or a step of the dynamic pipeline failed. Falling
+                    // back keeps the wallpaper changing rather than leaving the desktop stale;
+                    // the user is told once, below.
+                    fellBackToStatic = dynamicEnabled
+                    guard let fullImage = generator.generateWallpaper(
+                        clipping: displayClipping,
+                        style: style,
+                        screenSize: fullSize,
+                        typography: typographySnapshot,
+                        longQuote: longQuote
+                    ) else {
+                        throw KindleWallError.wallpaperGenerationFailed(reason: "Render başarısız")
+                    }
+                    url = try wallpaperManager.writeWallpaperPNG(image: fullImage)
                 }
-                url = try wallpaperManager.writeWallpaperPNG(image: fullImage)
             } catch {
                 await MainActor.run { [weak self] in
                     guard let self, self.applyGeneration == generation else { return }
@@ -494,6 +520,9 @@ final class MainViewModel {
                     }
                     self.applySuccess = true
                     self.isApplying = false
+                    if fellBackToStatic {
+                        self.errorMessage = "Dinamik duvar kağıdı üretilemedi, statik uygulandı."
+                    }
                     Task { @MainActor [weak self] in
                         try? await Task.sleep(for: .seconds(1.5))
                         self?.applySuccess = false
@@ -503,6 +532,44 @@ final class MainViewModel {
                     self.isApplying = false
                 }
             }
+        }
+    }
+
+    /// Renders the six-frame dynamic wallpaper and writes it as a single HEIC.
+    ///
+    /// Runs entirely off the main actor. Returns nil rather than throwing on any failure, so
+    /// the caller can fall back to the static path — a wallpaper that changed is always better
+    /// than an error dialog and an unchanged desktop.
+    private static func renderDynamicWallpaper(
+        clipping: Clipping, style: WallpaperStyle, screenSize: CGSize,
+        typography: TypographySettings, longQuote: LongQuoteSettings,
+        generator: WallpaperGeneratorProtocol, sunCalculator: SunCalculatorProtocol,
+        composer: DynamicWallpaperComposerProtocol, encoder: HEICWallpaperEncoderProtocol,
+        manager: WallpaperManagerProtocol
+    ) -> URL? {
+        // Anchor the frames to today's real sunrise/sunset, so the colours track the season.
+        let coordinate = GeoCoordinate.fromSystemTimeZone()
+        let phaseTimes = sunCalculator.phases(for: Date(), at: coordinate)
+        guard !phaseTimes.isEmpty else { return nil }
+
+        // The expensive typesetting happens here, once, and is reused by every frame.
+        guard let background = generator.renderBackgroundLayer(
+                  clipping: clipping, style: style, screenSize: screenSize, typography: typography),
+              let text = generator.renderTextLayer(
+                  clipping: clipping, style: style, screenSize: screenSize,
+                  typography: typography, longQuote: longQuote) else { return nil }
+
+        let frames = composer.compose(background: background, text: text,
+                                      style: style, phases: phaseTimes.map(\.phase))
+        guard frames.count == phaseTimes.count else { return nil }
+
+        do {
+            let url = manager.wallpaperFileURL(extension: "heic")
+            try manager.prepareWallpaperDirectory()
+            try encoder.write(frames: frames, phaseTimes: phaseTimes, to: url)
+            return url
+        } catch {
+            return nil
         }
     }
 

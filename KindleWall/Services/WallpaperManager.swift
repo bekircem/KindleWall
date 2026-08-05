@@ -43,6 +43,14 @@ protocol WallpaperManagerProtocol {
     /// Deletes wallpapers left over from previous runs, keeping only the one currently on
     /// the desktop. Call once at launch.
     func sweepOrphanedWallpapers()
+
+    /// A fresh, unused URL inside the wallpapers directory.
+    /// - Parameter extension: File extension without the dot, e.g. `"heic"`.
+    func wallpaperFileURL(extension ext: String) -> URL
+
+    /// Creates the wallpapers directory if it does not exist.
+    /// - Throws: `KindleWallError.directoryCreationFailed`.
+    func prepareWallpaperDirectory() throws
 }
 
 // MARK: - Implementation
@@ -77,10 +85,16 @@ final class WallpaperManager: WallpaperManagerProtocol {
         )
     }
 
-    func writeWallpaperPNG(image: NSImage) throws -> URL {
-        let fileName = "kindlewall_\(UUID().uuidString).png"
-        let fileURL = wallpapersDirectory.appendingPathComponent(fileName)
+    func wallpaperFileURL(extension ext: String) -> URL {
+        wallpapersDirectory.appendingPathComponent("kindlewall_\(UUID().uuidString).\(ext)")
+    }
 
+    func prepareWallpaperDirectory() throws {
+        try ensureWallpaperDirectoryExists()
+    }
+
+    func writeWallpaperPNG(image: NSImage) throws -> URL {
+        let fileURL = wallpaperFileURL(extension: "png")
         try ensureWallpaperDirectoryExists()
         try image.savePNG(to: fileURL)
         return fileURL

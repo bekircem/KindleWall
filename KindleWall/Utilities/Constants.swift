@@ -56,6 +56,7 @@ enum Constants {
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
         static let typographySettings = "typographySettings"
         static let applyToAllSpaces = "applyToAllSpaces"
+        static let dynamicWallpaperEnabled = "dynamicWallpaperEnabled"
         static let bookMetadataOverrides = "bookMetadataOverrides"
         static let persistedClippingIDs = "persistedClippingIDs"
         static let rotationMode         = "rotationMode"

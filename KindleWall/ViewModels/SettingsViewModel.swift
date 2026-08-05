@@ -14,6 +14,7 @@ final class SettingsViewModel {
     var showInMenuBar: Bool
     var showNotifications: Bool
     var applyToAllSpaces: Bool
+    var dynamicWallpaperEnabled: Bool
     var clippingsFilePath: String?
     var decorativeStyle: TypographySettings.DecorationStyle
     var backgroundStartColor: Color
@@ -47,6 +48,7 @@ final class SettingsViewModel {
         self.showInMenuBar = storage.showInMenuBar
         self.showNotifications = storage.showNotifications
         self.applyToAllSpaces = storage.applyToAllSpaces
+        self.dynamicWallpaperEnabled = storage.dynamicWallpaperEnabled
         self.clippingsFilePath = storage.resolveClippingsFileURL()?.path
         let t = storage.typography
         self.decorativeStyle = t.decorativeStyle
@@ -88,6 +90,11 @@ final class SettingsViewModel {
     func updateStyle(_ style: WallpaperStyle) {
         selectedStyle = style
         storage.selectedStyle = style
+    }
+
+    /// Persists the dynamic-wallpaper toggle.
+    func updateDynamicWallpaperEnabled() {
+        storage.dynamicWallpaperEnabled = dynamicWallpaperEnabled
     }
 
     /// Re-reads the typography values this view model mirrors.
