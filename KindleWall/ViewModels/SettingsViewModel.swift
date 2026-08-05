@@ -90,6 +90,14 @@ final class SettingsViewModel {
         storage.selectedStyle = style
     }
 
+    /// Re-reads the typography values this view model mirrors.
+    ///
+    /// Needed because picking a wallpaper style now rewrites typography in `MainViewModel`;
+    /// without this the Tipografi controls would keep showing the pre-change decoration.
+    func reloadTypographyFromStorage() {
+        decorativeStyle = storage.typography.decorativeStyle
+    }
+
     /// Saves the selected decoration style to storage.
     func updateDecorativeStyle(_ style: TypographySettings.DecorationStyle) {
         decorativeStyle = style

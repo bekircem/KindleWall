@@ -95,7 +95,7 @@ struct MainView: View {
             }
 
         case .style:
-            StyleSettingsPage(settingsVM: settingsVM, actions: actions)
+            StyleSettingsPage(viewModel: viewModel, settingsVM: settingsVM, actions: actions)
                 .livePreviewInspector(viewModel: viewModel)
 
         case .typography:

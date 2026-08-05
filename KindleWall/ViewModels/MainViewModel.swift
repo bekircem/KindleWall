@@ -19,6 +19,16 @@ final class MainViewModel {
     private(set) var isSchedulerPaused: Bool = false
     var pendingCaptureText: String? = nil
 
+    /// Set when a style change overwrote the user's typography; drives the undo banner.
+    /// Cleared on undo, on the next style change that changes nothing, or after a few seconds.
+    private(set) var styleTypographyUndo: StyleTypographyUndo?
+
+    /// What a style change replaced, so it can be put back.
+    struct StyleTypographyUndo: Equatable {
+        let styleName: String
+        let previous: TypographySettings
+    }
+
     // MARK: - Dependencies
 
     private let parser: ClippingsParserProtocol
@@ -34,6 +44,7 @@ final class MainViewModel {
     private var previewTask: Task<Void, Never>?
     private var previewGeneration: Int = 0
     private var typographyUpdateTask: Task<Void, Never>?
+    private var styleUndoDismissTask: Task<Void, Never>?
 
     // MARK: - Apply task management
 
@@ -514,6 +525,46 @@ final class MainViewModel {
     func updateStyle(_ style: WallpaperStyle) {
         selectedStyle = style
         storage.selectedStyle = style
+        applyStyleTypography(for: style)
+        generatePreview()
+    }
+
+    /// Writes the style's own font and decoration into the typography settings.
+    ///
+    /// Styles only feel distinct if choosing one visibly changes the type, so a style always
+    /// applies its character. The cost is that it overwrites whatever the user picked on the
+    /// Tipografi page — which is why the previous values are snapshotted and surfaced as an
+    /// undo (`styleTypographyUndo`) rather than silently discarded.
+    private func applyStyleTypography(for style: WallpaperStyle) {
+        var updated = typography
+        updated.fontFamily = style.defaultFontFamily
+        updated.decorativeStyle = style.defaultDecoration
+        guard updated != typography else {
+            styleTypographyUndo = nil
+            return
+        }
+
+        let previous = typography
+        typography = updated
+        storage.typography = updated
+        styleTypographyUndo = StyleTypographyUndo(styleName: style.displayName, previous: previous)
+
+        // Auto-dismiss so the banner never becomes permanent furniture.
+        styleUndoDismissTask?.cancel()
+        styleUndoDismissTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(6))
+            guard !Task.isCancelled else { return }
+            self?.styleTypographyUndo = nil
+        }
+    }
+
+    /// Restores the typography a style change overwrote.
+    func undoStyleTypography() {
+        guard let undo = styleTypographyUndo else { return }
+        styleUndoDismissTask?.cancel()
+        styleTypographyUndo = nil
+        typography = undo.previous
+        storage.typography = undo.previous
         generatePreview()
     }
 
