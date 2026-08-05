@@ -61,3 +61,20 @@ targets:
       - sdk: UserNotifications.framework
       - sdk: AuthenticationServices.framework
       - sdk: CloudKit.framework
+    scheme:
+      testTargets:
+        - KindleWallTests
+
+  KindleWallTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: KindleWallTests
+    dependencies:
+      - target: KindleWall
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: true
+        PRODUCT_BUNDLE_IDENTIFIER: com.kindlewall.app.tests
+        BUNDLE_LOADER: $(TEST_HOST)
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/KindleWall.app/Contents/MacOS/KindleWall
