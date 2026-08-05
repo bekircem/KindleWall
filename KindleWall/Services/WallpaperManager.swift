@@ -39,6 +39,10 @@ protocol WallpaperManagerProtocol {
     /// Whether the given URL is a wallpaper KindleWall generated (i.e. lives in our directory).
     /// - Parameter url: Any file URL.
     func isOwnWallpaper(_ url: URL) -> Bool
+
+    /// Deletes wallpapers left over from previous runs, keeping only the one currently on
+    /// the desktop. Call once at launch.
+    func sweepOrphanedWallpapers()
 }
 
 // MARK: - Implementation
@@ -115,6 +119,10 @@ final class WallpaperManager: WallpaperManagerProtocol {
         if storageService.applyToAllSpaces {
             applyToAllSpacesInBackground(fileURL: fileURL)
         }
+
+        // Prune only after the new wallpaper is on screen — pruning earlier would risk
+        // deleting the file the desktop is about to point at.
+        pruneWallpapers(keeping: [fileURL])
     }
 
     func restorePreviousWallpaper() throws {
@@ -148,6 +156,19 @@ final class WallpaperManager: WallpaperManagerProtocol {
         // directory sharing the same prefix ("wallpapers-backup") never matches.
         let root = wallpapersDirectory.standardizedFileURL.path + "/"
         return url.standardizedFileURL.path.hasPrefix(root)
+    }
+
+    func sweepOrphanedWallpapers() {
+        let current = NSScreen.main.flatMap { NSWorkspace.shared.desktopImageURL(for: $0) }
+        sweepOrphanedWallpapers(currentDesktopURL: current)
+    }
+
+    /// Testable core: `currentDesktopURL` is injected instead of read from NSWorkspace.
+    func sweepOrphanedWallpapers(currentDesktopURL: URL?) {
+        // Only a wallpaper of ours is worth keeping; anything else on the desktop means
+        // every file in our directory is an orphan.
+        let keep = currentDesktopURL.map { isOwnWallpaper($0) ? [$0] : [] } ?? []
+        pruneWallpapers(keeping: keep)
     }
 
     // MARK: - Private

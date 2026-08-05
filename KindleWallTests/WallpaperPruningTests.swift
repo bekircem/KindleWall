@@ -74,6 +74,29 @@ final class WallpaperPruningTests: XCTestCase {
         XCTAssertFalse(makeManager().isOwnWallpaper(theirs))
     }
 
+    // MARK: - Launch sweep
+
+    func test_sweep_keepsOnlyTheWallpaperCurrentlyOnTheDesktop() throws {
+        try makeFile("orphan_a.png")
+        try makeFile("orphan_b.png")
+        let active = try makeFile("active.png")
+
+        // Stand in for "what the desktop currently points at" without touching NSWorkspace.
+        makeManager().sweepOrphanedWallpapers(currentDesktopURL: active)
+
+        XCTAssertEqual(try remainingFileNames(), ["active.png"])
+    }
+
+    func test_sweep_whenDesktopWallpaperIsNotOurs_deletesEverything() throws {
+        try makeFile("orphan_a.png")
+        try makeFile("orphan_b.png")
+        let foreign = URL(fileURLWithPath: "/System/Library/Desktop Pictures/Mac Blue.heic")
+
+        makeManager().sweepOrphanedWallpapers(currentDesktopURL: foreign)
+
+        XCTAssertEqual(try remainingFileNames(), [])
+    }
+
     func test_isOwnWallpaper_falseForSiblingDirectoryWithSharedPrefix() {
         // "…/wallpapers-backup/x.png" must not count as being inside "…/wallpapers/".
         let sibling = tempDir.deletingLastPathComponent()

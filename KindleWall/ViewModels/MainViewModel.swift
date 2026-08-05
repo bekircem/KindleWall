@@ -656,6 +656,11 @@ final class MainViewModel {
         }
     }
 
+    /// Deletes wallpapers left behind by previous runs. Called once at launch.
+    func sweepOrphanedWallpapers() {
+        wallpaperManager.sweepOrphanedWallpapers()
+    }
+
     /// Starts the automatic wallpaper change scheduler.
     func startScheduler() {
         isSchedulerPaused = false

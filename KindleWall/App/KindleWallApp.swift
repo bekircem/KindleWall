@@ -54,6 +54,7 @@ struct KindleWallApp: App {
                         .environment(cloudKitSync)
                         .onAppear {
                             viewModel.startScheduler()
+                            viewModel.sweepOrphanedWallpapers()
                             AppEnvironment.shared.mainViewModel = viewModel
                         }
                         .task {
