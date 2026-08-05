@@ -578,17 +578,22 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
 
         #if DEBUG
         // Prove the monotonicity assumption against the original linear scan. A mismatch of a
-        // full grid step or more means `fits` was non-monotonic for this input — should never
-        // fire; if it does, the binary search is unsafe for that case.
-        var legacy = maxSize
-        var legacyResult = minSize
-        while legacy > minSize {
-            if fits(legacy) { legacyResult = legacy; break }
-            legacy -= step
-        }
-        if abs(legacyResult - result) >= step {
-            Logger(subsystem: Constants.App.bundleIdentifier, category: "perf")
-                .warning("calculateFontSize binary/linear mismatch: binary=\(Double(result)) linear=\(Double(legacyResult)) textLen=\(text.count)")
+        // full grid step or more means `fits` was non-monotonic for this input.
+        //
+        // Opt-in, because the audit *is* the linear scan the binary search replaced: running it
+        // on every render put the old cost straight back, and every debug run from Xcode paid
+        // it. Enable with `KINDLEWALL_AUDIT_FONT_FIT=1` when specifically checking this.
+        if ProcessInfo.processInfo.environment["KINDLEWALL_AUDIT_FONT_FIT"] == "1" {
+            var legacy = maxSize
+            var legacyResult = minSize
+            while legacy > minSize {
+                if fits(legacy) { legacyResult = legacy; break }
+                legacy -= step
+            }
+            if abs(legacyResult - result) >= step {
+                Logger(subsystem: Constants.App.bundleIdentifier, category: "perf")
+                    .warning("calculateFontSize binary/linear mismatch: binary=\(Double(result)) linear=\(Double(legacyResult)) textLen=\(text.count)")
+            }
         }
         #endif
 

@@ -135,12 +135,18 @@ final class MainViewModel {
                 return
             }
             fileURL = url
-        } else {
-            guard let resolved = storage.resolveClippingsFileURL() else {
-                errorMessage = "Lütfen My Clippings.txt dosyasını seçin."
-                return
-            }
+        } else if let resolved = storage.resolveClippingsFileURL(),
+                  FileManager.default.fileExists(atPath: resolved.path) {
+            // Prefer the original when it is reachable — it may hold newer highlights.
             fileURL = resolved
+        } else if let cached = storage.localClippingsFileURL() {
+            // Kindle unplugged (or the bookmark went stale). Fall back to our own copy instead
+            // of leaving the app with zero clippings, which is what used to happen: nothing to
+            // display, nothing to render, and an error where the quote should be.
+            fileURL = cached
+        } else {
+            errorMessage = "Lütfen My Clippings.txt dosyasını seçin."
+            return
         }
 
         let started = Date()
@@ -162,6 +168,10 @@ final class MainViewModel {
                     self.importState.progress = progress
                     self.importState.currentBook = book
                 }
+
+                // Only cache after a successful parse, and only while the security scope is
+                // still held — so we never persist a file we could not read.
+                self.storage.cacheClippingsFile(from: fileURL)
 
                 await MainActor.run {
                     self.mergeClippings(parsed, started: started)
@@ -208,6 +218,10 @@ final class MainViewModel {
         if currentClipping == nil && !clippings.isEmpty {
             selectRandomClipping()
         }
+
+        // Now that there is something to render, retry the blank-desktop repair the launch
+        // attempt could not perform.
+        rerenderIfDesktopIsBlank()
     }
 
     // MARK: - Legacy loaders (redirect to importClippings)
@@ -477,13 +491,18 @@ final class MainViewModel {
             let url: URL
             var fellBackToStatic = false
             do {
-                if dynamicEnabled,
-                   let dynamicURL = Self.renderDynamicWallpaper(
-                       clipping: displayClipping, style: style, screenSize: fullSize,
-                       typography: typographySnapshot, longQuote: longQuote,
-                       generator: generator, sunCalculator: sunCalculator,
-                       composer: composer, encoder: heicEncoder, manager: wallpaperManager
-                   ) {
+                let dynamicURL = dynamicEnabled ? Self.renderDynamicWallpaper(
+                    clipping: displayClipping, style: style, screenSize: fullSize,
+                    typography: typographySnapshot, longQuote: longQuote,
+                    generator: generator, sunCalculator: sunCalculator,
+                    composer: composer, encoder: heicEncoder, manager: wallpaperManager
+                ) : nil
+
+                // A superseded apply must stop here. Falling through to the static render would
+                // undo the cancellation we just honoured and do the expensive work anyway.
+                if Task.isCancelled { return }
+
+                if let dynamicURL {
                     url = dynamicURL
                 } else {
                     // Either dynamic is off, or a step of the dynamic pipeline failed. Falling
@@ -547,6 +566,12 @@ final class MainViewModel {
         composer: DynamicWallpaperComposerProtocol, encoder: HEICWallpaperEncoderProtocol,
         manager: WallpaperManagerProtocol
     ) -> URL? {
+        // Cancellation is checked between every stage. Without this, superseding an apply only
+        // stopped the *result* from being used — the six-frame render kept running to
+        // completion, so clicking through styles piled up several ~600 ms, several-hundred-MB
+        // renders at once and the UI stuttered.
+        if Task.isCancelled { return nil }
+
         // Anchor the frames to today's real sunrise/sunset, so the colours track the season.
         let coordinate = GeoCoordinate.fromSystemTimeZone()
         let phaseTimes = sunCalculator.phases(for: Date(), at: coordinate)
@@ -555,13 +580,15 @@ final class MainViewModel {
         // The expensive typesetting happens here, once, and is reused by every frame.
         guard let background = generator.renderBackgroundLayer(
                   clipping: clipping, style: style, screenSize: screenSize, typography: typography),
+              !Task.isCancelled,
               let text = generator.renderTextLayer(
                   clipping: clipping, style: style, screenSize: screenSize,
-                  typography: typography, longQuote: longQuote) else { return nil }
+                  typography: typography, longQuote: longQuote),
+              !Task.isCancelled else { return nil }
 
         let frames = composer.compose(background: background, text: text,
                                       style: style, phases: phaseTimes.map(\.phase))
-        guard frames.count == phaseTimes.count else { return nil }
+        guard frames.count == phaseTimes.count, !Task.isCancelled else { return nil }
 
         do {
             let url = manager.wallpaperFileURL(extension: "heic")
@@ -775,8 +802,28 @@ final class MainViewModel {
     }
 
     /// Deletes wallpapers left behind by previous runs. Called once at launch.
+    ///
+    /// Repair runs first: if a previous version's pruning deleted the file the desktop was
+    /// pointing at, the desktop is blank and putting a wallpaper back matters more than
+    /// reclaiming disk.
     func sweepOrphanedWallpapers() {
+        // Restoring a surviving file needs no clippings, so it can run immediately.
+        wallpaperManager.repairDesktopIfWallpaperMissing()
         wallpaperManager.sweepOrphanedWallpapers()
+        rerenderIfDesktopIsBlank()
+    }
+
+    /// Renders a fresh wallpaper when the desktop points at one of our files that is gone and
+    /// there is nothing left to restore from.
+    ///
+    /// Called both at launch and after an import finishes: at launch the clipping list is still
+    /// empty (the import is async), so a launch-only attempt would silently do nothing and
+    /// leave the user with a blank desktop.
+    private func rerenderIfDesktopIsBlank() {
+        guard wallpaperManager.isDesktopWallpaperMissing() else { return }
+        if currentClipping == nil && !clippings.isEmpty { selectRandomClipping() }
+        guard currentClipping != nil else { return }
+        applyWallpaper()
     }
 
     /// Starts the automatic wallpaper change scheduler.

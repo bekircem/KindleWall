@@ -77,6 +77,14 @@ protocol StorageServiceProtocol {
     /// - Returns: The resolved file URL, or nil if resolution fails.
     func resolveClippingsFileURL() -> URL?
 
+    /// The local copy of the clippings file, if one has been made.
+    func localClippingsFileURL() -> URL?
+
+    /// Copies the clippings file into Application Support so the app keeps working when the
+    /// Kindle is unplugged.
+    /// - Parameter url: The source file, already security-scope accessed by the caller.
+    func cacheClippingsFile(from url: URL)
+
     /// Creates and stores a security-scoped bookmark for the given URL.
     /// - Parameter url: The file URL to bookmark.
     /// - Throws: KindleWallError if bookmark creation fails.
@@ -128,6 +136,22 @@ final class StorageService: StorageServiceProtocol {
         }
 
         return url
+    }
+
+    func localClippingsFileURL() -> URL? {
+        let url = Constants.Paths.localClippingsFile
+        return FileManager.default.fileExists(atPath: url.path) ? url : nil
+    }
+
+    func cacheClippingsFile(from url: URL) {
+        let destination = Constants.Paths.localClippingsFile
+        // Never copy the cache onto itself.
+        guard url.standardizedFileURL != destination.standardizedFileURL else { return }
+
+        let fm = FileManager.default
+        try? fm.createDirectory(at: Constants.Paths.appSupportDirectory, withIntermediateDirectories: true)
+        guard let data = try? Data(contentsOf: url) else { return }
+        try? data.write(to: destination, options: .atomic)
     }
 
     func saveClippingsFileBookmark(for url: URL) throws {

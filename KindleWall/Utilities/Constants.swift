@@ -24,6 +24,16 @@ enum Constants {
         static let coversDirectory: URL = {
             appSupportDirectory.appendingPathComponent("covers")
         }()
+
+        /// Local copy of the user's clippings file.
+        ///
+        /// The security-scoped bookmark points at the file on the Kindle itself, so with the
+        /// device unplugged it cannot be resolved and the app has no clippings at all — nothing
+        /// to show and nothing to render. Keeping a copy makes the app work offline; the
+        /// bookmark is then only needed to pull in newer highlights.
+        static let localClippingsFile: URL = {
+            appSupportDirectory.appendingPathComponent("MyClippings.txt")
+        }()
     }
 
     /// Wallpaper rendering constants

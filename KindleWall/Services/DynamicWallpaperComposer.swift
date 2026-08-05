@@ -44,11 +44,40 @@ final class DynamicWallpaperComposer: DynamicWallpaperComposerProtocol {
         let extent = backgroundCI.extent
 
         return phases.compactMap { phase in
+            if Task.isCancelled { return nil }
             let transforms = SolarPalette.transforms(for: phase, style: style)
             let tintedBackground = apply(transforms.background, to: backgroundCI, hasAlpha: false)
             let tintedText = apply(transforms.text, to: textCI, hasAlpha: true)
-            return context.createCGImage(tintedText.composited(over: tintedBackground), from: extent)
+            let composited = tintedText.composited(over: tintedBackground)
+
+            // Render without an alpha channel. The composite is fully opaque, but keeping the
+            // alpha made ImageIO warn that it "will double (!!!) the required memory when
+            // decoding" — at 3840×2560 × 6 frames that is hundreds of megabytes of waste per
+            // apply, and it inflates the file too.
+            return context.createCGImage(
+                composited,
+                from: extent,
+                format: .RGBA8,
+                colorSpace: CGColorSpaceCreateDeviceRGB(),
+                deferred: false
+            ).flatMap(Self.droppingAlpha)
         }
+    }
+
+    /// Re-draws the image into an opaque bitmap, discarding the (fully opaque) alpha channel.
+    private static func droppingAlpha(_ image: CGImage) -> CGImage? {
+        guard let context = CGContext(
+            data: nil,
+            width: image.width,
+            height: image.height,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+        ) else { return image }
+
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        return context.makeImage() ?? image
     }
 
     /// Applies one phase's temperature and exposure to a layer.

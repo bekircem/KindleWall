@@ -27,6 +27,21 @@ final class WallpaperPruningTests: XCTestCase {
         Set(try FileManager.default.contentsOfDirectory(atPath: tempDir.path))
     }
 
+    /// Pruning deletes on a background queue — doing it inline froze the window on the first
+    /// launch after pruning shipped, when there were 604 files to remove. Tests therefore wait
+    /// for the directory to settle instead of reading it immediately.
+    private func waitForRemainingFiles(_ expected: Set<String>,
+                                       file: StaticString = #filePath, line: UInt = #line) throws {
+        let deadline = Date().addingTimeInterval(10)
+        var last: Set<String> = []
+        while Date() < deadline {
+            last = try remainingFileNames()
+            if last == expected { return }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+        XCTAssertEqual(last, expected, file: file, line: line)
+    }
+
     private func makeManager() -> WallpaperManager {
         WallpaperManager(storageService: StorageService(), wallpapersDirectory: tempDir)
     }
@@ -44,7 +59,7 @@ final class WallpaperPruningTests: XCTestCase {
 
         makeManager().pruneWallpapers(keeping: [keep])
 
-        XCTAssertEqual(try remainingFileNames(), ["active.heic"])
+        try waitForRemainingFiles(["active.heic"])
     }
 
     func test_prune_keepsEveryUrlPassedIn() throws {
@@ -54,7 +69,7 @@ final class WallpaperPruningTests: XCTestCase {
 
         makeManager().pruneWallpapers(keeping: [a, b])
 
-        XCTAssertEqual(try remainingFileNames(), ["a.png", "b.png"])
+        try waitForRemainingFiles(["a.png", "b.png"])
     }
 
     func test_prune_onMissingDirectory_doesNotCrash() throws {
@@ -84,7 +99,7 @@ final class WallpaperPruningTests: XCTestCase {
         // Stand in for "what the desktop currently points at" without touching NSWorkspace.
         makeManager().sweepOrphanedWallpapers(currentDesktopURL: active)
 
-        XCTAssertEqual(try remainingFileNames(), ["active.png"])
+        try waitForRemainingFiles(["active.png"])
     }
 
     func test_sweep_whenDesktopWallpaperIsNotOurs_deletesEverything() throws {
@@ -94,7 +109,33 @@ final class WallpaperPruningTests: XCTestCase {
 
         makeManager().sweepOrphanedWallpapers(currentDesktopURL: foreign)
 
-        XCTAssertEqual(try remainingFileNames(), [])
+        try waitForRemainingFiles([])
+    }
+
+    /// The bug this guards against actually happened: the desktop was pointing at one of our
+    /// files that had already been deleted, so the sweep decided nothing was worth keeping and
+    /// emptied the directory. The result was a blank desktop with no wallpaper left to restore.
+    func test_sweep_whenDesktopPointsAtOneOfOurDeletedFiles_keepsTheNewestSurvivor() throws {
+        try makeFile("old.png")
+        RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        let newest = try makeFile("newest.png")
+        let deletedButStillReferenced = tempDir.appendingPathComponent("gone.png")
+
+        makeManager().sweepOrphanedWallpapers(currentDesktopURL: deletedButStillReferenced)
+
+        try waitForRemainingFiles([newest.lastPathComponent])
+    }
+
+    func test_sweep_neverEmptiesTheDirectoryWhileTheDesktopStillNeedsUs() throws {
+        try makeFile("a.png")
+        try makeFile("b.png")
+        let stale = tempDir.appendingPathComponent("missing.png")
+
+        makeManager().sweepOrphanedWallpapers(currentDesktopURL: stale)
+
+        RunLoop.current.run(until: Date().addingTimeInterval(1.5))
+        XCTAssertFalse(try remainingFileNames().isEmpty,
+                       "masaüstü hâlâ bize bağlıyken dizin tamamen boşaltılmamalı")
     }
 
     func test_isOwnWallpaper_falseForSiblingDirectoryWithSharedPrefix() {

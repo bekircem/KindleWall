@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import OSLog
 
 // MARK: - Protocol
 
@@ -43,6 +44,16 @@ protocol WallpaperManagerProtocol {
     /// Deletes wallpapers left over from previous runs, keeping only the one currently on
     /// the desktop. Call once at launch.
     func sweepOrphanedWallpapers()
+
+    /// Re-applies the newest surviving wallpaper if the desktop points at one of ours that has
+    /// been deleted (which macOS renders as a blank desktop).
+    /// - Returns: true if a repair was applied.
+    @discardableResult
+    func repairDesktopIfWallpaperMissing() -> Bool
+
+    /// Whether the desktop points at one of our wallpapers that no longer exists, which macOS
+    /// renders as a blank desktop.
+    func isDesktopWallpaperMissing() -> Bool
 
     /// A fresh, unused URL inside the wallpapers directory.
     /// - Parameter extension: File extension without the dot, e.g. `"heic"`.
@@ -155,13 +166,30 @@ final class WallpaperManager: WallpaperManagerProtocol {
     }
 
     func pruneWallpapers(keeping keep: [URL]) {
-        let keepPaths = Set(keep.map(\.standardizedFileURL.path))
+        // Whatever the desktop is actually showing is never a candidate for deletion, even if
+        // the caller forgot to list it. Deleting it leaves the user with a blank desktop and no
+        // way back — which is exactly what happened before this guard existed.
+        var keepPaths = Set(keep.map(\.standardizedFileURL.path))
+        if let onScreen = NSScreen.main.flatMap({ NSWorkspace.shared.desktopImageURL(for: $0) }) {
+            keepPaths.insert(onScreen.standardizedFileURL.path)
+        }
+
         guard let entries = try? FileManager.default.contentsOfDirectory(
             at: wallpapersDirectory, includingPropertiesForKeys: nil
         ) else { return }   // directory missing or unreadable — nothing to prune
 
-        for url in entries where !keepPaths.contains(url.standardizedFileURL.path) {
-            try? FileManager.default.removeItem(at: url)
+        let doomed = entries.filter { !keepPaths.contains($0.standardizedFileURL.path) }
+        guard !doomed.isEmpty else { return }
+
+        Logger(subsystem: Constants.App.bundleIdentifier, category: "prune")
+            .info("prune siliyor: \(doomed.map(\.lastPathComponent).joined(separator: ", "), privacy: .public) | koruyor: \(keepPaths.map { ($0 as NSString).lastPathComponent }.joined(separator: ", "), privacy: .public)")
+
+        // Deleting off the main thread. The first run after pruning shipped had 604 files and
+        // 13 GB to remove, and doing that synchronously from `.onAppear` froze the window.
+        DispatchQueue.global(qos: .utility).async {
+            for url in doomed {
+                try? FileManager.default.removeItem(at: url)
+            }
         }
     }
 
@@ -179,10 +207,52 @@ final class WallpaperManager: WallpaperManagerProtocol {
 
     /// Testable core: `currentDesktopURL` is injected instead of read from NSWorkspace.
     func sweepOrphanedWallpapers(currentDesktopURL: URL?) {
-        // Only a wallpaper of ours is worth keeping; anything else on the desktop means
-        // every file in our directory is an orphan.
-        let keep = currentDesktopURL.map { isOwnWallpaper($0) ? [$0] : [] } ?? []
-        pruneWallpapers(keeping: keep)
+        // Only a *live* wallpaper of ours is worth keeping. If the desktop points at one of our
+        // files that no longer exists, the reference is already stale — but that is precisely
+        // when the directory must not be emptied, because the newest surviving file is the only
+        // thing that can repair the desktop. So in that case, keep the newest and drop the rest.
+        if let currentDesktopURL, isOwnWallpaper(currentDesktopURL) {
+            if FileManager.default.fileExists(atPath: currentDesktopURL.path) {
+                pruneWallpapers(keeping: [currentDesktopURL])
+                return
+            }
+            if let newest = newestWallpaper() {
+                pruneWallpapers(keeping: [newest])
+                return
+            }
+        }
+        pruneWallpapers(keeping: [])
+    }
+
+    /// The most recently written file in our directory, used to recover a stale desktop reference.
+    private func newestWallpaper() -> URL? {
+        guard let entries = try? FileManager.default.contentsOfDirectory(
+            at: wallpapersDirectory, includingPropertiesForKeys: [.contentModificationDateKey]
+        ) else { return nil }
+
+        return entries.max { lhs, rhs in
+            let l = (try? lhs.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+            let r = (try? rhs.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+            return l < r
+        }
+    }
+
+    func isDesktopWallpaperMissing() -> Bool {
+        guard let screen = NSScreen.main,
+              let current = NSWorkspace.shared.desktopImageURL(for: screen),
+              isOwnWallpaper(current) else { return false }
+        return !FileManager.default.fileExists(atPath: current.path)
+    }
+
+    @discardableResult
+    func repairDesktopIfWallpaperMissing() -> Bool {
+        guard isDesktopWallpaperMissing() else { return false }
+
+        // The desktop is pointing at one of our files that has been deleted, so macOS is showing
+        // nothing. Put the newest surviving wallpaper back rather than leaving it blank.
+        guard let replacement = newestWallpaper() else { return false }
+        try? setWallpaper(fileURL: replacement)
+        return true
     }
 
     // MARK: - Private
