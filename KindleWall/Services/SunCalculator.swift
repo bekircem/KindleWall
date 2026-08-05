@@ -95,9 +95,13 @@ final class SunCalculator: SunCalculatorProtocol {
 
     /// NOAA sunrise/sunset equations, working in Julian days.
     private func solarEvent(_ event: Event, date: Date, at coordinate: GeoCoordinate) -> Date? {
+        // Anchor on local *noon*, not local midnight. Midnight in a positive UTC offset falls
+        // on the previous UTC day, and rounding that to a Julian day number lands the whole
+        // calculation one day early — the phase times still looked right, but their dates were
+        // off by one, which would misbehave across DST changes and month boundaries.
         let startOfDay = calendar.startOfDay(for: date)
-        // Julian day number for the local day, referenced to 2000-01-01 12:00 UTC.
-        let julianDay = startOfDay.timeIntervalSince1970 / 86_400 + 2_440_587.5
+        let localNoon = startOfDay.addingTimeInterval(12 * 3600)
+        let julianDay = localNoon.timeIntervalSince1970 / 86_400 + 2_440_587.5
         let n = (julianDay - 2_451_545.0 + 0.0008).rounded()
 
         let meanSolarNoon = n - coordinate.longitude / 360

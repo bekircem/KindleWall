@@ -66,6 +66,7 @@
 		9651EB08A73B52831A149DA0 /* SchedulerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960F9C40AEAD0DFA2A98BB65 /* SchedulerService.swift */; };
 		9CD4764294317FE9F2E9BB35 /* ScheduleSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B2EEF226108AF7FE21F148A /* ScheduleSettingsPage.swift */; };
 		9DE22B1856C11CB0CFB1B3AD /* SolarPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7564696BBF27D1BCF480289 /* SolarPhase.swift */; };
+		9E8580BC977DADCDA5FFE898 /* DynamicWallpaperExportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD367FB49D3786BFD9B13B3D /* DynamicWallpaperExportTests.swift */; };
 		A5C08C1977C2EB95151FC087 /* ManualClippingFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08544AB0ED3C57DE9712136 /* ManualClippingFormView.swift */; };
 		A5D9ECB7644496E59193D692 /* RotationSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 762063AA7772A73AB5D4D208 /* RotationSettingsPage.swift */; };
 		A962097EB8345F616F154E1D /* TypographyPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CC248CBF037C8D7A6A2 /* TypographyPanelView.swift */; };
@@ -204,6 +205,7 @@
 		F3D5E30DC05F026C1E649A53 /* LibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModel.swift; sourceTree = "<group>"; };
 		F7564696BBF27D1BCF480289 /* SolarPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolarPhase.swift; sourceTree = "<group>"; };
 		F85ABC4DE882DD80453CAADE /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
+		FD367FB49D3786BFD9B13B3D /* DynamicWallpaperExportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicWallpaperExportTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -430,6 +432,7 @@
 		EE208586DADE5060BA8C0B24 /* KindleWallTests */ = {
 			isa = PBXGroup;
 			children = (
+				FD367FB49D3786BFD9B13B3D /* DynamicWallpaperExportTests.swift */,
 				A9148332127C6E2E34E9988C /* DynamicWallpaperTests.swift */,
 				15BF48C1423B84E5E5D4C510 /* SolarTests.swift */,
 				84B8DCCB21715F04D7F1F47B /* StyleRenderSnapshotTests.swift */,
@@ -534,6 +537,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E8580BC977DADCDA5FFE898 /* DynamicWallpaperExportTests.swift in Sources */,
 				2607C2BCA90D9ACD1DF0A047 /* DynamicWallpaperTests.swift in Sources */,
 				DA4D9ACED55083BA56A4F627 /* SolarTests.swift in Sources */,
 				CE315013D6AFFCFE08D077FE /* StyleRenderSnapshotTests.swift in Sources */,

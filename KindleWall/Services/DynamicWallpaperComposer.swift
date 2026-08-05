@@ -59,9 +59,14 @@ final class DynamicWallpaperComposer: DynamicWallpaperComposerProtocol {
     private func apply(_ transform: SolarPalette.Transform, to image: CIImage, hasAlpha: Bool) -> CIImage {
         let source = hasAlpha ? image.unpremultiplyingAlpha() : image
 
+        // Direction matters and is easy to get backwards: `inputNeutral` is the white point the
+        // source is assumed to have, `inputTargetNeutral` the one it should be rendered at. The
+        // layers are authored at neutral daylight, so 6500 K is the source; pushing the *target*
+        // down to 3200 K is what makes a frame look like golden hour. Swapping the two tints
+        // sunrise blue instead of amber.
         let warmed = source.applyingFilter("CITemperatureAndTint", parameters: [
-            "inputNeutral": CIVector(x: transform.kelvin, y: 0),
-            "inputTargetNeutral": CIVector(x: 6500, y: 0)
+            "inputNeutral": CIVector(x: 6500, y: 0),
+            "inputTargetNeutral": CIVector(x: transform.kelvin, y: 0)
         ])
         let exposed = warmed.applyingFilter("CIExposureAdjust", parameters: [
             "inputEV": transform.exposure

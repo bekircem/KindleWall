@@ -75,6 +75,36 @@ final class SolarTests: XCTestCase {
                              "güney yarımkürede aralık günü haziran gününden uzun olmalı")
     }
 
+    /// Every phase must land on the day that was asked for. Anchoring the Julian day number on
+    /// local midnight used to put them a day early in positive UTC offsets — the clock times
+    /// looked right, so only the dates gave it away.
+    func test_phasesFallOnTheRequestedCalendarDay() {
+        let target = date(2026, 8, 5)
+        let phases = SunCalculator(calendar: calendar).phases(for: target, at: istanbul)
+
+        let wanted = calendar.dateComponents([.year, .month, .day], from: target)
+        for phaseTime in phases {
+            let got = calendar.dateComponents([.year, .month, .day], from: phaseTime.date)
+            XCTAssertEqual(got, wanted, "\(phaseTime.phase.rawValue) yanlış güne düştü")
+        }
+    }
+
+    /// Same check in a negative UTC offset, where the error would appear in the other direction.
+    func test_phasesFallOnTheRequestedDayInWesternTimeZones() {
+        var pacific = Calendar(identifier: .gregorian)
+        pacific.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        let losAngeles = GeoCoordinate(latitude: 34.05, longitude: -118.24)
+
+        let target = pacific.date(from: DateComponents(year: 2026, month: 8, day: 5, hour: 12))!
+        let phases = SunCalculator(calendar: pacific).phases(for: target, at: losAngeles)
+
+        let wanted = pacific.dateComponents([.year, .month, .day], from: target)
+        for phaseTime in phases {
+            let got = pacific.dateComponents([.year, .month, .day], from: phaseTime.date)
+            XCTAssertEqual(got, wanted, "\(phaseTime.phase.rawValue) yanlış güne düştü")
+        }
+    }
+
     func test_phasesAreChronologicalAndComplete() {
         let phases = SunCalculator(calendar: calendar).phases(for: date(2026, 8, 5), at: istanbul)
 

@@ -90,6 +90,23 @@ final class DynamicWallpaperTests: XCTestCase {
         XCTAssertGreaterThan(noon - night, 0.05, "gece karesi öğlenden belirgin koyu olmalı")
     }
 
+    /// Golden hours must run *warm*. `CITemperatureAndTint`'s two white-point arguments are
+    /// easy to transpose, and transposing them tints sunrise blue — a bug that shipped once and
+    /// was only caught by looking at the frames, since every other assertion still passed.
+    func test_goldenHourFramesAreWarmerThanNoon() throws {
+        let (background, text) = try layers(style: .forestLight)
+        let frames = composer.compose(background: background, text: text,
+                                      style: .forestLight, phases: [.noon, .sunset])
+        XCTAssertEqual(frames.count, 2)
+
+        let noon = averageChannels(frames[0])
+        let sunset = averageChannels(frames[1])
+
+        // Red rising relative to blue is what "warmer" means.
+        XCTAssertGreaterThan(sunset.red - sunset.blue, noon.red - noon.blue,
+                             "günbatımı karesi öğlenden daha sıcak olmalı (kırmızı-mavi farkı artmalı)")
+    }
+
     // MARK: - Encoding
 
     func test_encodedFileIsAMultiImageHeicWithDynamicMetadata() throws {
@@ -163,6 +180,19 @@ final class DynamicWallpaperTests: XCTestCase {
     private func fileSize(_ url: URL) throws -> Int {
         let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
         return (attributes[.size] as? NSNumber)?.intValue ?? 0
+    }
+
+    private func averageChannels(_ image: CGImage) -> (red: Double, green: Double, blue: Double) {
+        let rep = NSBitmapImageRep(cgImage: image)
+        var r = 0.0, g = 0.0, b = 0.0, count = 0.0
+        for y in stride(from: 0, to: rep.pixelsHigh, by: 16) {
+            for x in stride(from: 0, to: rep.pixelsWide, by: 16) {
+                guard let c = rep.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB) else { continue }
+                r += c.redComponent; g += c.greenComponent; b += c.blueComponent; count += 1
+            }
+        }
+        guard count > 0 else { return (0, 0, 0) }
+        return (r / count, g / count, b / count)
     }
 
     private func averageLuminance(_ image: CGImage) -> Double {
