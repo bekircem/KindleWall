@@ -29,6 +29,12 @@ protocol WallpaperManagerProtocol {
     /// Restores the wallpaper to the one before KindleWall last changed it.
     /// - Throws: KindleWallError if restoring fails.
     func restorePreviousWallpaper() throws
+
+    /// Deletes every file in the wallpapers directory except the given URLs.
+    /// Call only *after* a new wallpaper has been applied successfully — pruning first
+    /// would risk deleting the file the desktop is about to point at.
+    /// - Parameter keep: URLs that must survive; anything else in the directory goes.
+    func pruneWallpapers(keeping keep: [URL])
 }
 
 // MARK: - Implementation
@@ -37,13 +43,19 @@ protocol WallpaperManagerProtocol {
 final class WallpaperManager: WallpaperManagerProtocol {
     private var storageService: StorageServiceProtocol
 
+    /// Where generated wallpapers live. Injectable so pruning can be tested against a
+    /// throwaway directory instead of the user's real Application Support folder.
+    private let wallpapersDirectory: URL
+
     private(set) var previousWallpaperURL: URL?
 
     /// The last wallpaper URL applied by KindleWall — used by the space-change observer.
     private var currentWallpaperURL: URL?
 
-    init(storageService: StorageServiceProtocol) {
+    init(storageService: StorageServiceProtocol,
+         wallpapersDirectory: URL = Constants.Paths.wallpapersDirectory) {
         self.storageService = storageService
+        self.wallpapersDirectory = wallpapersDirectory
         self.previousWallpaperURL = storageService.previousWallpaperURL
 
         // Observe Mission Control space changes so we can re-apply the wallpaper
@@ -59,7 +71,7 @@ final class WallpaperManager: WallpaperManagerProtocol {
 
     func writeWallpaperPNG(image: NSImage) throws -> URL {
         let fileName = "kindlewall_\(UUID().uuidString).png"
-        let fileURL = Constants.Paths.wallpapersDirectory.appendingPathComponent(fileName)
+        let fileURL = wallpapersDirectory.appendingPathComponent(fileName)
 
         try ensureWallpaperDirectoryExists()
         try image.savePNG(to: fileURL)
@@ -113,6 +125,17 @@ final class WallpaperManager: WallpaperManagerProtocol {
         }
         if storageService.applyToAllSpaces {
             applyToAllSpacesInBackground(fileURL: previousURL)
+        }
+    }
+
+    func pruneWallpapers(keeping keep: [URL]) {
+        let keepPaths = Set(keep.map(\.standardizedFileURL.path))
+        guard let entries = try? FileManager.default.contentsOfDirectory(
+            at: wallpapersDirectory, includingPropertiesForKeys: nil
+        ) else { return }   // directory missing or unreadable — nothing to prune
+
+        for url in entries where !keepPaths.contains(url.standardizedFileURL.path) {
+            try? FileManager.default.removeItem(at: url)
         }
     }
 
@@ -177,9 +200,9 @@ final class WallpaperManager: WallpaperManagerProtocol {
 
     private func ensureWallpaperDirectoryExists() throws {
         let fm = FileManager.default
-        if !fm.fileExists(atPath: Constants.Paths.wallpapersDirectory.path) {
+        if !fm.fileExists(atPath: wallpapersDirectory.path) {
             do {
-                try fm.createDirectory(at: Constants.Paths.wallpapersDirectory, withIntermediateDirectories: true)
+                try fm.createDirectory(at: wallpapersDirectory, withIntermediateDirectories: true)
             } catch {
                 throw KindleWallError.directoryCreationFailed(underlying: error)
             }
