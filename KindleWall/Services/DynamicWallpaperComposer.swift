@@ -8,11 +8,13 @@ protocol DynamicWallpaperComposerProtocol {
     /// Composites background and text for every phase, applying that phase's colour transforms.
     /// - Parameters:
     ///   - background: Opaque background layer.
-    ///   - text: Transparent text/decoration layer, same pixel size as `background`.
+    ///   - text: Transparent text/decoration layer in the style's normal ink.
+    ///   - invertedText: The same layer drawn in the opposite ink, for phases whose background
+    ///     has darkened past readability. Pass nil when no phase needs it.
     ///   - style: Style being rendered — selects the palette tuning.
     ///   - phases: Phases to render, in order.
     /// - Returns: One image per phase, in the same order; empty if compositing failed.
-    func compose(background: NSImage, text: NSImage,
+    func compose(background: NSImage, text: NSImage, invertedText: NSImage?,
                  style: WallpaperStyle, phases: [SolarPhase]) -> [CGImage]
 }
 
@@ -32,7 +34,7 @@ final class DynamicWallpaperComposer: DynamicWallpaperComposerProtocol {
         self.context = context
     }
 
-    func compose(background: NSImage, text: NSImage,
+    func compose(background: NSImage, text: NSImage, invertedText: NSImage?,
                  style: WallpaperStyle, phases: [SolarPhase]) -> [CGImage] {
         guard let backgroundCG = background.cgImage(forProposedRect: nil, context: nil, hints: nil),
               let textCG = text.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
@@ -41,14 +43,21 @@ final class DynamicWallpaperComposer: DynamicWallpaperComposerProtocol {
 
         let backgroundCI = CIImage(cgImage: backgroundCG)
         let textCI = CIImage(cgImage: textCG)
+        let invertedTextCI = invertedText
+            .flatMap { $0.cgImage(forProposedRect: nil, context: nil, hints: nil) }
+            .map { CIImage(cgImage: $0) }
         let extent = backgroundCI.extent
 
         return phases.compactMap { phase in
             if Task.isCancelled { return nil }
             let transforms = SolarPalette.transforms(for: phase, style: style)
+
+            // Only the background is transformed. The text is composited exactly as drawn —
+            // tinting it alongside the background made the two converge, and by sunset a Paper
+            // wallpaper was brown text on brown paper.
             let tintedBackground = apply(transforms.background, to: backgroundCI, hasAlpha: false)
-            let tintedText = apply(transforms.text, to: textCI, hasAlpha: true)
-            let composited = tintedText.composited(over: tintedBackground)
+            let ink = (transforms.usesInvertedInk ? invertedTextCI : nil) ?? textCI
+            let composited = ink.composited(over: tintedBackground)
 
             // Render without an alpha channel. The composite is fully opaque, but keeping the
             // alpha made ImageIO warn that it "will double (!!!) the required memory when

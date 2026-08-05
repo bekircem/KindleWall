@@ -51,24 +51,31 @@ struct SolarPalette {
         let exposure: Double
     }
 
-    /// Background and text transforms for a phase, already checked for legibility.
+    /// What one phase does to a frame.
+    ///
+    /// Only the background is colour-transformed. The text keeps exactly the colour it was
+    /// drawn with — an earlier version moved it on an inverse curve, and because both layers
+    /// also took the same warmth shift, the background and the ink converged as the day went
+    /// on: by sunset a Paper wallpaper was brown text on brown paper. Time of day changes the
+    /// light in the room, not the ink on the page.
     struct FrameTransforms: Equatable {
         let background: Transform
-        let text: Transform
+
+        /// Whether this frame draws the style's inverted ink (light text) instead of its normal
+        /// ink. A discrete swap, used only when the background has darkened far enough that the
+        /// normal ink could not be read — never a gradual fade between the two.
+        let usesInvertedInk: Bool
     }
 
-    /// Minimum background/text luminance separation. Below this the frame is unreadable;
-    /// the text transform is pulled back until it clears.
-    private static let minimumLuminanceGap = 0.35
+    /// Luminance below which a light style's dark ink stops being readable and the frame swaps
+    /// to the inverted ink.
+    private static let inkFlipThreshold = 0.42
 
     /// Builds the transforms for one phase of one style.
-    ///
-    /// Legibility is settled here, on two representative colours, *before* any pixels are
-    /// touched — so an unreadable frame is never rendered and then discarded.
     /// - Parameters:
     ///   - phase: Which moment of the day.
     ///   - style: The style being rendered.
-    /// - Returns: Transforms for the background and text layers.
+    /// - Returns: The background transform and which ink the text layer should use.
     static func transforms(for phase: SolarPhase, style: WallpaperStyle) -> FrameTransforms {
         let base = curve[phase] ?? (kelvin: 6500, exposure: 0)
         let tune = tuning(for: style)
@@ -80,21 +87,23 @@ struct SolarPalette {
         let floorStops = log2(max(tune.floor, 0.01))
         let backgroundExposure = max(rawExposure, floorStops)
 
-        // Light styles flip at night: the background darkens past the text, so the text has to
-        // brighten to stay readable. That was the explicit design choice for Paper.
-        let flips = style.hasLightBackground && phase == .night
-        let textExposure = flips
-            ? -backgroundExposure + 1.6
-            : -backgroundExposure * 0.55
+        let background = Transform(kelvin: kelvin, exposure: backgroundExposure)
 
-        var transforms = FrameTransforms(
-            background: Transform(kelvin: kelvin, exposure: backgroundExposure),
-            text: Transform(kelvin: kelvin, exposure: textExposure)
+        // Decide the ink from where the background actually ended up, not from the phase name:
+        // a light style whose background has gone dark needs light ink, and a dark style never
+        // brightens enough to need dark ink.
+        let backgroundLuminance = adjustedLuminance(
+            representativeBackground(for: style), exposure: backgroundExposure
         )
+        let inverted = style.hasLightBackground && backgroundLuminance < inkFlipThreshold
 
-        // Verify on representative colours and pull the text back if the gap is too small.
-        transforms = enforcingContrast(transforms, style: style)
-        return transforms
+        return FrameTransforms(background: background, usesInvertedInk: inverted)
+    }
+
+    /// The ink colour a frame will actually use — the same value `WallpaperGenerator` draws.
+    static func inkColor(for style: WallpaperStyle, inverted: Bool) -> NSColor {
+        let onLight = inverted ? !style.hasLightBackground : style.hasLightBackground
+        return onLight ? NSColor(hex: "3B2F1E")! : .white
     }
 
     /// Approximate luminance after an exposure adjustment, in 0...1.
@@ -121,25 +130,4 @@ struct SolarPalette {
         style.hasLightBackground ? NSColor(hex: "3B2F1E")! : .white
     }
 
-    private static func enforcingContrast(_ transforms: FrameTransforms,
-                                          style: WallpaperStyle) -> FrameTransforms {
-        let background = representativeBackground(for: style)
-        let text = representativeText(for: style)
-
-        var textExposure = transforms.text.exposure
-        let backgroundLuminance = adjustedLuminance(background, exposure: transforms.background.exposure)
-
-        // Push the text away from the background — brighter on dark backgrounds, darker on
-        // light ones — until the gap clears, in small steps so the look degrades gracefully.
-        for _ in 0..<24 {
-            let textLuminance = adjustedLuminance(text, exposure: textExposure)
-            if abs(textLuminance - backgroundLuminance) >= minimumLuminanceGap { break }
-            textExposure += backgroundLuminance < 0.5 ? 0.15 : -0.15
-        }
-
-        return FrameTransforms(
-            background: transforms.background,
-            text: Transform(kelvin: transforms.text.kelvin, exposure: textExposure)
-        )
-    }
 }

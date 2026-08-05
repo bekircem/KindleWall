@@ -32,7 +32,7 @@ final class DynamicWallpaperTests: XCTestCase {
             clipping: clipping, style: style, screenSize: size, typography: .default))
         let text = try XCTUnwrap(generator.renderTextLayer(
             clipping: clipping, style: style, screenSize: size,
-            typography: .default, longQuote: .default))
+            typography: .default, longQuote: .default, invertedInk: false))
         return (background, text)
     }
 
@@ -68,7 +68,7 @@ final class DynamicWallpaperTests: XCTestCase {
 
     func test_composerProducesOneFramePerPhase() throws {
         let (background, text) = try layers(style: .forestLight)
-        let frames = composer.compose(background: background, text: text,
+        let frames = composer.compose(background: background, text: text, invertedText: nil,
                                       style: .forestLight, phases: SolarPhase.allCases)
 
         XCTAssertEqual(frames.count, SolarPhase.allCases.count)
@@ -81,7 +81,7 @@ final class DynamicWallpaperTests: XCTestCase {
     /// The point of the feature: the day's frames must not all look the same.
     func test_framesDifferAcrossTheDay() throws {
         let (background, text) = try layers(style: .forestLight)
-        let frames = composer.compose(background: background, text: text,
+        let frames = composer.compose(background: background, text: text, invertedText: nil,
                                       style: .forestLight, phases: [.noon, .night])
         XCTAssertEqual(frames.count, 2)
 
@@ -95,7 +95,7 @@ final class DynamicWallpaperTests: XCTestCase {
     /// was only caught by looking at the frames, since every other assertion still passed.
     func test_goldenHourFramesAreWarmerThanNoon() throws {
         let (background, text) = try layers(style: .forestLight)
-        let frames = composer.compose(background: background, text: text,
+        let frames = composer.compose(background: background, text: text, invertedText: nil,
                                       style: .forestLight, phases: [.noon, .sunset])
         XCTAssertEqual(frames.count, 2)
 
@@ -111,7 +111,7 @@ final class DynamicWallpaperTests: XCTestCase {
 
     func test_encodedFileIsAMultiImageHeicWithDynamicMetadata() throws {
         let (background, text) = try layers(style: .paper)
-        let frames = composer.compose(background: background, text: text,
+        let frames = composer.compose(background: background, text: text, invertedText: nil,
                                       style: .paper, phases: SolarPhase.allCases)
         let url = tempDir.appendingPathComponent("dynamic.heic")
 
@@ -145,7 +145,7 @@ final class DynamicWallpaperTests: XCTestCase {
 
     func test_encoderRejectsMismatchedFrameAndPhaseCounts() throws {
         let (background, text) = try layers(style: .night)
-        let frames = composer.compose(background: background, text: text,
+        let frames = composer.compose(background: background, text: text, invertedText: nil,
                                       style: .night, phases: [.noon])
 
         XCTAssertThrowsError(
@@ -158,7 +158,7 @@ final class DynamicWallpaperTests: XCTestCase {
     /// the single PNG the static path writes today.
     func test_sixFrameHeicIsSmallerThanASinglePng() throws {
         let (background, text) = try layers(style: .depth)
-        let frames = composer.compose(background: background, text: text,
+        let frames = composer.compose(background: background, text: text, invertedText: nil,
                                       style: .depth, phases: SolarPhase.allCases)
 
         let heicURL = tempDir.appendingPathComponent("six.heic")

@@ -14,8 +14,11 @@ protocol WallpaperGeneratorProtocol {
                                typography: TypographySettings) -> NSImage?
 
     /// Renders only the quote, decoration and byline over transparency.
+    /// - Parameter invertedInk: draws the style's opposite ink (light text on a normally light
+    ///   style, and vice versa) for frames whose background has darkened past readability.
     func renderTextLayer(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize,
-                         typography: TypographySettings, longQuote: LongQuoteSettings) -> NSImage?
+                         typography: TypographySettings, longQuote: LongQuoteSettings,
+                         invertedInk: Bool) -> NSImage?
 }
 
 extension WallpaperGeneratorProtocol {
@@ -90,7 +93,7 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
             drawBackground(context: context, rect: rect, style: style, typography: typography,
                            textureSeed: Self.textureSeed(for: clipping))
             drawContent(context: context, rect: rect, clipping: clipping, style: style,
-                        typography: typography, longQuote: longQuote)
+                        typography: typography, longQuote: longQuote, invertedInk: false)
         }
     }
 
@@ -111,10 +114,12 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
 
     /// Renders only the quote, decoration and byline, over transparency.
     func renderTextLayer(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize,
-                         typography: TypographySettings, longQuote: LongQuoteSettings) -> NSImage? {
+                         typography: TypographySettings, longQuote: LongQuoteSettings,
+                         invertedInk: Bool = false) -> NSImage? {
         NSImage.render(size: screenSize) { context in
             drawContent(context: context, rect: CGRect(origin: .zero, size: screenSize),
-                        clipping: clipping, style: style, typography: typography, longQuote: longQuote)
+                        clipping: clipping, style: style, typography: typography,
+                        longQuote: longQuote, invertedInk: invertedInk)
         }
     }
 
@@ -130,7 +135,10 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
     /// Draws the quote block: decoration, quote text, separator rule and byline.
     private func drawContent(context: CGContext, rect: CGRect, clipping: Clipping,
                              style: WallpaperStyle, typography: TypographySettings,
-                             longQuote: LongQuoteSettings) {
+                             longQuote: LongQuoteSettings, invertedInk: Bool) {
+        // Every ink decision below reads this instead of `style.hasLightBackground`, so one
+        // flag flips the whole text layer to the opposite ink.
+        let onLightBackground = invertedInk ? !style.hasLightBackground : style.hasLightBackground
         // Bare scope: this body was lifted verbatim out of the old render closure, and keeping
         // it at its original indentation keeps the extraction diff reviewable.
         do {
@@ -148,9 +156,9 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
             let basePadding = rect.width * Constants.Wallpaper.paddingRatio
             let padding = basePadding * typography.paddingScale * profile.paddingMultiplier
             let contentWidth = rect.width - padding * 2
-            let textColor = textColor(for: style, typography: typography)
+            let textColor = textColor(for: style, typography: typography, onLightBackground: onLightBackground)
                 .withAlphaComponent(typography.textOpacity)
-            let metaColor = metaColor(for: style, typography: typography)
+            let metaColor = metaColor(for: style, typography: typography, onLightBackground: onLightBackground)
                 .withAlphaComponent(typography.textOpacity)
 
             // Adaptive font limits based on profile, scaled to resolution and user typography.
@@ -238,7 +246,8 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
                 topY: cursorY,
                 size: quoteIconSize,
                 style: style,
-                typography: typography
+                typography: typography,
+                onLightBackground: onLightBackground
             )
             cursorY -= quoteIconSize + quoteIconGap
 
@@ -255,7 +264,7 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
                 context.setShadow(
                     offset: CGSize(width: 0, height: -1),
                     blur: typography.shadowRadius,
-                    color: shadowColor(for: style, typography: typography).cgColor
+                    color: shadowColor(for: style, typography: typography, onLightBackground: onLightBackground).cgColor
                 )
                 attributedText.draw(with: drawTextRect, options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine])
                 context.restoreGState()
@@ -421,14 +430,15 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
 
     /// Dispatches to the appropriate decoration renderer based on the typography setting.
     private func drawDecoration(context: CGContext, centerX: CGFloat, topY: CGFloat,
-                                size: CGFloat, style: WallpaperStyle, typography: TypographySettings) {
+                                size: CGFloat, style: WallpaperStyle, typography: TypographySettings,
+                                onLightBackground: Bool) {
         switch typography.decorativeStyle {
         case .classicQuote:
-            drawClassicQuoteMark(context: context, centerX: centerX, topY: topY, size: size, style: style, typography: typography)
+            drawClassicQuoteMark(context: context, centerX: centerX, topY: topY, size: size, style: style, typography: typography, onLightBackground: onLightBackground)
         case .minimalDots:
-            drawQuoteIcon(context: context, centerX: centerX, topY: topY, size: size, style: style)
+            drawQuoteIcon(context: context, centerX: centerX, topY: topY, size: size, style: style, onLightBackground: onLightBackground)
         case .line:
-            drawDecorationLine(context: context, centerX: centerX, topY: topY, size: size, style: style)
+            drawDecorationLine(context: context, centerX: centerX, topY: topY, size: size, style: style, onLightBackground: onLightBackground)
         case .none:
             break
         }
@@ -436,8 +446,9 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
 
     /// Draws a large typographic open-quote mark " using the quote font family from typography settings.
     private func drawClassicQuoteMark(context: CGContext, centerX: CGFloat, topY: CGFloat,
-                                      size: CGFloat, style: WallpaperStyle, typography: TypographySettings) {
-        let iconColor: NSColor = style.hasLightBackground
+                                      size: CGFloat, style: WallpaperStyle, typography: TypographySettings,
+                                      onLightBackground: Bool) {
+        let iconColor: NSColor = onLightBackground
             ? NSColor(white: 0.0, alpha: 0.20)
             : NSColor(white: 1.0, alpha: 0.30)
 
@@ -457,8 +468,8 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
 
     /// Draws a thin centered horizontal rule in the allocated decoration space.
     private func drawDecorationLine(context: CGContext, centerX: CGFloat, topY: CGFloat,
-                                    size: CGFloat, style: WallpaperStyle) {
-        let lineColor: NSColor = style.hasLightBackground
+                                    size: CGFloat, style: WallpaperStyle, onLightBackground: Bool) {
+        let lineColor: NSColor = onLightBackground
             ? NSColor(white: 0.0, alpha: 0.30)
             : NSColor(white: 1.0, alpha: 0.40)
 
@@ -475,8 +486,9 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
     }
 
     /// Draws the original minimal decorative quote icon (two small vertical bars with dots).
-    private func drawQuoteIcon(context: CGContext, centerX: CGFloat, topY: CGFloat, size: CGFloat, style: WallpaperStyle) {
-        let color: NSColor = style.hasLightBackground
+    private func drawQuoteIcon(context: CGContext, centerX: CGFloat, topY: CGFloat, size: CGFloat,
+                               style: WallpaperStyle, onLightBackground: Bool) {
+        let color: NSColor = onLightBackground
             ? NSColor(white: 0.0, alpha: 0.15)
             : NSColor(white: 1.0, alpha: 0.25)
 
@@ -600,7 +612,8 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
         return result
     }
 
-    private func textColor(for style: WallpaperStyle, typography: TypographySettings) -> NSColor {
+    private func textColor(for style: WallpaperStyle, typography: TypographySettings,
+                           onLightBackground: Bool) -> NSColor {
         if let startHex = typography.backgroundStartColorHex,
            let color = NSColor(hex: startHex) {
             var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
@@ -610,10 +623,11 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
                 : .white
         }
         // Paper's ink is a warm brown rather than black — it reads as print, not as UI text.
-        return style.hasLightBackground ? NSColor(hex: "3B2F1E")! : .white
+        return onLightBackground ? NSColor(hex: "3B2F1E")! : .white
     }
 
-    private func metaColor(for style: WallpaperStyle, typography: TypographySettings) -> NSColor {
+    private func metaColor(for style: WallpaperStyle, typography: TypographySettings,
+                           onLightBackground: Bool) -> NSColor {
         if let startHex = typography.backgroundStartColorHex,
            let color = NSColor(hex: startHex) {
             var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
@@ -622,7 +636,7 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
                 ? NSColor(white: 0.0, alpha: 0.45)
                 : NSColor(white: 1.0, alpha: 0.55)
         }
-        return style.hasLightBackground
+        return onLightBackground
             ? NSColor(hex: "3B2F1E")!.withAlphaComponent(0.55)
             : NSColor(white: 1.0, alpha: 0.55)
     }
@@ -645,14 +659,15 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
         }
     }
 
-    private func shadowColor(for style: WallpaperStyle, typography: TypographySettings) -> NSColor {
+    private func shadowColor(for style: WallpaperStyle, typography: TypographySettings,
+                             onLightBackground: Bool) -> NSColor {
         let lightBackground: Bool
         if let hex = typography.backgroundStartColorHex, let c = NSColor(hex: hex) {
             var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
             c.getRed(&r, green: &g, blue: &b, alpha: &a)
             lightBackground = (0.299 * r + 0.587 * g + 0.114 * b) > 0.5
         } else {
-            lightBackground = style.hasLightBackground
+            lightBackground = onLightBackground
         }
         return lightBackground
             ? NSColor.black.withAlphaComponent(0.50)

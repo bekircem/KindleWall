@@ -22,16 +22,21 @@ final class DynamicWallpaperExportTests: XCTestCase {
         )
 
         let generator = WallpaperGenerator()
-        let style = WallpaperStyle.forestLight
+        let style = WallpaperStyle.paper
         let background = try XCTUnwrap(generator.renderBackgroundLayer(
             clipping: clipping, style: style, screenSize: size, typography: .default))
         let text = try XCTUnwrap(generator.renderTextLayer(
             clipping: clipping, style: style, screenSize: size,
-            typography: .default, longQuote: .default))
+            typography: .default, longQuote: .default, invertedInk: false))
+
+        let invertedText = try XCTUnwrap(generator.renderTextLayer(
+            clipping: clipping, style: style, screenSize: size,
+            typography: .default, longQuote: .default, invertedInk: true))
 
         let phaseTimes = SunCalculator().phases(for: Date(), at: GeoCoordinate.fromSystemTimeZone())
         let frames = DynamicWallpaperComposer().compose(
-            background: background, text: text, style: style, phases: phaseTimes.map(\.phase))
+            background: background, text: text, invertedText: invertedText,
+            style: style, phases: phaseTimes.map(\.phase))
         XCTAssertEqual(frames.count, phaseTimes.count)
 
         let url = outputDir.appendingPathComponent("kindlewall_dynamic.heic")

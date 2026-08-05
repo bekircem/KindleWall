@@ -175,20 +175,20 @@ final class SolarTests: XCTestCase {
 
     // MARK: - Palette
 
-    /// The guarantee that makes the whole feature safe: no style, at any hour, produces a
-    /// frame whose text washes into its background.
+    /// Legibility guarantee: whatever ink a frame ends up with must stand clear of the
+    /// background that frame actually renders.
     func test_everyStyleAndPhaseKeepsTextLegible() {
         for style in WallpaperStyle.allCases {
             for phase in SolarPhase.allCases {
                 let transforms = SolarPalette.transforms(for: phase, style: style)
                 let background = SolarPalette.representativeBackground(for: style)
-                let text = SolarPalette.representativeText(for: style)
+                let ink = SolarPalette.inkColor(for: style, inverted: transforms.usesInvertedInk)
 
                 let bgLuminance = luminance(background, exposure: transforms.background.exposure)
-                let textLuminance = luminance(text, exposure: transforms.text.exposure)
+                let inkLuminance = luminance(ink, exposure: 0)
 
                 XCTAssertGreaterThanOrEqual(
-                    abs(textLuminance - bgLuminance), 0.34,
+                    abs(inkLuminance - bgLuminance), 0.34,
                     "\(style.rawValue) / \(phase.rawValue) okunaksız"
                 )
             }
@@ -203,8 +203,43 @@ final class SolarTests: XCTestCase {
 
         XCTAssertLessThan(night.background.exposure, noon.background.exposure - 0.8,
                           "Kağıt gece belirgin şekilde koyulaşmalı")
-        XCTAssertGreaterThan(night.text.exposure, noon.text.exposure,
-                             "Kağıt gece metnini açmalı (kontrast koruması)")
+        XCTAssertTrue(night.usesInvertedInk, "Kağıt gece açık mürekkebe geçmeli")
+    }
+
+    /// The reported bug: the ink drifted with the background instead of staying put, and by
+    /// sunset a Paper wallpaper was brown text on brown paper. Time of day must change the
+    /// background only — the ink is either the style's normal colour or, once the background
+    /// has genuinely gone dark, its inverse. Never anything in between.
+    func test_inkIsNeverPartiallyShifted() {
+        for style in WallpaperStyle.allCases {
+            let inks = SolarPhase.allCases.map {
+                SolarPalette.inkColor(for: style, inverted: SolarPalette.transforms(for: $0, style: style).usesInvertedInk)
+            }
+            let distinct = Set(inks.map { $0.description })
+            XCTAssertLessThanOrEqual(distinct.count, 2,
+                                     "\(style.rawValue) gün içinde ikiden fazla mürekkep rengi kullanıyor")
+        }
+    }
+
+    /// Daylight hours must keep the style's authored ink. This is what broke: at sunset the
+    /// text had already started moving toward the background.
+    func test_daylightPhasesKeepTheAuthoredInk() {
+        for style in WallpaperStyle.allCases {
+            for phase in [SolarPhase.sunrise, .noon, .afternoon, .sunset] {
+                XCTAssertFalse(SolarPalette.transforms(for: phase, style: style).usesInvertedInk,
+                               "\(style.rawValue) / \(phase.rawValue) gündüz mürekkebini korumalı")
+            }
+        }
+    }
+
+    /// Dark styles have no reason to ever swap ink — their backgrounds only get darker.
+    func test_darkStylesNeverSwapInk() {
+        for style in WallpaperStyle.allCases where !style.hasLightBackground {
+            for phase in SolarPhase.allCases {
+                XCTAssertFalse(SolarPalette.transforms(for: phase, style: style).usesInvertedInk,
+                               "\(style.rawValue) mürekkebini hiç değiştirmemeli")
+            }
+        }
     }
 
     /// Night's whole identity is staying dark; the floor must stop it drifting light.

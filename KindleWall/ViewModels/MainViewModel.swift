@@ -583,11 +583,24 @@ final class MainViewModel {
               !Task.isCancelled,
               let text = generator.renderTextLayer(
                   clipping: clipping, style: style, screenSize: screenSize,
-                  typography: typography, longQuote: longQuote),
+                  typography: typography, longQuote: longQuote, invertedInk: false),
               !Task.isCancelled else { return nil }
 
+        // A second text layer is only worth drawing when some phase actually darkens the
+        // background past readability — for the dark styles, none ever does.
+        let phases = phaseTimes.map(\.phase)
+        let needsInvertedInk = phases.contains {
+            SolarPalette.transforms(for: $0, style: style).usesInvertedInk
+        }
+        let invertedText = needsInvertedInk
+            ? generator.renderTextLayer(clipping: clipping, style: style, screenSize: screenSize,
+                                        typography: typography, longQuote: longQuote, invertedInk: true)
+            : nil
+        if Task.isCancelled { return nil }
+
         let frames = composer.compose(background: background, text: text,
-                                      style: style, phases: phaseTimes.map(\.phase))
+                                      invertedText: invertedText,
+                                      style: style, phases: phases)
         guard frames.count == phaseTimes.count, !Task.isCancelled else { return nil }
 
         do {
