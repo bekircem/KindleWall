@@ -79,16 +79,53 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
     func generateWallpaper(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize, typography: TypographySettings = .default, longQuote: LongQuoteSettings = .default) -> NSImage? {
         return NSImage.render(size: screenSize) { context in
             let rect = CGRect(origin: .zero, size: screenSize)
+            drawBackground(context: context, rect: rect, style: style, typography: typography,
+                           textureSeed: Self.textureSeed(for: clipping))
+            drawContent(context: context, rect: rect, clipping: clipping, style: style,
+                        typography: typography, longQuote: longQuote)
+        }
+    }
 
-            // Derive a deterministic seed from the clipping UUID bytes so paper texture
-        // looks the same in preview and when applied (no randomness across renders).
+    /// Renders only the background — no text, no decoration.
+    ///
+    /// Dynamic mode needs the two halves separately so it can tint them on different curves
+    /// and keep the text legible at every hour. Typesetting is by far the most expensive part
+    /// of a render, so producing it once and reusing it across all six frames is what makes
+    /// the feature cheap.
+    func renderBackgroundLayer(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize,
+                               typography: TypographySettings) -> NSImage? {
+        NSImage.render(size: screenSize) { context in
+            drawBackground(context: context, rect: CGRect(origin: .zero, size: screenSize),
+                           style: style, typography: typography,
+                           textureSeed: Self.textureSeed(for: clipping))
+        }
+    }
+
+    /// Renders only the quote, decoration and byline, over transparency.
+    func renderTextLayer(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize,
+                         typography: TypographySettings, longQuote: LongQuoteSettings) -> NSImage? {
+        NSImage.render(size: screenSize) { context in
+            drawContent(context: context, rect: CGRect(origin: .zero, size: screenSize),
+                        clipping: clipping, style: style, typography: typography, longQuote: longQuote)
+        }
+    }
+
+    /// Deterministic seed from the clipping UUID bytes, so paper texture looks the same in
+    /// the preview and when applied (no randomness across renders).
+    private static func textureSeed(for clipping: Clipping) -> UInt64 {
         let uuid = clipping.id.uuid
-        let textureSeed = UInt64(uuid.0) | UInt64(uuid.1) << 8 | UInt64(uuid.2) << 16 |
-                          UInt64(uuid.3) << 24 | UInt64(uuid.4) << 32 | UInt64(uuid.5) << 40 |
-                          UInt64(uuid.6) << 48 | UInt64(uuid.7) << 56
+        return UInt64(uuid.0) | UInt64(uuid.1) << 8 | UInt64(uuid.2) << 16 |
+               UInt64(uuid.3) << 24 | UInt64(uuid.4) << 32 | UInt64(uuid.5) << 40 |
+               UInt64(uuid.6) << 48 | UInt64(uuid.7) << 56
+    }
 
-        drawBackground(context: context, rect: rect, style: style, typography: typography, textureSeed: textureSeed)
-
+    /// Draws the quote block: decoration, quote text, separator rule and byline.
+    private func drawContent(context: CGContext, rect: CGRect, clipping: Clipping,
+                             style: WallpaperStyle, typography: TypographySettings,
+                             longQuote: LongQuoteSettings) {
+        // Bare scope: this body was lifted verbatim out of the old render closure, and keeping
+        // it at its original indentation keeps the extraction diff reviewable.
+        do {
             // Scale factor: all fixed pt values are designed for 900pt height.
             // At 1800pt (Retina) everything doubles automatically.
             let referenceHeight: CGFloat = 900
