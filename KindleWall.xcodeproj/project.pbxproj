@@ -69,6 +69,7 @@
 		B347CF940BED503C1B0FFFEA /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CA2A5E378ADFD199B3E6819 /* UserProfile.swift */; };
 		B8DF1FA27BE7631DCCFE35C6 /* BookMetadataEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F04A2A0B130D7F286B3CCEC /* BookMetadataEditView.swift */; };
 		C15AFBBAA3B1CA2E89A1DD3C /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5F286F21F22BBB44598C2B4 /* Theme.swift */; };
+		CE315013D6AFFCFE08D077FE /* StyleRenderSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B8DCCB21715F04D7F1F47B /* StyleRenderSnapshotTests.swift */; };
 		CE3D228F4C83CD541902B7BF /* SettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1085B7B5BAC2DE5E33C2299 /* SettingsPage.swift */; };
 		D173EC0524D3D9F793651109 /* Clipping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FA598536FDE02399641964 /* Clipping.swift */; };
 		D209C8993C712DB4FE8808C7 /* SettingsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74B64528A203B282109E7784 /* SettingsCard.swift */; };
@@ -146,6 +147,7 @@
 		811E26389F17F084542DAAF7 /* KindleWall.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KindleWall.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8143673FE823CDFA4DAABFAD /* ClippingsParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClippingsParser.swift; sourceTree = "<group>"; };
 		82FC09C6904F9FF3E40C4905 /* SyncSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSchema.swift; sourceTree = "<group>"; };
+		84B8DCCB21715F04D7F1F47B /* StyleRenderSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleRenderSnapshotTests.swift; sourceTree = "<group>"; };
 		84BB3CC248CBF037C8D7A6A2 /* TypographyPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypographyPanelView.swift; sourceTree = "<group>"; };
 		84FA598536FDE02399641964 /* Clipping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipping.swift; sourceTree = "<group>"; };
 		8658D5FC36A6BBD9C500BE02 /* StyleSettingsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleSettingsPage.swift; sourceTree = "<group>"; };
@@ -407,6 +409,7 @@
 		EE208586DADE5060BA8C0B24 /* KindleWallTests */ = {
 			isa = PBXGroup;
 			children = (
+				84B8DCCB21715F04D7F1F47B /* StyleRenderSnapshotTests.swift */,
 				083758A57448F8B09F4C4FBB /* WallpaperPruningTests.swift */,
 			);
 			path = KindleWallTests;
@@ -507,6 +510,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE315013D6AFFCFE08D077FE /* StyleRenderSnapshotTests.swift in Sources */,
 				4514F7C5B2736643BCC3ECC0 /* WallpaperPruningTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
