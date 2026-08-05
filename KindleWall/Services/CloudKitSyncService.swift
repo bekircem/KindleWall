@@ -562,7 +562,9 @@ final class CloudKitSyncService {
     private func applyUserStateRecord(_ record: CKRecord) {
         let f = SyncSchema.UserStateField.self
 
-        if let raw = record[f.selectedStyle] as? String, let style = WallpaperStyle(rawValue: raw) {
+        // Another device may still be on the eight-style build; migrate its value rather
+        // than dropping the sync.
+        if let raw = record[f.selectedStyle] as? String, let style = WallpaperStyle(persistedRawValue: raw) {
             storage.selectedStyle = style
         }
         if let raw = record[f.scheduleInterval] as? String, let interval = ScheduleInterval(rawValue: raw) {

@@ -142,9 +142,11 @@ final class StorageService: StorageServiceProtocol {
 
     var selectedStyle: WallpaperStyle {
         get {
+            // `persistedRawValue` also resolves the retired eight-style names, so a user who
+            // last saved "Nature Blur" lands on Forest Light instead of silently resetting.
             guard let raw = defaults.string(forKey: Constants.StorageKeys.selectedStyle),
-                  let style = WallpaperStyle(rawValue: raw) else {
-                return .minimalDark
+                  let style = WallpaperStyle(persistedRawValue: raw) else {
+                return .night
             }
             return style
         }

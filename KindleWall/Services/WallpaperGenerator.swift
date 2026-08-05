@@ -249,39 +249,33 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
         }
 
         switch style {
-        case .minimalDark:
-            drawSolidBackground(context: context, rect: rect, color: NSColor(hex: "1A1A1A")!)
+        case .night:
+            drawSolidBackground(context: context, rect: rect, color: NSColor(hex: "141414")!)
 
-        case .minimalLight:
-            drawSolidBackground(context: context, rect: rect, color: NSColor(hex: "F5F1EB")!)
+        case .paper:
+            drawSolidBackground(context: context, rect: rect, color: NSColor(hex: "F4E8C1")!)
+            drawPaperTextureOverlay(context: context, rect: rect, seed: textureSeed)
 
-        case .gradientWarm:
+        case .grid:
+            drawSolidBackground(context: context, rect: rect, color: NSColor(hex: "0D1117")!)
+            drawGeometricDecoration(context: context, rect: rect)
+
+        case .dawn:
             drawGradientBackground(
                 context: context, rect: rect,
-                colors: [NSColor(hex: "FF6B35")!, NSColor(hex: "D62828")!, NSColor(hex: "7B2D26")!]
+                colors: [NSColor(hex: "FF8A4C")!, NSColor(hex: "E0453A")!, NSColor(hex: "8A2F2A")!]
             )
 
-        case .gradientCool:
+        case .depth:
             drawGradientBackground(
                 context: context, rect: rect,
                 colors: [NSColor(hex: "667EEA")!, NSColor(hex: "764BA2")!, NSColor(hex: "1B1464")!]
             )
 
-        case .paperTexture:
-            drawSolidBackground(context: context, rect: rect, color: NSColor(hex: "F4E8C1")!)
-            drawPaperTextureOverlay(context: context, rect: rect, seed: textureSeed)
-
-        case .elegantSerif:
-            drawSolidBackground(context: context, rect: rect, color: NSColor(hex: "2C2C2C")!)
-
-        case .modernSans:
-            drawSolidBackground(context: context, rect: rect, color: NSColor(hex: "0D1117")!)
-            drawGeometricDecoration(context: context, rect: rect)
-
-        case .natureBlur:
-            drawGradientBackground(
+        case .forestLight:
+            drawRadialBackground(
                 context: context, rect: rect,
-                colors: [NSColor(hex: "2D5016")!, NSColor(hex: "1A3A0A")!, NSColor(hex: "0F2006")!]
+                colors: [NSColor(hex: "35662F")!, NSColor(hex: "17330F")!, NSColor(hex: "08150A")!]
             )
         }
     }
@@ -304,6 +298,28 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
             start: CGPoint(x: 0, y: rect.height),
             end: CGPoint(x: rect.width, y: 0),
             options: []
+        )
+    }
+
+    /// Draws a radial gradient centred slightly above the middle — light falling through a
+    /// canopy. This is the only radial surface in the set; every other gradient is linear,
+    /// which is what gives Forest Light an identity of its own rather than being a third
+    /// gradient. In dynamic mode it is also the style that shows the most movement: both the
+    /// warmth and the intensity of the shaft shift across the day.
+    private func drawRadialBackground(context: CGContext, rect: CGRect, colors: [NSColor]) {
+        let cgColors = colors.map { $0.cgColor } as CFArray
+        guard let gradient = CGGradient(
+            colorsSpace: CGColorSpaceCreateDeviceRGB(),
+            colors: cgColors,
+            locations: [0, 0.52, 1]
+        ) else { return }
+
+        let center = CGPoint(x: rect.midX, y: rect.height * 0.60)
+        context.drawRadialGradient(
+            gradient,
+            startCenter: center, startRadius: 0,
+            endCenter: center, endRadius: rect.width * 0.75,
+            options: [.drawsAfterEndLocation]
         )
     }
 
@@ -376,13 +392,9 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
     /// Draws a large typographic open-quote mark " using the quote font family from typography settings.
     private func drawClassicQuoteMark(context: CGContext, centerX: CGFloat, topY: CGFloat,
                                       size: CGFloat, style: WallpaperStyle, typography: TypographySettings) {
-        let iconColor: NSColor
-        switch style {
-        case .minimalDark, .gradientWarm, .gradientCool, .elegantSerif, .modernSans, .natureBlur:
-            iconColor = NSColor(white: 1.0, alpha: 0.30)
-        case .minimalLight, .paperTexture:
-            iconColor = NSColor(white: 0.0, alpha: 0.20)
-        }
+        let iconColor: NSColor = style.hasLightBackground
+            ? NSColor(white: 0.0, alpha: 0.20)
+            : NSColor(white: 1.0, alpha: 0.30)
 
         // Point size ~2× the allocated icon size; visual glyph height ≈ 55% of point size,
         // so the " character fills the quoteIconSize area naturally.
@@ -401,13 +413,9 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
     /// Draws a thin centered horizontal rule in the allocated decoration space.
     private func drawDecorationLine(context: CGContext, centerX: CGFloat, topY: CGFloat,
                                     size: CGFloat, style: WallpaperStyle) {
-        let lineColor: NSColor
-        switch style {
-        case .minimalDark, .gradientWarm, .gradientCool, .elegantSerif, .modernSans, .natureBlur:
-            lineColor = NSColor(white: 1.0, alpha: 0.40)
-        case .minimalLight, .paperTexture:
-            lineColor = NSColor(white: 0.0, alpha: 0.30)
-        }
+        let lineColor: NSColor = style.hasLightBackground
+            ? NSColor(white: 0.0, alpha: 0.30)
+            : NSColor(white: 1.0, alpha: 0.40)
 
         let lineThickness = max(1.0, size * 0.05)
         let lineLength = size * 2.5
@@ -423,13 +431,9 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
 
     /// Draws the original minimal decorative quote icon (two small vertical bars with dots).
     private func drawQuoteIcon(context: CGContext, centerX: CGFloat, topY: CGFloat, size: CGFloat, style: WallpaperStyle) {
-        let color: NSColor
-        switch style {
-        case .minimalDark, .gradientWarm, .gradientCool, .elegantSerif, .modernSans, .natureBlur:
-            color = NSColor(white: 1.0, alpha: 0.25)
-        case .minimalLight, .paperTexture:
-            color = NSColor(white: 0.0, alpha: 0.15)
-        }
+        let color: NSColor = style.hasLightBackground
+            ? NSColor(white: 0.0, alpha: 0.15)
+            : NSColor(white: 1.0, alpha: 0.25)
 
         // Draw a minimal open-quote glyph using two thin rounded bars
         let barWidth: CGFloat = size * 0.08
@@ -555,14 +559,8 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
                 ? NSColor(hex: "2C2C2C")!
                 : .white
         }
-        switch style {
-        case .minimalDark, .gradientWarm, .gradientCool, .elegantSerif, .modernSans, .natureBlur:
-            return .white
-        case .minimalLight:
-            return NSColor(hex: "2C2C2C")!
-        case .paperTexture:
-            return NSColor(hex: "3B2F1E")!
-        }
+        // Paper's ink is a warm brown rather than black — it reads as print, not as UI text.
+        return style.hasLightBackground ? NSColor(hex: "3B2F1E")! : .white
     }
 
     private func metaColor(for style: WallpaperStyle, typography: TypographySettings) -> NSColor {
@@ -574,14 +572,9 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
                 ? NSColor(white: 0.0, alpha: 0.45)
                 : NSColor(white: 1.0, alpha: 0.55)
         }
-        switch style {
-        case .minimalDark, .gradientWarm, .gradientCool, .elegantSerif, .modernSans, .natureBlur:
-            return NSColor(white: 1.0, alpha: 0.55)
-        case .minimalLight:
-            return NSColor(white: 0.0, alpha: 0.45)
-        case .paperTexture:
-            return NSColor(hex: "3B2F1E")!.withAlphaComponent(0.55)
-        }
+        return style.hasLightBackground
+            ? NSColor(hex: "3B2F1E")!.withAlphaComponent(0.55)
+            : NSColor(white: 1.0, alpha: 0.55)
     }
 
     private func makeQuoteFont(size: CGFloat, typography: TypographySettings) -> NSFont {
@@ -609,7 +602,7 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
             c.getRed(&r, green: &g, blue: &b, alpha: &a)
             lightBackground = (0.299 * r + 0.587 * g + 0.114 * b) > 0.5
         } else {
-            lightBackground = (style == .minimalLight || style == .paperTexture)
+            lightBackground = style.hasLightBackground
         }
         return lightBackground
             ? NSColor.black.withAlphaComponent(0.50)

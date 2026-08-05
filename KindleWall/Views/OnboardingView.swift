@@ -8,7 +8,7 @@ struct OnboardingView: View {
     /// Drives the slide direction of the step transition (forward = next slides in from trailing).
     @State private var slideForward = true
     @State private var selectedFileURL: URL?
-    @State private var selectedStyle: WallpaperStyle = .minimalDark
+    @State private var selectedStyle: WallpaperStyle = .night
     @State private var selectedInterval: ScheduleInterval = .hourly
 
     // Preview state

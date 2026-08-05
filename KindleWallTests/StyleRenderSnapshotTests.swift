@@ -57,10 +57,8 @@ final class StyleRenderSnapshotTests: XCTestCase {
     /// Wrong values here mean the bitmap context's colour space is mangling the palette.
     func test_backgroundCornerMatchesDeclaredStyleColor() throws {
         let expected: [WallpaperStyle: (r: CGFloat, g: CGFloat, b: CGFloat)] = [
-            .minimalDark:   (0x1A / 255, 0x1A / 255, 0x1A / 255),
-            .minimalLight:  (0xF5 / 255, 0xF1 / 255, 0xEB / 255),
-            .elegantSerif:  (0x2C / 255, 0x2C / 255, 0x2C / 255),
-            .modernSans:    (0x0D / 255, 0x11 / 255, 0x17 / 255)
+            .night: (0x14 / 255, 0x14 / 255, 0x14 / 255),
+            .grid:  (0x0D / 255, 0x11 / 255, 0x17 / 255)
         ]
 
         for (style, want) in expected {
@@ -74,12 +72,12 @@ final class StyleRenderSnapshotTests: XCTestCase {
         }
     }
 
-    /// `gradientWarm` runs orange (top-left) to dark red (bottom-right). If the bitmap
-    /// context were flipped relative to the old `lockFocus` behaviour, these two swap —
-    /// which is exactly how mirrored/upside-down text would show up.
+    /// `dawn` runs orange (top-left) to dark red (bottom-right). If the bitmap context were
+    /// flipped relative to the old `lockFocus` behaviour, these two swap — which is exactly
+    /// how mirrored/upside-down text would show up.
     func test_gradientOrientationIsNotFlipped() throws {
         let image = try XCTUnwrap(
-            generator.generateWallpaper(clipping: clipping, style: .gradientWarm, screenSize: size)
+            generator.generateWallpaper(clipping: clipping, style: .dawn, screenSize: size)
         )
         let topLeft = try pixel(image, x: 8, yFromTop: 8).usingColorSpace(.deviceRGB)!
         let bottomRight = try pixel(image, x: Int(size.width) - 8, yFromTop: Int(size.height) - 8)

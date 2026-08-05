@@ -27,6 +27,7 @@
 		344706C2926BAB6CB998A58A /* StylePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1651C641E93F65D094CE096 /* StylePickerView.swift */; };
 		345372D699AF55DB7B054DF5 /* WallpaperStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F1349888334E25C72261CE /* WallpaperStyle.swift */; };
 		3870C4F66328E42B28ABE06F /* HotkeyRecorderButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15ED09A5691424B720CBDF26 /* HotkeyRecorderButton.swift */; };
+		38C0ECADDA7E3731D5AA9B3B /* WallpaperStyleMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16FF470B4AB5E726C2E10FE /* WallpaperStyleMigrationTests.swift */; };
 		3A4318DFE6E02DB154C6A25B /* CurrentQuoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 666760574F0185C2595696EF /* CurrentQuoteView.swift */; };
 		3D6E86308A82A0F32FCF73C8 /* GeneralSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64DEEEB3074EBE6AB903F348 /* GeneralSettingsPage.swift */; };
 		4272505441027870853C9F2D /* ClippingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6C0418233969592799EC2E /* ClippingCard.swift */; };
@@ -186,6 +187,7 @@
 		E9CBDB10D1233006904C5296 /* ImportState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportState.swift; sourceTree = "<group>"; };
 		EA714C7CA0CDC37EB70CB227 /* BehaviorSettingsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BehaviorSettingsPage.swift; sourceTree = "<group>"; };
 		F08544AB0ED3C57DE9712136 /* ManualClippingFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualClippingFormView.swift; sourceTree = "<group>"; };
+		F16FF470B4AB5E726C2E10FE /* WallpaperStyleMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperStyleMigrationTests.swift; sourceTree = "<group>"; };
 		F3D5E30DC05F026C1E649A53 /* LibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModel.swift; sourceTree = "<group>"; };
 		F85ABC4DE882DD80453CAADE /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -411,6 +413,7 @@
 			children = (
 				84B8DCCB21715F04D7F1F47B /* StyleRenderSnapshotTests.swift */,
 				083758A57448F8B09F4C4FBB /* WallpaperPruningTests.swift */,
+				F16FF470B4AB5E726C2E10FE /* WallpaperStyleMigrationTests.swift */,
 			);
 			path = KindleWallTests;
 			sourceTree = "<group>";
@@ -512,6 +515,7 @@
 			files = (
 				CE315013D6AFFCFE08D077FE /* StyleRenderSnapshotTests.swift in Sources */,
 				4514F7C5B2736643BCC3ECC0 /* WallpaperPruningTests.swift in Sources */,
+				38C0ECADDA7E3731D5AA9B3B /* WallpaperStyleMigrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

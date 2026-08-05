@@ -36,8 +36,8 @@ struct StyleCard: View {
         VStack(spacing: 8) {
             // Mini preview at wallpaper aspect ratio
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(previewGradient)
+                previewFill
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
 
                 VStack(alignment: .leading, spacing: 0) {
                     Text("\u{201C}")
@@ -96,43 +96,42 @@ struct StyleCard: View {
         return .clear
     }
 
-    private var previewGradient: LinearGradient {
+    /// Card preview fill. Mirrors the real background each style renders, including Forest
+    /// Light's radial shaft — a linear gradient there would misrepresent the one style whose
+    /// surface is radial.
+    @ViewBuilder
+    private var previewFill: some View {
         switch style {
-        case .minimalDark:
-            return LinearGradient(colors: [Color(nsColor: .darkGray), .black], startPoint: .top, endPoint: .bottom)
-        case .minimalLight:
-            return LinearGradient(colors: [Color(white: 0.96), Color(white: 0.92)], startPoint: .top, endPoint: .bottom)
-        case .gradientWarm:
-            return LinearGradient(colors: [.orange, .red], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .gradientCool:
-            return LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .paperTexture:
-            return LinearGradient(colors: [Color(red: 0.96, green: 0.91, blue: 0.76)], startPoint: .top, endPoint: .bottom)
-        case .elegantSerif:
-            return LinearGradient(colors: [Color(white: 0.17), Color(white: 0.12)], startPoint: .top, endPoint: .bottom)
-        case .modernSans:
-            return LinearGradient(colors: [Color(white: 0.05), Color(white: 0.08)], startPoint: .top, endPoint: .bottom)
-        case .natureBlur:
-            return LinearGradient(colors: [.green.opacity(0.6), .green.opacity(0.3)], startPoint: .top, endPoint: .bottom)
+        case .night:
+            LinearGradient(colors: [Color(white: 0.11), Color(white: 0.08)], startPoint: .top, endPoint: .bottom)
+        case .paper:
+            LinearGradient(colors: [Color(red: 0.96, green: 0.91, blue: 0.76)], startPoint: .top, endPoint: .bottom)
+        case .grid:
+            LinearGradient(colors: [Color(white: 0.05), Color(white: 0.09)], startPoint: .top, endPoint: .bottom)
+        case .dawn:
+            LinearGradient(colors: [Color(red: 1.0, green: 0.54, blue: 0.30),
+                                    Color(red: 0.54, green: 0.18, blue: 0.16)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .depth:
+            LinearGradient(colors: [Color(red: 0.40, green: 0.49, blue: 0.92),
+                                    Color(red: 0.11, green: 0.08, blue: 0.39)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .forestLight:
+            RadialGradient(colors: [Color(red: 0.21, green: 0.40, blue: 0.18),
+                                    Color(red: 0.03, green: 0.08, blue: 0.04)],
+                           center: UnitPoint(x: 0.5, y: 0.4), startRadius: 0, endRadius: 90)
         }
     }
 
     private var previewFontDesign: Font.Design {
-        switch style {
-        case .elegantSerif, .paperTexture:
-            return .serif
-        case .modernSans, .minimalDark, .minimalLight,
-             .gradientWarm, .gradientCool, .natureBlur:
-            return .default
+        switch style.defaultFontFamily {
+        case .serif, .classic: return .serif
+        case .monospace:       return .monospaced
+        case .sansSerif:       return .default
         }
     }
 
     private var previewTextColor: Color {
-        switch style {
-        case .minimalLight, .paperTexture:
-            return .black.opacity(0.7)
-        default:
-            return .white.opacity(0.8)
-        }
+        style.hasLightBackground ? .black.opacity(0.7) : .white.opacity(0.8)
     }
 }
