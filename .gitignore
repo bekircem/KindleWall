@@ -32,3 +32,5 @@ profile
 .claude/TODO.md
 .claude/settings.local.json
 .claude/dev-log.md
+
+.superpowers/
