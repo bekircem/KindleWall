@@ -61,4 +61,24 @@ final class WallpaperPruningTests: XCTestCase {
         try FileManager.default.removeItem(at: tempDir)
         makeManager().pruneWallpapers(keeping: [])   // must be a no-op, not a crash
     }
+
+    // MARK: - Ownership
+
+    func test_isOwnWallpaper_trueForFileInsideOurDirectory() throws {
+        let mine = try makeFile("kindlewall_123.png")
+        XCTAssertTrue(makeManager().isOwnWallpaper(mine))
+    }
+
+    func test_isOwnWallpaper_falseForFileOutsideOurDirectory() {
+        let theirs = URL(fileURLWithPath: "/System/Library/Desktop Pictures/Mac Blue.heic")
+        XCTAssertFalse(makeManager().isOwnWallpaper(theirs))
+    }
+
+    func test_isOwnWallpaper_falseForSiblingDirectoryWithSharedPrefix() {
+        // "…/wallpapers-backup/x.png" must not count as being inside "…/wallpapers/".
+        let sibling = tempDir.deletingLastPathComponent()
+            .appendingPathComponent(tempDir.lastPathComponent + "-backup")
+            .appendingPathComponent("x.png")
+        XCTAssertFalse(makeManager().isOwnWallpaper(sibling))
+    }
 }

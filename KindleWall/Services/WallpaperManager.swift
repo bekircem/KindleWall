@@ -35,6 +35,10 @@ protocol WallpaperManagerProtocol {
     /// would risk deleting the file the desktop is about to point at.
     /// - Parameter keep: URLs that must survive; anything else in the directory goes.
     func pruneWallpapers(keeping keep: [URL])
+
+    /// Whether the given URL is a wallpaper KindleWall generated (i.e. lives in our directory).
+    /// - Parameter url: Any file URL.
+    func isOwnWallpaper(_ url: URL) -> Bool
 }
 
 // MARK: - Implementation
@@ -139,6 +143,13 @@ final class WallpaperManager: WallpaperManagerProtocol {
         }
     }
 
+    func isOwnWallpaper(_ url: URL) -> Bool {
+        // Compare against the directory path plus a trailing separator so a sibling
+        // directory sharing the same prefix ("wallpapers-backup") never matches.
+        let root = wallpapersDirectory.standardizedFileURL.path + "/"
+        return url.standardizedFileURL.path.hasPrefix(root)
+    }
+
     // MARK: - Private
 
     /// Fires whenever the user switches to a different Mission Control space (or activates a new one).
@@ -191,11 +202,16 @@ final class WallpaperManager: WallpaperManagerProtocol {
     }
 
     private func captureCurrentWallpaper() {
-        if let screen = NSScreen.main {
-            let currentURL = NSWorkspace.shared.desktopImageURL(for: screen)
-            previousWallpaperURL = currentURL
-            storageService.previousWallpaperURL = currentURL
-        }
+        guard let screen = NSScreen.main,
+              let currentURL = NSWorkspace.shared.desktopImageURL(for: screen) else { return }
+
+        // Never record our own output as "the previous wallpaper". This method runs on every
+        // apply, so without this guard the second apply overwrites the user's real wallpaper
+        // with a KindleWall image and "restore previous" becomes a no-op forever.
+        guard !isOwnWallpaper(currentURL) else { return }
+
+        previousWallpaperURL = currentURL
+        storageService.previousWallpaperURL = currentURL
     }
 
     private func ensureWallpaperDirectoryExists() throws {
