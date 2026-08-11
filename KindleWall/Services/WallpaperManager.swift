@@ -55,6 +55,14 @@ protocol WallpaperManagerProtocol {
     /// renders as a blank desktop.
     func isDesktopWallpaperMissing() -> Bool
 
+    /// Whether any wallpaper we generated still exists on disk.
+    ///
+    /// False means there is nothing of ours to show and nothing to restore from — which happens
+    /// when the launch sweep finds the desktop set to something that is not ours and clears the
+    /// directory. Without noticing that, the app would sit there producing nothing until the
+    /// next rotation tick, which the user experiences as the wallpaper having stopped working.
+    var hasWallpaperOnDisk: Bool { get }
+
     /// A fresh, unused URL inside the wallpapers directory.
     /// - Parameter extension: File extension without the dot, e.g. `"heic"`.
     func wallpaperFileURL(extension ext: String) -> URL
@@ -67,6 +75,23 @@ protocol WallpaperManagerProtocol {
 // MARK: - Implementation
 
 /// Manages applying and restoring desktop wallpapers using NSWorkspace.
+///
+/// ## How other Spaces get the wallpaper
+///
+/// `NSWorkspace.setDesktopImageURL` only reaches the **active** Space, so the app used to also
+/// shell out to System Events (`tell every desktop to set picture …`) on every apply, believing
+/// that covered the rest.
+///
+/// It does not. In System Events a `desktop` is a **display**, not a Space. Measured on this
+/// machine — 12 Spaces, one display — running that script changed exactly the desktops
+/// `setDesktopImageURL` had already changed, and left the other Spaces untouched. It was pure
+/// cost: ~115 ms of blocked thread per apply, an Automation permission prompt, and a slow
+/// asynchronous write that could land *after* its file had been pruned, pointing Spaces at a file
+/// that no longer existed. macOS then renders that deleted file from cache forever, which is what
+/// "the wallpaper stopped changing" turned out to be.
+///
+/// Other Spaces are covered by `activeSpaceDidChange` instead: each one gets the current
+/// wallpaper the first time it is visited, and only if it is not already showing it.
 final class WallpaperManager: WallpaperManagerProtocol {
     private var storageService: StorageServiceProtocol
 
@@ -78,6 +103,11 @@ final class WallpaperManager: WallpaperManagerProtocol {
 
     /// The last wallpaper URL applied by KindleWall — used by the space-change observer.
     private var currentWallpaperURL: URL?
+
+    /// Debounces bursts of Space changes (Ctrl+arrow through five desktops fires five times).
+    private var spaceChangeWork: DispatchWorkItem?
+
+    private let logger = Logger(subsystem: Constants.App.bundleIdentifier, category: "wallpaper")
 
     init(storageService: StorageServiceProtocol,
          wallpapersDirectory: URL = Constants.Paths.wallpapersDirectory) {
@@ -96,6 +126,11 @@ final class WallpaperManager: WallpaperManagerProtocol {
         )
     }
 
+    deinit {
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
+        spaceChangeWork?.cancel()
+    }
+
     func wallpaperFileURL(extension ext: String) -> URL {
         wallpapersDirectory.appendingPathComponent("kindlewall_\(UUID().uuidString).\(ext)")
     }
@@ -107,7 +142,7 @@ final class WallpaperManager: WallpaperManagerProtocol {
     func writeWallpaperPNG(image: NSImage) throws -> URL {
         let fileURL = wallpaperFileURL(extension: "png")
         try ensureWallpaperDirectoryExists()
-        try image.savePNG(to: fileURL)
+        try Perf.measure("png.write") { try image.savePNG(to: fileURL) }
         return fileURL
     }
 
@@ -132,17 +167,14 @@ final class WallpaperManager: WallpaperManagerProtocol {
         }
 
         // Apply immediately to the active space on every screen (instant visual feedback)
-        for screen in screens {
-            do {
-                try NSWorkspace.shared.setDesktopImageURL(fileURL, for: screen, options: [:])
-            } catch {
-                throw KindleWallError.wallpaperApplyFailed(underlying: error)
+        try Perf.measure("desktop.set", "\(screens.count) ekran") {
+            for screen in screens {
+                do {
+                    try NSWorkspace.shared.setDesktopImageURL(fileURL, for: screen, options: [:])
+                } catch {
+                    throw KindleWallError.wallpaperApplyFailed(underlying: error)
+                }
             }
-        }
-
-        // Apply to all Mission Control spaces in the background via osascript
-        if storageService.applyToAllSpaces {
-            applyToAllSpacesInBackground(fileURL: fileURL)
         }
 
         // Prune only after the new wallpaper is on screen — pruning earlier would risk
@@ -160,33 +192,32 @@ final class WallpaperManager: WallpaperManagerProtocol {
                 throw KindleWallError.wallpaperApplyFailed(underlying: error)
             }
         }
-        if storageService.applyToAllSpaces {
-            applyToAllSpacesInBackground(fileURL: previousURL)
-        }
+        currentWallpaperURL = nil
     }
 
     func pruneWallpapers(keeping keep: [URL]) {
-        // Whatever the desktop is actually showing is never a candidate for deletion, even if
-        // the caller forgot to list it. Deleting it leaves the user with a blank desktop and no
-        // way back — which is exactly what happened before this guard existed.
+        // Whatever we last put on the desktop always survives, even if the caller forgot to list
+        // it. Deleting the file the desktop points at does not blank it — macOS keeps drawing the
+        // image from cache — it freezes it, permanently, with no way to refresh. That is what
+        // "the wallpaper stopped changing" was.
         var keepPaths = Set(keep.map(\.standardizedFileURL.path))
-        if let onScreen = NSScreen.main.flatMap({ NSWorkspace.shared.desktopImageURL(for: $0) }) {
-            keepPaths.insert(onScreen.standardizedFileURL.path)
-        }
+        if let current = currentWallpaperURL { keepPaths.insert(current.standardizedFileURL.path) }
 
-        guard let entries = try? FileManager.default.contentsOfDirectory(
-            at: wallpapersDirectory, includingPropertiesForKeys: nil
-        ) else { return }   // directory missing or unreadable — nothing to prune
-
-        let doomed = entries.filter { !keepPaths.contains($0.standardizedFileURL.path) }
-        guard !doomed.isEmpty else { return }
-
-        Logger(subsystem: Constants.App.bundleIdentifier, category: "prune")
-            .info("prune siliyor: \(doomed.map(\.lastPathComponent).joined(separator: ", "), privacy: .public) | koruyor: \(keepPaths.map { ($0 as NSString).lastPathComponent }.joined(separator: ", "), privacy: .public)")
-
-        // Deleting off the main thread. The first run after pruning shipped had 604 files and
-        // 13 GB to remove, and doing that synchronously from `.onAppear` froze the window.
+        // Everything below is filesystem work with no AppKit in it, so the whole body runs off
+        // the main thread. It used to list the directory and make a synchronous XPC call to the
+        // wallpaper agent on the main thread, on every single apply.
+        let directory = wallpapersDirectory
+        let logger = self.logger
         DispatchQueue.global(qos: .utility).async {
+            guard let entries = try? FileManager.default.contentsOfDirectory(
+                at: directory, includingPropertiesForKeys: nil
+            ) else { return }   // directory missing or unreadable — nothing to prune
+
+            let doomed = entries.filter { !keepPaths.contains($0.standardizedFileURL.path) }
+            guard !doomed.isEmpty else { return }
+
+            logger.info("prune siliyor: \(doomed.map(\.lastPathComponent).joined(separator: ", "), privacy: .public) | koruyor: \(keepPaths.map { ($0 as NSString).lastPathComponent }.joined(separator: ", "), privacy: .public)")
+
             for url in doomed {
                 try? FileManager.default.removeItem(at: url)
             }
@@ -244,6 +275,13 @@ final class WallpaperManager: WallpaperManagerProtocol {
         return !FileManager.default.fileExists(atPath: current.path)
     }
 
+    var hasWallpaperOnDisk: Bool {
+        let entries = (try? FileManager.default.contentsOfDirectory(
+            at: wallpapersDirectory, includingPropertiesForKeys: nil
+        )) ?? []
+        return !entries.isEmpty
+    }
+
     @discardableResult
     func repairDesktopIfWallpaperMissing() -> Bool {
         guard isDesktopWallpaperMissing() else { return false }
@@ -258,61 +296,50 @@ final class WallpaperManager: WallpaperManagerProtocol {
     // MARK: - Private
 
     /// Fires whenever the user switches to a different Mission Control space (or activates a new one).
-    /// Applies the current KindleWall wallpaper to all screens in the newly active space.
-    /// Uses only NSWorkspace — no special Automation permission required.
+    ///
+    /// Applying unconditionally made every Mission Control switch pay a full wallpaper decode in
+    /// the system's wallpaper agent, even when the Space already had the right picture — which is
+    /// what made switching desktops stutter. Now the burst is debounced and each screen is only
+    /// touched when it is actually showing something else.
     @objc private func activeSpaceDidChange(_ notification: Notification) {
-        guard storageService.applyToAllSpaces,
-              let wallpaperURL = currentWallpaperURL else { return }
-        DispatchQueue.main.async {
-            for screen in NSScreen.screens {
-                try? NSWorkspace.shared.setDesktopImageURL(wallpaperURL, for: screen, options: [:])
-            }
+        guard storageService.applyToAllSpaces else { return }
+        guard let wallpaperURL = currentWallpaperURL ?? newestWallpaper() else { return }
+        guard FileManager.default.fileExists(atPath: wallpaperURL.path) else { return }
+
+        spaceChangeWork?.cancel()
+        // `NSScreen.screens` is AppKit state, so it is snapshotted here on the main thread; the
+        // comparison and the set then run off it.
+        let screens = NSScreen.screens
+        let work = DispatchWorkItem { [weak self] in
+            self?.applyToScreensThatNeedIt(wallpaperURL, screens: screens)
         }
+        spaceChangeWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: work)
     }
 
-    /// Uses System Events AppleScript to apply the wallpaper to every Space on every screen.
-    /// `NSWorkspace.setDesktopImageURL` only targets the *active* Space; osascript covers all immediately.
-    /// Runs in background — caller gets instant feedback from the NSWorkspace call above.
-    /// NOTE: Requires Automation permission (System Settings → Privacy & Security → Automation).
-    /// When running from Xcode this often fails silently; the activeSpaceDidChange observer handles
-    /// coverage in that case (lazily, on each space visit).
-    private func applyToAllSpacesInBackground(fileURL: URL) {
-        // Escape backslashes and quotes so the path is safe inside an AppleScript string literal
-        let safePath = fileURL.path
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
-
-        let script = """
-        tell application "System Events"
-            tell every desktop
-                set picture to "\(safePath)"
-            end tell
-        end tell
-        """
-
-        Task.detached(priority: .background) {
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-            process.arguments = ["-e", script]
-            process.standardOutput = FileHandle.nullDevice
-            process.standardError = FileHandle.nullDevice
-            try? process.run()
-            process.waitUntilExit()
-            if process.terminationStatus != 0 {
-                // Most likely cause: Automation permission not granted for System Events.
-                // Go to System Settings → Privacy & Security → Automation and enable it for KindleWall.
-                print("[WallpaperManager] osascript failed (exit \(process.terminationStatus)) — Automation permission for System Events may not be granted")
-            }
+    /// Sets `url` only on the screens not already showing it.
+    private func applyToScreensThatNeedIt(_ url: URL, screens: [NSScreen]) {
+        let target = url.standardizedFileURL.path
+        for screen in screens {
+            let onScreen = NSWorkspace.shared.desktopImageURL(for: screen)?.standardizedFileURL.path
+            guard onScreen != target else { continue }
+            try? NSWorkspace.shared.setDesktopImageURL(url, for: screen, options: [:])
         }
     }
 
     private func captureCurrentWallpaper() {
+        // Once we have set the desktop ourselves, the wallpaper on screen is our own file —
+        // which the `isOwnWallpaper` guard below would reject anyway. Reading it again costs a
+        // synchronous XPC round-trip into the wallpaper agent on the main thread, on every
+        // apply including every scheduler tick, to learn something already known.
+        guard currentWallpaperURL == nil else { return }
+
         guard let screen = NSScreen.main,
               let currentURL = NSWorkspace.shared.desktopImageURL(for: screen) else { return }
 
-        // Never record our own output as "the previous wallpaper". This method runs on every
-        // apply, so without this guard the second apply overwrites the user's real wallpaper
-        // with a KindleWall image and "restore previous" becomes a no-op forever.
+        // Never record our own output as "the previous wallpaper". Without this guard the second
+        // apply overwrites the user's real wallpaper with a KindleWall image and "restore
+        // previous" becomes a no-op forever.
         guard !isOwnWallpaper(currentURL) else { return }
 
         previousWallpaperURL = currentURL

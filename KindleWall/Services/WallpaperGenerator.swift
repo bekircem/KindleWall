@@ -612,18 +612,55 @@ final class WallpaperGenerator: WallpaperGeneratorProtocol {
         return result
     }
 
-    private func textColor(for style: WallpaperStyle, typography: TypographySettings,
-                           onLightBackground: Bool) -> NSColor {
+    // MARK: - Colour decisions (single source of truth)
+    //
+    // `SolarPalette` has to predict what a frame will look like in order to choose its ink, so
+    // these are static and shared rather than duplicated there. They were duplicated, and the
+    // copies disagreed: the palette assumed the style's own surface even when the user had set a
+    // custom gradient, so the ink swap was decided against a colour that was not on screen.
+
+    /// The colour a style's background reads as — the flat fill, or a gradient's midpoint.
+    /// A custom gradient replaces the style's surface entirely, so it wins.
+    static func backgroundColor(for style: WallpaperStyle, typography: TypographySettings) -> NSColor {
+        if let startHex = typography.backgroundStartColorHex,
+           let endHex = typography.backgroundEndColorHex,
+           let start = NSColor(hex: startHex),
+           let end = NSColor(hex: endHex),
+           let mid = start.blended(withFraction: 0.5, of: end) {
+            return mid
+        }
+        switch style {
+        case .night:       return NSColor(hex: "141414")!
+        case .paper:       return NSColor(hex: "F4E8C1")!
+        case .grid:        return NSColor(hex: "0D1117")!
+        case .dawn:        return NSColor(hex: "E0453A")!
+        case .depth:       return NSColor(hex: "764BA2")!
+        case .forestLight: return NSColor(hex: "17330F")!
+        }
+    }
+
+    /// The quote's ink for a style.
+    /// - Parameter inverted: draw the opposite ink, for frames whose background has moved past
+    ///   readability. Applies to custom gradients too — it used to be ignored there, so an
+    ///   "inverted" text layer came out identical to the normal one and the swap did nothing.
+    static func inkColor(for style: WallpaperStyle, typography: TypographySettings,
+                         inverted: Bool) -> NSColor {
         if let startHex = typography.backgroundStartColorHex,
            let color = NSColor(hex: startHex) {
-            var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-            color.getRed(&r, green: &g, blue: &b, alpha: &a)
-            return (0.299 * r + 0.587 * g + 0.114 * b) > 0.5
-                ? NSColor(hex: "2C2C2C")!
-                : .white
+            let lightSurface = SolarColorTransform.luminance(color) > 0.5
+            return (inverted ? !lightSurface : lightSurface) ? NSColor(hex: "2C2C2C")! : .white
         }
         // Paper's ink is a warm brown rather than black — it reads as print, not as UI text.
-        return onLightBackground ? NSColor(hex: "3B2F1E")! : .white
+        let onLight = inverted ? !style.hasLightBackground : style.hasLightBackground
+        return onLight ? NSColor(hex: "3B2F1E")! : .white
+    }
+
+    private func textColor(for style: WallpaperStyle, typography: TypographySettings,
+                           onLightBackground: Bool) -> NSColor {
+        // `onLightBackground` already encodes the inversion the caller wants: it is the style's
+        // own lightness, flipped when the frame needs the opposite ink.
+        Self.inkColor(for: style, typography: typography,
+                      inverted: onLightBackground != style.hasLightBackground)
     }
 
     private func metaColor(for style: WallpaperStyle, typography: TypographySettings,

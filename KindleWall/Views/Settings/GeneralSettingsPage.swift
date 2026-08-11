@@ -24,7 +24,7 @@ struct GeneralSettingsPage: View {
                 SettingsRow(
                     icon: "rectangle.on.rectangle", iconColor: .blue,
                     title: "Tüm Alanlara Uygula",
-                    subtitle: "Mission Control'deki tüm çalışma alanlarının duvar kağıdını değiştirir."
+                    subtitle: "Diğer Mission Control alanları ilk ziyaret edildiklerinde güncellenir."
                 ) {
                     Toggle("", isOn: $settingsVM.applyToAllSpaces).labelsHidden()
                 }

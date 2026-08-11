@@ -13,7 +13,6 @@ final class ApplyWallpaperBranchTests: XCTestCase {
     private var suiteName: String!
     private var defaults: UserDefaults!
     private var wallpaperDir: URL!
-    private var originalWallpaper: URL?
 
     override func setUpWithError() throws {
         suiteName = "KindleWallTests-\(UUID().uuidString)"
@@ -23,15 +22,11 @@ final class ApplyWallpaperBranchTests: XCTestCase {
             .appendingPathComponent("KindleWallApply-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: wallpaperDir, withIntermediateDirectories: true)
 
-        originalWallpaper = NSScreen.main.flatMap { NSWorkspace.shared.desktopImageURL(for: $0) }
+        DesktopWallpaperGuard.capture()
     }
 
     override func tearDownWithError() throws {
-        if let originalWallpaper {
-            for screen in NSScreen.screens {
-                try? NSWorkspace.shared.setDesktopImageURL(originalWallpaper, for: screen, options: [:])
-            }
-        }
+        DesktopWallpaperGuard.restore()
         defaults.removePersistentDomain(forName: suiteName)
         try? FileManager.default.removeItem(at: wallpaperDir)
     }
@@ -77,8 +72,14 @@ final class ApplyWallpaperBranchTests: XCTestCase {
         XCTAssertEqual(written.pathExtension, "heic", "dinamik modda HEIC yazılmalı")
 
         let source = try XCTUnwrap(CGImageSourceCreateWithURL(written as CFURL, nil))
-        XCTAssertEqual(CGImageSourceGetCount(source), SolarPhase.allCases.count,
-                       "altı kare bekleniyor")
+        // Not necessarily six. The file is rewritten on every quote rotation, so frames that
+        // fall after the next rotation — and frames from earlier today, which `h24` can never
+        // select again — are written and decoded for nothing. What matters is that the file is
+        // genuinely multi-frame and carries the dynamic tag.
+        let frameCount = CGImageSourceGetCount(source)
+        XCTAssertGreaterThan(frameCount, 1, "dinamik modda çok kareli olmalı")
+        XCTAssertLessThanOrEqual(frameCount, SolarPhase.allCases.count,
+                                 "faz sayısından fazla kare yazılamaz")
         XCTAssertNotNil(
             CGImageSourceCopyMetadataAtIndex(source, 0, nil).flatMap {
                 CGImageMetadataCopyTagWithPath($0, nil, "apple_desktop:h24" as CFString)
@@ -96,5 +97,61 @@ final class ApplyWallpaperBranchTests: XCTestCase {
 
         let source = try XCTUnwrap(CGImageSourceCreateWithURL(written as CFURL, nil))
         XCTAssertEqual(CGImageSourceGetCount(source), 1)
+    }
+
+    // MARK: - Which frames are worth writing
+    //
+    // `apple_desktop:h24` shows the frame whose time is the latest at or before now, and the file
+    // is rewritten on every quote rotation. Frames outside that window are composited, encoded,
+    // and re-decoded by the system on every Space — for nothing. At the default 30-minute
+    // rotation that was five of six frames on every apply.
+
+    private func phases(_ hours: [Double]) -> [SolarPhaseTime] {
+        let midnight = Calendar.current.startOfDay(for: Date())
+        return zip(SolarPhase.allCases, hours).map {
+            SolarPhaseTime(phase: $0, date: midnight.addingTimeInterval($1 * 3600))
+        }
+    }
+
+    /// dawn 5, sunrise 6, noon 12, afternoon 16, sunset 19, night 21
+    private var sixPhases: [SolarPhaseTime] { phases([5, 6, 12, 16, 19, 21]) }
+    private func today(_ hour: Double) -> Date {
+        Calendar.current.startOfDay(for: Date()).addingTimeInterval(hour * 3600)
+    }
+
+    func test_framesWorthWriting_dropsPhasesAlreadyBehindUs() {
+        // 13:00 — dawn and sunrise can never be selected again today.
+        let result = MainViewModel.framesWorthWriting(sixPhases, now: today(13), until: nil)
+        XCTAssertEqual(result.map(\.phase), [.noon, .afternoon, .sunset, .night])
+    }
+
+    func test_framesWorthWriting_stopsOneFrameAfterTheNextRewrite() {
+        // 13:00, next rotation at 13:30: only `noon` can be shown before the rewrite. One frame
+        // beyond is kept so a late rewrite still has somewhere to go.
+        let result = MainViewModel.framesWorthWriting(sixPhases, now: today(13), until: today(13.5))
+        XCTAssertEqual(result.map(\.phase), [.noon, .afternoon])
+    }
+
+    func test_framesWorthWriting_withNoRewriteScheduled_carriesTheRestOfTheDay() {
+        // Scheduler paused: nothing will rewrite the file, so it must cover every phase left.
+        let result = MainViewModel.framesWorthWriting(sixPhases, now: today(6.5), until: nil)
+        XCTAssertEqual(result.map(\.phase), [.sunrise, .noon, .afternoon, .sunset, .night])
+    }
+
+    func test_framesWorthWriting_neverDropsBelowTwoFramesWhileTheDayHasTwoLeft() {
+        // A one-frame HEIC is just a static wallpaper, which is not what dynamic mode promises.
+        let result = MainViewModel.framesWorthWriting(sixPhases, now: today(13), until: today(13.01))
+        XCTAssertGreaterThanOrEqual(result.count, 2)
+    }
+
+    func test_framesWorthWriting_beforeTheDaysFirstPhase_keepsEverything() {
+        // At 03:00 macOS wraps to the last frame, so the whole set is still meaningful.
+        let result = MainViewModel.framesWorthWriting(sixPhases, now: today(3), until: nil)
+        XCTAssertEqual(result.count, SolarPhase.allCases.count)
+    }
+
+    func test_framesWorthWriting_inTheLastPhase_returnsWhatIsLeft() {
+        let result = MainViewModel.framesWorthWriting(sixPhases, now: today(22), until: today(22.5))
+        XCTAssertEqual(result.map(\.phase), [.night])
     }
 }

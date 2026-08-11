@@ -419,24 +419,36 @@ final class MainViewModel {
         previewGeneration &+= 1
         let generation = previewGeneration
 
-        // Use 1x screen size for preview (not Retina) — much faster and readable in the app
-        let previewSize = screen.frame.size
+        // The preview is shown in a hero view a few hundred points wide, so rendering it at the
+        // screen's full point size (1920×1280 here) was ~2.3× more pixels than anything on
+        // screen could use — paid on every style click, every typography nudge and every quote
+        // change, while the apply render was often running too.
+        let previewSize = Self.previewSize(for: screen.frame.size)
         let displayClipping = clippingWithOverride(clipping)
 
         let longQuote = storage.longQuote
-        previewTask = Task.detached { [generator, selectedStyle, typography] in
-            let image = generator.generateWallpaper(
+        previewTask = Task.detached(priority: .utility) { [generator, selectedStyle, typography] in
+            let image = Perf.measure("preview.render") { generator.generateWallpaper(
                 clipping: displayClipping,
                 style: selectedStyle,
                 screenSize: previewSize,
                 typography: typography,
                 longQuote: longQuote
-            )
+            ) }
             await MainActor.run { [weak self] in
                 guard let self, self.previewGeneration == generation else { return }
                 self.currentWallpaperImage = image
             }
         }
+    }
+
+    /// Preview render size: the screen's aspect ratio capped to a width no on-screen preview
+    /// can exceed. Rendering more pixels than the panel can show is pure cost.
+    private static func previewSize(for screenSize: CGSize) -> CGSize {
+        let maxWidth: CGFloat = 1280
+        guard screenSize.width > maxWidth, screenSize.width > 0 else { return screenSize }
+        let scale = maxWidth / screenSize.width
+        return CGSize(width: maxWidth, height: (screenSize.height * scale).rounded())
     }
 
     /// Selects a clipping, updates the preview, and immediately applies the wallpaper.
@@ -484,8 +496,19 @@ final class MainViewModel {
         let notify = storage.showNotifications
 
         let dynamicEnabled = storage.dynamicWallpaperEnabled
+        // When the next rotation will rewrite this file, frames scheduled after it are encoded,
+        // written and decoded by the system only to be thrown away unseen.
+        let rewriteHorizon = scheduler.isActive ? scheduler.nextChangeDate : nil
 
-        applyTask = Task.detached { [generator, wallpaperManager, sunCalculator, composer, heicEncoder] in
+        applyTask = Task.detached(priority: .utility) { [generator, wallpaperManager, sunCalculator, composer, heicEncoder] in
+            // Coalesce bursts. A settings toggle, the "Şimdi Değiştir" button and a scheduler
+            // tick can land within milliseconds of each other; each one used to start a full
+            // multi-hundred-megabyte render before being superseded by the next.
+            try? await Task.sleep(for: .milliseconds(150))
+            if Task.isCancelled { return }
+
+            let applyClock = Perf.Clock("apply.total")
+
             // Render + encode + write off-main. The NSImage never crosses actors — only the
             // resulting file URL does.
             let url: URL
@@ -494,6 +517,7 @@ final class MainViewModel {
                 let dynamicURL = dynamicEnabled ? Self.renderDynamicWallpaper(
                     clipping: displayClipping, style: style, screenSize: fullSize,
                     typography: typographySnapshot, longQuote: longQuote,
+                    rewriteHorizon: rewriteHorizon,
                     generator: generator, sunCalculator: sunCalculator,
                     composer: composer, encoder: heicEncoder, manager: wallpaperManager
                 ) : nil
@@ -509,17 +533,19 @@ final class MainViewModel {
                     // back keeps the wallpaper changing rather than leaving the desktop stale;
                     // the user is told once, below.
                     fellBackToStatic = dynamicEnabled
-                    guard let fullImage = generator.generateWallpaper(
+                    guard let fullImage = Perf.measure("static.render", "", { generator.generateWallpaper(
                         clipping: displayClipping,
                         style: style,
                         screenSize: fullSize,
                         typography: typographySnapshot,
                         longQuote: longQuote
-                    ) else {
+                    ) }) else {
                         throw KindleWallError.wallpaperGenerationFailed(reason: "Render başarısız")
                     }
                     url = try wallpaperManager.writeWallpaperPNG(image: fullImage)
                 }
+                applyClock.finish(fellBackToStatic ? "statik (dinamik başarısız)"
+                                                   : (dynamicEnabled ? "dinamik" : "statik"))
             } catch {
                 await MainActor.run { [weak self] in
                     guard let self, self.applyGeneration == generation else { return }
@@ -562,6 +588,7 @@ final class MainViewModel {
     private static func renderDynamicWallpaper(
         clipping: Clipping, style: WallpaperStyle, screenSize: CGSize,
         typography: TypographySettings, longQuote: LongQuoteSettings,
+        rewriteHorizon: Date?,
         generator: WallpaperGeneratorProtocol, sunCalculator: SunCalculatorProtocol,
         composer: DynamicWallpaperComposerProtocol, encoder: HEICWallpaperEncoderProtocol,
         manager: WallpaperManagerProtocol
@@ -574,43 +601,85 @@ final class MainViewModel {
 
         // Anchor the frames to today's real sunrise/sunset, so the colours track the season.
         let coordinate = GeoCoordinate.fromSystemTimeZone()
-        let phaseTimes = sunCalculator.phases(for: Date(), at: coordinate)
+        let allPhaseTimes = sunCalculator.phases(for: Date(), at: coordinate)
+        guard !allPhaseTimes.isEmpty else { return nil }
+
+        let phaseTimes = framesWorthWriting(allPhaseTimes, now: Date(), until: rewriteHorizon)
         guard !phaseTimes.isEmpty else { return nil }
 
         // The expensive typesetting happens here, once, and is reused by every frame.
-        guard let background = generator.renderBackgroundLayer(
-                  clipping: clipping, style: style, screenSize: screenSize, typography: typography),
+        // Explicit "" for the detail argument: a trailing closure cannot be used inside a guard
+        // condition, so the body has to be passed positionally.
+        guard let background = Perf.measure("layer.background", "", {
+                  generator.renderBackgroundLayer(clipping: clipping, style: style,
+                                                  screenSize: screenSize, typography: typography) }),
               !Task.isCancelled,
-              let text = generator.renderTextLayer(
-                  clipping: clipping, style: style, screenSize: screenSize,
-                  typography: typography, longQuote: longQuote, invertedInk: false),
+              let text = Perf.measure("layer.text", "", {
+                  generator.renderTextLayer(clipping: clipping, style: style, screenSize: screenSize,
+                                            typography: typography, longQuote: longQuote,
+                                            invertedInk: false) }),
               !Task.isCancelled else { return nil }
 
-        // A second text layer is only worth drawing when some phase actually darkens the
+        // A second text layer is only worth drawing when some phase actually moves the
         // background past readability — for the dark styles, none ever does.
         let phases = phaseTimes.map(\.phase)
         let needsInvertedInk = phases.contains {
-            SolarPalette.transforms(for: $0, style: style).usesInvertedInk
+            SolarPalette.transforms(for: $0, style: style, typography: typography).usesInvertedInk
         }
         let invertedText = needsInvertedInk
-            ? generator.renderTextLayer(clipping: clipping, style: style, screenSize: screenSize,
-                                        typography: typography, longQuote: longQuote, invertedInk: true)
+            ? Perf.measure("layer.text.inverted", "", {
+                  generator.renderTextLayer(clipping: clipping, style: style, screenSize: screenSize,
+                                            typography: typography, longQuote: longQuote,
+                                            invertedInk: true) })
             : nil
         if Task.isCancelled { return nil }
 
-        let frames = composer.compose(background: background, text: text,
-                                      invertedText: invertedText,
-                                      style: style, phases: phases)
-        guard frames.count == phaseTimes.count, !Task.isCancelled else { return nil }
+        guard let frameSource = composer.makeFrameSource(
+            background: background, text: text, invertedText: invertedText,
+            style: style, typography: typography
+        ), !Task.isCancelled else { return nil }
 
         do {
             let url = manager.wallpaperFileURL(extension: "heic")
             try manager.prepareWallpaperDirectory()
-            try encoder.write(frames: frames, phaseTimes: phaseTimes, to: url)
-            return url
+            // Frames are produced one at a time inside the encoder, so peak memory is one frame
+            // (39 MB at 3840×2560) rather than the whole set.
+            try encoder.write(phaseTimes: phaseTimes, to: url) { index in
+                Task.isCancelled ? nil : frameSource(phases[index])
+            }
+            return Task.isCancelled ? nil : url
         } catch {
             return nil
         }
+    }
+
+    /// The phases a dynamic file actually needs to carry.
+    ///
+    /// `apple_desktop:h24` shows the frame whose time is the latest one at or before now, so two
+    /// kinds of frame are written and never seen: phases that are already behind us today, and
+    /// phases that fall after the next quote rotation rewrites the whole file. At the default
+    /// 30-minute rotation that was five of six frames, every single time — six full-resolution
+    /// composites, six encodes, and a file the system re-decodes on every Space.
+    ///
+    /// One frame past the horizon is kept so a late rewrite still has somewhere to go, and the
+    /// result never drops below two frames while the day still has two left — a single-frame
+    /// HEIC is just a static wallpaper.
+    static func framesWorthWriting(_ phaseTimes: [SolarPhaseTime],
+                                   now: Date,
+                                   until horizon: Date?) -> [SolarPhaseTime] {
+        let sorted = phaseTimes.sorted { $0.date < $1.date }
+        guard sorted.count > 1 else { return sorted }
+
+        // Start at the phase that is current now. If the day has not reached its first phase
+        // yet, macOS wraps to the last frame, so keeping the whole set is correct there.
+        guard let currentIndex = sorted.lastIndex(where: { $0.date <= now }) else { return sorted }
+        var remaining = Array(sorted[currentIndex...])
+
+        if let horizon, horizon > now {
+            let throughHorizon = remaining.prefix { $0.date <= horizon }.count
+            remaining = Array(remaining.prefix(max(2, throughHorizon + 1)))
+        }
+        return remaining
     }
 
     /// Returns a copy of the clipping with title/author replaced by the user's saved override, if any.
@@ -826,14 +895,22 @@ final class MainViewModel {
         rerenderIfDesktopIsBlank()
     }
 
-    /// Renders a fresh wallpaper when the desktop points at one of our files that is gone and
-    /// there is nothing left to restore from.
+    /// Renders a fresh wallpaper when there is no working KindleWall wallpaper to show.
+    ///
+    /// Two ways to get there, both seen in practice:
+    /// * the desktop points at one of our files that has been deleted — macOS keeps drawing it
+    ///   from cache, so it looks like a wallpaper that has frozen and stopped changing;
+    /// * the launch sweep found the desktop set to something that is not ours (another app, a
+    ///   leftover from a test run) and cleared our directory, leaving nothing to show at all.
+    ///
+    /// Without this the app produces nothing until the next rotation tick — up to a full
+    /// interval of the user watching a wallpaper that has apparently stopped working.
     ///
     /// Called both at launch and after an import finishes: at launch the clipping list is still
-    /// empty (the import is async), so a launch-only attempt would silently do nothing and
-    /// leave the user with a blank desktop.
+    /// empty (the import is async), so a launch-only attempt would silently do nothing.
     private func rerenderIfDesktopIsBlank() {
-        guard wallpaperManager.isDesktopWallpaperMissing() else { return }
+        guard wallpaperManager.isDesktopWallpaperMissing()
+                || !wallpaperManager.hasWallpaperOnDisk else { return }
         if currentClipping == nil && !clippings.isEmpty { selectRandomClipping() }
         guard currentClipping != nil else { return }
         applyWallpaper()

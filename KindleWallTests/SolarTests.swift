@@ -177,21 +177,54 @@ final class SolarTests: XCTestCase {
 
     /// Legibility guarantee: whatever ink a frame ends up with must stand clear of the
     /// background that frame actually renders.
+    ///
+    /// This test used to score the frame with `luminance × 2^exposure` — the same approximation
+    /// the code under test used, so it was checking the model against itself and passed while
+    /// Paper's evening frames were genuinely unreadable on screen. `CIExposureAdjust` works in
+    /// linear light and darkens far less than that formula predicts. The surface is now pushed
+    /// through the real Core Image chain and scored with a WCAG contrast ratio, which is a
+    /// property of the pixels the user actually sees.
     func test_everyStyleAndPhaseKeepsTextLegible() {
         for style in WallpaperStyle.allCases {
             for phase in SolarPhase.allCases {
                 let transforms = SolarPalette.transforms(for: phase, style: style)
-                let background = SolarPalette.representativeBackground(for: style)
+                let surface = SolarColorTransform.resolve(
+                    SolarPalette.representativeBackground(for: style),
+                    through: transforms.background
+                )
                 let ink = SolarPalette.inkColor(for: style, inverted: transforms.usesInvertedInk)
-
-                let bgLuminance = luminance(background, exposure: transforms.background.exposure)
-                let inkLuminance = luminance(ink, exposure: 0)
+                let ratio = SolarColorTransform.contrastRatio(ink, surface)
 
                 XCTAssertGreaterThanOrEqual(
-                    abs(inkLuminance - bgLuminance), 0.34,
-                    "\(style.rawValue) / \(phase.rawValue) okunaksız"
+                    ratio, SolarPalette.minimumContrast,
+                    "\(style.rawValue) / \(phase.rawValue) okunaksız — kontrast \(ratio)"
                 )
             }
+        }
+    }
+
+    /// A custom gradient replaces the style's surface, so the ink decision has to follow it.
+    /// It did not: the palette kept asking about the style's own colour, so with a light custom
+    /// gradient the frames were scored against a colour that was nowhere on screen.
+    func test_customGradientDrivesTheInkDecision() {
+        var typography = TypographySettings.default
+        typography.backgroundStartColorHex = "F7F3E8"   // near-white surface
+        typography.backgroundEndColorHex = "F0E6D2"
+
+        for phase in SolarPhase.allCases {
+            // Night is the dark style, but with a light custom gradient its frames are light,
+            // so they must use dark ink.
+            let transforms = SolarPalette.transforms(for: phase, style: .night, typography: typography)
+            let surface = SolarColorTransform.resolve(
+                WallpaperGenerator.backgroundColor(for: .night, typography: typography),
+                through: transforms.background
+            )
+            let ink = WallpaperGenerator.inkColor(for: .night, typography: typography,
+                                                  inverted: transforms.usesInvertedInk)
+            XCTAssertGreaterThanOrEqual(
+                SolarColorTransform.contrastRatio(ink, surface), SolarPalette.minimumContrast,
+                "özel gradient / \(phase.rawValue) okunaksız"
+            )
         }
     }
 

@@ -10,7 +10,6 @@ final class InteractionStressTests: XCTestCase {
     private var suiteName: String!
     private var defaults: UserDefaults!
     private var wallpaperDir: URL!
-    private var originalWallpaper: URL?
 
     override func setUpWithError() throws {
         suiteName = "KindleWallStress-\(UUID().uuidString)"
@@ -18,15 +17,11 @@ final class InteractionStressTests: XCTestCase {
         wallpaperDir = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent("KindleWallStress-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: wallpaperDir, withIntermediateDirectories: true)
-        originalWallpaper = NSScreen.main.flatMap { NSWorkspace.shared.desktopImageURL(for: $0) }
+        DesktopWallpaperGuard.capture()
     }
 
     override func tearDownWithError() throws {
-        if let originalWallpaper {
-            for screen in NSScreen.screens {
-                try? NSWorkspace.shared.setDesktopImageURL(originalWallpaper, for: screen, options: [:])
-            }
-        }
+        DesktopWallpaperGuard.restore()
         defaults.removePersistentDomain(forName: suiteName)
         try? FileManager.default.removeItem(at: wallpaperDir)
     }
