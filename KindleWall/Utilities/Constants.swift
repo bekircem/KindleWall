@@ -34,6 +34,18 @@ enum Constants {
         static let localClippingsFile: URL = {
             appSupportDirectory.appendingPathComponent("MyClippings.txt")
         }()
+
+        /// macOS's own wallpaper store — one entry per Space per display. The only mechanism that
+        /// can change every Space at once; see `WallpaperStoreSync`.
+        static let wallpaperStore: URL = {
+            FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent("com.apple.wallpaper/Store/Index.plist")
+        }()
+
+        /// The store exactly as macOS wrote it, kept before this app first modifies it.
+        static let wallpaperStoreBackup: URL = {
+            appSupportDirectory.appendingPathComponent("wallpaper-store-backup.plist")
+        }()
     }
 
     /// Wallpaper rendering constants
@@ -67,6 +79,7 @@ enum Constants {
         static let typographySettings = "typographySettings"
         static let applyToAllSpaces = "applyToAllSpaces"
         static let dynamicWallpaperEnabled = "dynamicWallpaperEnabled"
+        static let syncAllSpaces = "syncAllSpaces"
         static let bookMetadataOverrides = "bookMetadataOverrides"
         static let persistedClippingIDs = "persistedClippingIDs"
         static let rotationMode         = "rotationMode"

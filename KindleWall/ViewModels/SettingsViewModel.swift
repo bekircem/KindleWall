@@ -14,6 +14,7 @@ final class SettingsViewModel {
     var showInMenuBar: Bool
     var showNotifications: Bool
     var applyToAllSpaces: Bool
+    var syncAllSpaces: Bool
     var dynamicWallpaperEnabled: Bool
     var clippingsFilePath: String?
     var decorativeStyle: TypographySettings.DecorationStyle
@@ -48,6 +49,7 @@ final class SettingsViewModel {
         self.showInMenuBar = storage.showInMenuBar
         self.showNotifications = storage.showNotifications
         self.applyToAllSpaces = storage.applyToAllSpaces
+        self.syncAllSpaces = storage.syncAllSpaces
         self.dynamicWallpaperEnabled = storage.dynamicWallpaperEnabled
         self.clippingsFilePath = storage.resolveClippingsFileURL()?.path
         let t = storage.typography
@@ -82,6 +84,7 @@ final class SettingsViewModel {
         storage.showInMenuBar = showInMenuBar
         storage.showNotifications = showNotifications
         storage.applyToAllSpaces = applyToAllSpaces
+        storage.syncAllSpaces = syncAllSpaces
 
         updateLoginItem()
     }

@@ -35,6 +35,25 @@ struct GeneralSettingsPage: View {
                 settingsVM.saveSettings()
             }
 
+            SettingsCard(
+                title: "Anında Eşitleme",
+                footnote: "Açıkken tüm masaüstleri aynı anda değişir. Bunu yapmanın tek yolu macOS'un kendi duvar kağıdı kaydını yazıp duvar kağıdı servisini yeniden başlatmak — Ayarlar panelinin yaptığı da budur. Biçim Apple tarafından belgelenmemiştir, bu yüzden varsayılan kapalı. İlk kullanımda kaydın yedeği alınır."
+            ) {
+                SettingsRow(
+                    icon: "square.on.square.dashed", iconColor: .orange,
+                    title: "Tüm Masaüstlerini Anında Eşitle",
+                    subtitle: "Kapalıyken her alan ilk ziyaret edildiğinde güncellenir."
+                ) {
+                    Toggle("", isOn: $settingsVM.syncAllSpaces).labelsHidden()
+                }
+            }
+            .onChange(of: settingsVM.syncAllSpaces) {
+                settingsVM.saveSettings()
+                // Apply straight away, so switching the toggle on visibly does something instead
+                // of waiting for the next rotation.
+                if settingsVM.syncAllSpaces { actions.onApplyNow() }
+            }
+
             SettingsCard(title: "Duvar Kağıdı") {
                 SettingsRow(
                     icon: "arrow.uturn.backward", iconColor: Color(.systemGray),

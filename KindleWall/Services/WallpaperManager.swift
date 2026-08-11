@@ -107,12 +107,25 @@ final class WallpaperManager: WallpaperManagerProtocol {
     /// Debounces bursts of Space changes (Ctrl+arrow through five desktops fires five times).
     private var spaceChangeWork: DispatchWorkItem?
 
+    /// Opt-in all-Spaces sync. Writes macOS's own wallpaper store — see `WallpaperStoreSync`.
+    private let storeSync: WallpaperStoreSyncProtocol
+
+    /// Serial queue for the store sync. It writes a file and blocks on `killall`, neither of
+    /// which belongs on the main thread or on Swift's cooperative pool — blocking a cooperative
+    /// thread starves every other async task in the app, renders included.
+    private let syncQueue = DispatchQueue(label: "\(Constants.App.bundleIdentifier).spaceSync",
+                                          qos: .utility)
+    private let syncLock = NSLock()
+    private var syncGeneration = 0
+
     private let logger = Logger(subsystem: Constants.App.bundleIdentifier, category: "wallpaper")
 
     init(storageService: StorageServiceProtocol,
-         wallpapersDirectory: URL = Constants.Paths.wallpapersDirectory) {
+         wallpapersDirectory: URL = Constants.Paths.wallpapersDirectory,
+         storeSync: WallpaperStoreSyncProtocol = WallpaperStoreSync()) {
         self.storageService = storageService
         self.wallpapersDirectory = wallpapersDirectory
+        self.storeSync = storeSync
         self.previousWallpaperURL = storageService.previousWallpaperURL
 
         // Observe Mission Control space changes so we can re-apply the wallpaper
@@ -180,6 +193,34 @@ final class WallpaperManager: WallpaperManagerProtocol {
         // Prune only after the new wallpaper is on screen — pruning earlier would risk
         // deleting the file the desktop is about to point at.
         pruneWallpapers(keeping: [fileURL])
+
+        if storageService.syncAllSpaces {
+            syncEverySpace(to: fileURL)
+        }
+    }
+
+    /// Pushes `fileURL` to every Mission Control Space, off the main thread.
+    ///
+    /// Coalesced by generation: a sync superseded by a newer apply is dropped rather than run,
+    /// so clicking through wallpapers cannot queue up a series of agent restarts.
+    private func syncEverySpace(to fileURL: URL) {
+        syncLock.lock()
+        syncGeneration &+= 1
+        let generation = syncGeneration
+        syncLock.unlock()
+
+        syncQueue.async { [weak self] in
+            guard let self else { return }
+            self.syncLock.lock()
+            let current = self.syncGeneration
+            self.syncLock.unlock()
+            guard current == generation else { return }
+
+            let entries = self.storeSync.syncAllSpaces(to: fileURL)
+            if entries == 0 {
+                self.logger.notice("tüm-space eşitlemesi bir şey değiştirmedi; diğer alanlar ziyaret edildiklerinde güncellenecek")
+            }
+        }
     }
 
     func restorePreviousWallpaper() throws {

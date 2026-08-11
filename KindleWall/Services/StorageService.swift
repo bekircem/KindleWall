@@ -43,6 +43,10 @@ protocol StorageServiceProtocol {
     /// Whether to apply wallpaper to all Mission Control spaces (not just the active one).
     var applyToAllSpaces: Bool { get set }
 
+    /// Whether to rewrite macOS's wallpaper store so every Space changes at once.
+    /// Opt-in: the store format is undocumented and the agent has to be restarted.
+    var syncAllSpaces: Bool { get set }
+
     /// Whether wallpapers are written as time-of-day dynamic HEICs instead of a single PNG.
     var dynamicWallpaperEnabled: Bool { get set }
 
@@ -281,6 +285,16 @@ final class StorageService: StorageServiceProtocol {
         get { defaults.object(forKey: Constants.StorageKeys.applyToAllSpaces) as? Bool ?? true }
         set {
             defaults.set(newValue, forKey: Constants.StorageKeys.applyToAllSpaces)
+            postUserStateChanged()
+        }
+    }
+
+    /// Default off: this rewrites an undocumented system file and has to restart a system agent,
+    /// so it is the user's call, not ours. See `WallpaperStoreSync`.
+    var syncAllSpaces: Bool {
+        get { defaults.object(forKey: Constants.StorageKeys.syncAllSpaces) as? Bool ?? false }
+        set {
+            defaults.set(newValue, forKey: Constants.StorageKeys.syncAllSpaces)
             postUserStateChanged()
         }
     }
