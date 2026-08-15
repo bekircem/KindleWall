@@ -102,8 +102,13 @@ final class DynamicWallpaperComposer: DynamicWallpaperComposerProtocol {
                     bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
                 ) else { return nil }
 
+                // Force-unwrapping `out.data` would trade a missing frame for a crash. The
+                // caller already knows how to handle nil here — it falls back to the static
+                // wallpaper — so a desktop that changes beats a dialog that does not.
+                guard let bitmap = out.data else { return nil }
+
                 context.render(composited,
-                               toBitmap: out.data!,
+                               toBitmap: bitmap,
                                rowBytes: out.bytesPerRow,
                                bounds: extent,
                                format: .RGBA8,
