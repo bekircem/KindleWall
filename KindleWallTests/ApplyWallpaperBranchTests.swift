@@ -15,7 +15,7 @@ final class ApplyWallpaperBranchTests: XCTestCase {
     private var wallpaperDir: URL!
 
     override func setUp() async throws {
-        suiteName = "KindleWallTests-\(UUID().uuidString)"
+        suiteName = TestDefaults.makeSuiteName("apply")
         defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
 
         wallpaperDir = URL(fileURLWithPath: NSTemporaryDirectory())
@@ -27,7 +27,7 @@ final class ApplyWallpaperBranchTests: XCTestCase {
 
     override func tearDown() async throws {
         DesktopWallpaperGuard.restore()
-        defaults.removePersistentDomain(forName: suiteName)
+        TestDefaults.destroy(suiteNamed: suiteName, defaults: defaults)
         try? FileManager.default.removeItem(at: wallpaperDir)
     }
 

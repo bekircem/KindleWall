@@ -14,12 +14,12 @@ final class StorageServiceRobustnessTests: XCTestCase {
     private var defaults: UserDefaults!
 
     override func setUpWithError() throws {
-        suiteName = "KindleWallStorageTests-\(UUID().uuidString)"
+        suiteName = TestDefaults.makeSuiteName("storage")
         defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
     }
 
     override func tearDownWithError() throws {
-        defaults.removePersistentDomain(forName: suiteName)
+        TestDefaults.destroy(suiteNamed: suiteName, defaults: defaults)
     }
 
     private func makeStorage() -> StorageService { StorageService(defaults: defaults) }

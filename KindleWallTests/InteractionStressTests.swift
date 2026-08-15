@@ -12,7 +12,7 @@ final class InteractionStressTests: XCTestCase {
     private var wallpaperDir: URL!
 
     override func setUp() async throws {
-        suiteName = "KindleWallStress-\(UUID().uuidString)"
+        suiteName = TestDefaults.makeSuiteName("stress")
         defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         wallpaperDir = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent("KindleWallStress-\(UUID().uuidString)")
@@ -22,7 +22,7 @@ final class InteractionStressTests: XCTestCase {
 
     override func tearDown() async throws {
         DesktopWallpaperGuard.restore()
-        defaults.removePersistentDomain(forName: suiteName)
+        TestDefaults.destroy(suiteNamed: suiteName, defaults: defaults)
         try? FileManager.default.removeItem(at: wallpaperDir)
     }
 

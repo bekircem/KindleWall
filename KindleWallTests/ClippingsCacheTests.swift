@@ -37,14 +37,14 @@ final class ClippingsCacheTests: XCTestCase {
     }
 
     override func setUp() async throws {
-        suiteName = "KindleWallCache-\(UUID().uuidString)"
+        suiteName = TestDefaults.makeSuiteName("cache")
         defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         sourceFile = try writeSourceFile()
         try? FileManager.default.removeItem(at: Constants.Paths.localClippingsFile)
     }
 
     override func tearDown() async throws {
-        defaults.removePersistentDomain(forName: suiteName)
+        TestDefaults.destroy(suiteNamed: suiteName, defaults: defaults)
         try? FileManager.default.removeItem(at: sourceFile.deletingLastPathComponent())
         try? FileManager.default.removeItem(at: Constants.Paths.localClippingsFile)
     }

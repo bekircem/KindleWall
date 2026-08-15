@@ -14,13 +14,13 @@ final class AutoApplyTests: XCTestCase {
     private var manager: FakeWallpaperManager!
 
     override func setUp() async throws {
-        suiteName = "KindleWallTests-\(UUID().uuidString)"
+        suiteName = TestDefaults.makeSuiteName("autoapply")
         defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         manager = FakeWallpaperManager()
     }
 
     override func tearDown() async throws {
-        defaults.removePersistentDomain(forName: suiteName)
+        TestDefaults.destroy(suiteNamed: suiteName, defaults: defaults)
     }
 
     private func makeViewModel(autoApply: Bool = true) -> MainViewModel {

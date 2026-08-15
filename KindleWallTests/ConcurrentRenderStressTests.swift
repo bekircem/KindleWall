@@ -27,11 +27,15 @@ final class ConcurrentRenderStressTests: XCTestCase {
         done.expectedFulfillmentCount = iterations
 
         let styles = WallpaperStyle.allCases
+        // Hoisted out of the concurrent body: capturing `self` would drag the whole XCTestCase
+        // across threads, which is the very thing this file exists to police.
+        let generator = self.generator
+        let clippings = (0..<iterations).map(clipping)
 
         DispatchQueue.concurrentPerform(iterations: iterations) { index in
             let style = styles[index % styles.count]
             let image = generator.generateWallpaper(
-                clipping: clipping(index),
+                clipping: clippings[index],
                 style: style,
                 screenSize: CGSize(width: 800, height: 500),
                 typography: .default,
@@ -51,17 +55,20 @@ final class ConcurrentRenderStressTests: XCTestCase {
         let done = expectation(description: "overlapping renders finished")
         done.expectedFulfillmentCount = rounds * 2
 
+        let generator = self.generator
+
         for round in 0..<rounds {
+            let fixture = clipping(round)
             DispatchQueue.global().async {
-                _ = self.generator.generateWallpaper(
-                    clipping: self.clipping(round), style: .paper,
+                _ = generator.generateWallpaper(
+                    clipping: fixture, style: .paper,
                     screenSize: CGSize(width: 600, height: 375),
                     typography: .default, longQuote: .default)
                 done.fulfill()
             }
             DispatchQueue.global().async {
-                _ = self.generator.generateWallpaper(
-                    clipping: self.clipping(round), style: .paper,
+                _ = generator.generateWallpaper(
+                    clipping: fixture, style: .paper,
                     screenSize: CGSize(width: 1600, height: 1000),
                     typography: .default, longQuote: .default)
                 done.fulfill()
