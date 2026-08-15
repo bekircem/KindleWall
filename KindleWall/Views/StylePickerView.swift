@@ -4,8 +4,10 @@ import SwiftUI
 struct StylePickerView: View {
     @Binding var selectedStyle: WallpaperStyle
 
+    // 150 rather than 160: the grid now shares its page with a live-preview inspector, and its
+    // intrinsic minimum was part of what pushed the whole layout wider than the window.
     private let columns = [
-        GridItem(.adaptive(minimum: 160), spacing: 12)
+        GridItem(.adaptive(minimum: 150), spacing: 12)
     ]
 
     var body: some View {

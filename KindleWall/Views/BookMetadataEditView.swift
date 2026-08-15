@@ -113,7 +113,9 @@ struct BookMetadataEditView: View {
                                     }
                                 }
 
-                                Button("Uygula") {
+                                // Not "Uygula": everywhere else in the app that word means
+                                // "put this on the desktop". Here it only fills two fields.
+                                Button("Öneriyi Kullan") {
                                     editTitle = sugTitle
                                     editAuthor = sugAuthor ?? ""
                                 }
@@ -137,7 +139,7 @@ struct BookMetadataEditView: View {
             // Action buttons
             HStack {
                 // Reset to original — only enabled if an override exists
-                Button("Sıfırla") {
+                Button("Varsayılana Dön") {
                     onReset()
                     dismiss()
                 }

@@ -6,6 +6,9 @@ struct GeneralSettingsPage: View {
     let canRestorePreviousWallpaper: Bool
     let actions: SettingsActions
 
+    /// Same key the app scene watches, so clearing it swaps the window back to setup at once.
+    @AppStorage(Constants.StorageKeys.hasCompletedOnboarding) private var hasCompletedOnboarding = false
+
     var body: some View {
         SettingsPage(title: "Genel") {
             SettingsCard(footnote: settingsVM.loginItemError) {
@@ -50,8 +53,10 @@ struct GeneralSettingsPage: View {
             .onChange(of: settingsVM.syncAllSpaces) {
                 settingsVM.saveSettings()
                 // Apply straight away, so switching the toggle on visibly does something instead
-                // of waiting for the next rotation.
-                if settingsVM.syncAllSpaces { actions.onApplyNow() }
+                // of waiting for the next rotation — but re-apply the *same* quote. This used to
+                // call `onApplyNow`, which also rolled a new one, so a spaces toggle silently
+                // changed which highlight you were reading.
+                if settingsVM.syncAllSpaces { actions.onApplyDesignNow() }
             }
 
             SettingsCard(title: "Duvar Kağıdı") {
@@ -65,6 +70,21 @@ struct GeneralSettingsPage: View {
                     }
                     .buttonStyle(.bordered)
                     .disabled(!canRestorePreviousWallpaper)
+                }
+            }
+
+            SettingsCard(
+                title: "Kurulum",
+                footnote: "Karşılama akışını yeniden açar. Alıntıların, favorilerin ve ayarların olduğu gibi kalır."
+            ) {
+                SettingsRow(
+                    icon: "sparkles", iconColor: .indigo,
+                    title: "Tanıtımı Yeniden Göster"
+                ) {
+                    Button("Başlat") {
+                        hasCompletedOnboarding = false
+                    }
+                    .buttonStyle(.bordered)
                 }
             }
         }

@@ -12,7 +12,7 @@ struct TypographyPanelView: View {
                     Text("Tipografi")
                         .font(.headline)
                     Spacer()
-                    Button("Sıfırla") {
+                    Button("Varsayılana Dön") {
                         onReset()
                     }
                     .font(.caption)

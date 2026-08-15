@@ -18,11 +18,11 @@ struct BehaviorSettingsPage: View {
 
     var body: some View {
         SettingsPage(title: "Davranış") {
-            BehaviorGroup("Zamanlama") {
+            SettingsGroup("Zamanlama") {
                 ScheduleSection(settingsVM: settingsVM, actions: actions)
             }
 
-            BehaviorGroup("Döngü Modu") {
+            SettingsGroup("Döngü Modu") {
                 RotationSection(
                     settingsVM: settingsVM,
                     availableBooks: viewModel.availableBooks,
@@ -32,39 +32,13 @@ struct BehaviorSettingsPage: View {
                 )
             }
 
-            BehaviorGroup("Uzun Alıntılar") {
+            SettingsGroup("Uzun Alıntılar") {
                 LongQuoteSection(settingsVM: settingsVM, actions: actions)
             }
 
-            BehaviorGroup("Kaynak Dosya") {
+            SettingsGroup("Kaynak Dosya") {
                 SourceFileSection(settingsVM: settingsVM, clippingsCount: viewModel.clippings.count, actions: actions)
             }
-        }
-    }
-}
-
-// MARK: - Behavior Group
-
-/// A labeled group within `BehaviorSettingsPage`: a prominent header above its section content.
-/// The header sits one step above `SettingsCard`'s own uppercased titles, giving a clear
-/// hierarchy (group → card → row) on the consolidated page.
-private struct BehaviorGroup<Content: View>: View {
-    let title: String
-    @ViewBuilder var content: Content
-
-    init(_ title: String, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.content = content()
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-            Text(title)
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(.primary)
-                .padding(.leading, Theme.Spacing.xs)
-
-            content
         }
     }
 }

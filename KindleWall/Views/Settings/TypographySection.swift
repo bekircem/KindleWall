@@ -1,10 +1,9 @@
 import SwiftUI
 
-/// "Tipografi" page — live type controls (shared with the hero inspector) plus quote decoration.
-struct TypographySettingsPage: View {
+/// Decoration chips plus the live type controls (shared with the hero inspector) — the
+/// "Tipografi" group of the "Tasarım" page.
+struct TypographySection: View {
     let viewModel: MainViewModel
-    @Bindable var settingsVM: SettingsViewModel
-    let actions: SettingsActions
 
     private var typographyBinding: Binding<TypographySettings> {
         Binding(
@@ -14,17 +13,17 @@ struct TypographySettingsPage: View {
     }
 
     var body: some View {
-        SettingsPage(title: "Tipografi") {
-            // Decoration
+        VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
+            // Decoration — reads and writes the same `typography` the sliders below do, so
+            // "Varsayılana Dön" can no longer leave the chips highlighting a stale choice.
             SettingsCard(title: "Süsleme", footnote: "Alıntının çevresine eklenen dekoratif öğe.") {
                 HStack(spacing: Theme.Spacing.s) {
                     ForEach(TypographySettings.DecorationStyle.allCases) { style in
                         DecorationStyleChip(
                             style: style,
-                            isSelected: settingsVM.decorativeStyle == style
+                            isSelected: viewModel.typography.decorativeStyle == style
                         ) {
-                            settingsVM.updateDecorativeStyle(style)
-                            actions.onTypographyChanged()
+                            viewModel.updateDecorationStyle(style)
                         }
                     }
                 }
@@ -36,7 +35,7 @@ struct TypographySettingsPage: View {
                 HStack {
                     SectionHeader("Yazı Tipi")
                     Spacer()
-                    Button("Sıfırla") {
+                    Button("Varsayılana Dön") {
                         viewModel.updateTypography(.default)
                     }
                     .font(.caption)

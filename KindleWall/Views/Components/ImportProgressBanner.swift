@@ -48,7 +48,7 @@ struct ImportProgressBanner: View {
             HStack {
                 ProgressView()
                     .controlSize(.small)
-                Text("İçeri Aktarılıyor...")
+                Text("İçeri Aktarılıyor…")
                     .font(.subheadline)
                     .fontWeight(.medium)
                 Spacer()

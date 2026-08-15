@@ -43,5 +43,15 @@ struct ShortcutsSettingsPage: View {
             }
         }
         .onAppear { accessibilityGranted = AXIsProcessTrusted() }
+        // Granting the permission happens in System Settings, so the user comes back to a page
+        // that is already on screen — `onAppear` alone never fires again and the row kept
+        // insisting the permission was missing.
+        .task {
+            for await _ in NotificationCenter.default.notifications(
+                named: NSApplication.didBecomeActiveNotification
+            ) {
+                accessibilityGranted = AXIsProcessTrusted()
+            }
+        }
     }
 }

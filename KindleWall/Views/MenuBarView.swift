@@ -109,7 +109,7 @@ struct MenuBarView: View {
             Button {
                 GlobalHotkeyManager.shared.showCapture()
             } label: {
-                Label("Manuel Alıntı Ekle", systemImage: Constants.Icons.captureIcon)
+                Label("Alıntı Ekle", systemImage: Constants.Icons.captureIcon)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)

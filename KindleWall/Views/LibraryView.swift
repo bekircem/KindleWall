@@ -9,6 +9,7 @@ struct LibraryView: View {
     var onAddManualClipping: (String, String?, String, String?) -> Void = { _, _, _, _ in }
     var onDeleteManualClipping: (Clipping) -> Void = { _ in }
     var onUpdateManualClipping: (Clipping) -> Void = { _ in }
+    var onChooseFile: () -> Void = {}
 
     @State private var viewModel = LibraryViewModel()
     @State private var coverService = BookCoverService()
@@ -20,13 +21,31 @@ struct LibraryView: View {
     var body: some View {
         Group {
             if filteredBooks.isEmpty {
-                ContentUnavailableView(
-                    clippings.isEmpty ? "Kitap bulunamadı" : "Sonuç yok",
-                    systemImage: "books.vertical",
-                    description: Text(clippings.isEmpty
-                        ? "Önce bir My Clippings.txt dosyası yükleyin."
-                        : "Arama kriterlerinize uygun kitap yok.")
-                )
+                // Both variants used to be a dead end with no way out of them.
+                if clippings.isEmpty {
+                    ContentUnavailableView {
+                        Label("Henüz alıntı yok", systemImage: "books.vertical")
+                    } description: {
+                        Text("Kindle'ındaki My Clippings.txt dosyasını yükle, ya da elle bir alıntı ekle.")
+                    } actions: {
+                        Button {
+                            onChooseFile()
+                        } label: {
+                            Label("Dosya Seç…", systemImage: "folder")
+                        }
+                        .buttonStyle(.borderedProminent)
+
+                        Button("Alıntı Ekle") { showAddClippingForm = true }
+                    }
+                } else {
+                    ContentUnavailableView {
+                        Label("Sonuç yok", systemImage: "magnifyingglass")
+                    } description: {
+                        Text("Arama kriterlerinize uygun kitap yok.")
+                    } actions: {
+                        Button("Aramayı Temizle") { viewModel.searchText = "" }
+                    }
+                }
             } else if viewModel.viewMode == .list {
                 List(filteredBooks) { book in
                     NavigationLink(value: book) {

@@ -18,6 +18,9 @@ struct SettingsRow<Trailing: View>: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.body)
+                    // Let a long title wrap instead of reporting one wide line as its minimum;
+                    // otherwise a single row can widen the whole detail column.
+                    .fixedSize(horizontal: false, vertical: true)
                 if let subtitle {
                     Text(subtitle)
                         .font(.caption)

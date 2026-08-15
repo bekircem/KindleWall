@@ -3,11 +3,13 @@ import SwiftUI
 /// The main application window: Loop-style grouped sidebar navigation with focused detail pages.
 struct MainView: View {
     @State private var viewModel: MainViewModel
-    @State private var settingsVM = SettingsViewModel()
+    /// Injected rather than created here, so onboarding and the main window share one instance.
+    @Bindable var settingsVM: SettingsViewModel
     @State private var selection: SidebarItem = .currentQuote
 
-    init(viewModel: MainViewModel) {
+    init(viewModel: MainViewModel, settingsVM: SettingsViewModel) {
         _viewModel = State(initialValue: viewModel)
+        self.settingsVM = settingsVM
     }
 
     var body: some View {
@@ -16,12 +18,21 @@ struct MainView: View {
         } detail: {
             detail
         }
-        .frame(minWidth: 840, minHeight: 560)
+        // The design page puts a sidebar, a style grid and the preview inspector side by side.
+        // Below this width they cannot all fit, and `NavigationSplitView` resolves that by
+        // pushing the sidebar off the left edge — its labels end up clipped mid-word rather
+        // than the inspector giving way. Measured at 940: ~60pt short.
+        .frame(minWidth: 1000, minHeight: 600)
         .overlay(alignment: .bottom) {
-            ImportProgressBanner()
-                .padding(.bottom, 12)
-                .padding(.horizontal, 16)
-                .frame(maxWidth: 420)
+            // Both float in the same corner so status has one home, whichever page is open.
+            VStack(spacing: Theme.Spacing.s) {
+                AlertBanner(viewModel: viewModel)
+                ApplyStatusBar(viewModel: viewModel)
+                ImportProgressBanner()
+                    .frame(maxWidth: 420)
+            }
+            .padding(.bottom, 12)
+            .padding(.horizontal, 16)
         }
         .sheet(isPresented: Binding(
             get: { viewModel.pendingCaptureText != nil },
@@ -64,6 +75,24 @@ struct MainView: View {
         }
         .listStyle(.sidebar)
         .navigationSplitViewColumnWidth(min: 210, ideal: 230)
+        .background(sidebarShortcuts)
+    }
+
+    /// ⌘1…⌘8 jump straight to a sidebar destination.
+    ///
+    /// Zero-sized buttons because a `List` row carries a selection tag, not an action, so there
+    /// is nothing there to hang a shortcut on.
+    private var sidebarShortcuts: some View {
+        ForEach(Array(SidebarItem.allCases.enumerated()), id: \.element) { index, item in
+            Button("") { selection = item }
+                .keyboardShortcut(
+                    KeyEquivalent(Character("\(index + 1)")),
+                    modifiers: .command
+                )
+                .frame(width: 0, height: 0)
+                .opacity(0)
+                .accessibilityHidden(true)
+        }
     }
 
     // MARK: - Detail
@@ -90,26 +119,23 @@ struct MainView: View {
                         viewModel.addManualClipping(bookTitle: title, author: author, text: text, page: page)
                     },
                     onDeleteManualClipping: { viewModel.deleteManualClipping($0) },
-                    onUpdateManualClipping: { viewModel.updateManualClipping($0) }
+                    onUpdateManualClipping: { viewModel.updateManualClipping($0) },
+                    onChooseFile: {
+                        if let url = settingsVM.selectClippingsFile() {
+                            viewModel.loadClippings(from: url)
+                        }
+                    }
                 )
             }
 
-        case .style:
-            StyleSettingsPage(viewModel: viewModel, settingsVM: settingsVM, actions: actions)
-                .livePreviewInspector(viewModel: viewModel)
-
-        case .typography:
-            TypographySettingsPage(viewModel: viewModel, settingsVM: settingsVM, actions: actions)
-                .livePreviewInspector(viewModel: viewModel)
-
-        case .background:
-            BackgroundSettingsPage(settingsVM: settingsVM, actions: actions)
+        case .design:
+            DesignSettingsPage(viewModel: viewModel, settingsVM: settingsVM, actions: actions)
                 .livePreviewInspector(viewModel: viewModel)
 
         case .behavior:
             BehaviorSettingsPage(viewModel: viewModel, settingsVM: settingsVM, actions: actions)
 
-        case .general:
+        case .settings:
             GeneralSettingsPage(settingsVM: settingsVM, canRestorePreviousWallpaper: viewModel.canRestorePreviousWallpaper, actions: actions)
 
         case .shortcuts:
@@ -140,7 +166,8 @@ struct MainView: View {
             onApplyNow: {
                 viewModel.selectRandomClipping()
                 viewModel.applyWallpaper()
-            }
+            },
+            onApplyDesignNow: { viewModel.applyDesignNow() }
         )
     }
 
@@ -155,5 +182,5 @@ struct MainView: View {
 }
 
 #Preview {
-    MainView(viewModel: MainViewModel())
+    MainView(viewModel: MainViewModel(), settingsVM: SettingsViewModel())
 }

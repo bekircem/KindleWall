@@ -1,23 +1,32 @@
 import SwiftUI
 
-/// Full-panel empty state shown when no Kindle clippings file has been selected.
+/// Full-panel empty state for "there is nothing to show yet".
+///
+/// Takes its wording from the caller because two very different situations reach it: no file
+/// has ever been chosen, or a file was chosen and yielded nothing. Both used to show the same
+/// "Kindle Dosyası Seçilmedi" screen, which told the second user something plainly untrue and
+/// gave them no idea what had gone wrong.
 struct NoFileEmptyStateView: View {
+    var symbol: String = "book.closed.fill"
+    var title: String = "Kindle Dosyası Seçilmedi"
+    var message: String = "My Clippings.txt dosyanızı seçerek\nKindle alıntılarınızı duvar kağıdına\ndönüştürmeye başlayın."
+    var actionTitle: String = "Dosya Seç…"
     var onSelectFile: () -> Void
 
     var body: some View {
         VStack(spacing: 16) {
             Spacer()
 
-            Image(systemName: "book.closed.fill")
+            Image(systemName: symbol)
                 .font(.system(size: 64))
                 .foregroundStyle(Color.accentColor)
 
-            Text("Kindle Dosyası Seçilmedi")
+            Text(title)
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
 
-            Text("My Clippings.txt dosyanızı seçerek\nKindle alıntılarınızı duvar kağıdına\ndönüştürmeye başlayın.")
+            Text(message)
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -26,7 +35,7 @@ struct NoFileEmptyStateView: View {
             Button {
                 onSelectFile()
             } label: {
-                Label("Dosya Seç", systemImage: "folder")
+                Label(actionTitle, systemImage: "folder")
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)

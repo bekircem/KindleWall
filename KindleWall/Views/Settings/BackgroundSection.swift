@@ -1,12 +1,14 @@
 import SwiftUI
 
-/// "Arka Plan" page — dynamic (time-of-day) wallpaper, and a custom gradient override.
-struct BackgroundSettingsPage: View {
+/// Dynamic (time-of-day) wallpaper and the custom gradient override — the "Arka Plan" group
+/// of the "Tasarım" page.
+struct BackgroundSection: View {
+    @Bindable var viewModel: MainViewModel
     @Bindable var settingsVM: SettingsViewModel
     let actions: SettingsActions
 
     var body: some View {
-        SettingsPage(title: "Arka Plan") {
+        VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
             SettingsCard(
                 title: "Dinamik Duvar Kağıdı",
                 footnote: "Açıkken duvar kağıdı tek bir görüntü yerine altı kareli bir HEIC olarak yazılır ve macOS gün içinde renkleri kendisi değiştirir — uygulama kapalıyken bile. Alıntının ne sıklıkla değişeceği ayrı bir ayar; bu yalnızca renkleri etkiler."
@@ -31,7 +33,9 @@ struct BackgroundSettingsPage: View {
             }
             .onChange(of: settingsVM.dynamicWallpaperEnabled) {
                 settingsVM.updateDynamicWallpaperEnabled()
-                actions.onApplyNow()
+                // Through the design funnel, not `onApplyNow` — that one also picks a new
+                // quote, so turning this toggle on used to jump you to a different highlight.
+                viewModel.externalDesignSettingChanged()
             }
 
             SettingsCard(
@@ -39,31 +43,26 @@ struct BackgroundSettingsPage: View {
                 footnote: "Seçili stilin arka planını özel renklerle değiştir. Metin rengi otomatik olarak okunabilirliğe göre ayarlanır."
             ) {
                 VStack(alignment: .leading, spacing: Theme.Spacing.m) {
+                    // Bound straight to the owner: the setter persists and refreshes the
+                    // preview itself, so the page no longer needs onChange observers that
+                    // wrote the gradient a second time.
                     GradientPicker(
-                        startColor: $settingsVM.backgroundStartColor,
-                        endColor: $settingsVM.backgroundEndColor
+                        startColor: $viewModel.backgroundStartColor,
+                        endColor: $viewModel.backgroundEndColor
                     )
 
                     HStack {
                         Spacer()
                         Button("Varsayılana Dön") {
-                            settingsVM.resetBackgroundGradient()
-                            actions.onTypographyChanged()
+                            viewModel.resetBackgroundGradient()
                         }
                         .font(.caption)
                         .buttonStyle(.plain)
                         .foregroundStyle(.secondary)
+                        .disabled(!viewModel.hasCustomGradient)
                     }
                 }
                 .padding(Theme.Spacing.l)
-            }
-            .onChange(of: settingsVM.backgroundStartColor) {
-                settingsVM.updateBackgroundGradient()
-                actions.onTypographyChanged()
-            }
-            .onChange(of: settingsVM.backgroundEndColor) {
-                settingsVM.updateBackgroundGradient()
-                actions.onTypographyChanged()
             }
         }
     }
@@ -75,8 +74,11 @@ struct BackgroundSettingsPage: View {
 /// is invisible unless it is shown. Location is derived from the system time zone; no Location
 /// Services permission is involved.
 private struct SolarScheduleRow: View {
-    private let phases: [SolarPhaseTime] = SunCalculator()
-        .phases(for: Date(), at: GeoCoordinate.fromSystemTimeZone())
+    /// Computed, not stored: as a `let` it was fixed when the view struct was first built, so
+    /// leaving the app open past midnight left yesterday's times on screen.
+    private var phases: [SolarPhaseTime] {
+        SunCalculator().phases(for: Date(), at: GeoCoordinate.fromSystemTimeZone())
+    }
 
     private static let formatter: DateFormatter = {
         let f = DateFormatter()

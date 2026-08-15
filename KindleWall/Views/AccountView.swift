@@ -13,7 +13,7 @@ struct AccountView: View {
             VStack(spacing: Theme.Spacing.xl) {
                 switch authState.status {
                 case .unknown:
-                    ProgressView("Kontrol ediliyor...")
+                    ProgressView("Kontrol ediliyor…")
                         .padding(.top, Theme.Spacing.xxl)
 
                 case .unauthenticated:

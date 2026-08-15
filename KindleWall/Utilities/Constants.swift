@@ -76,6 +76,7 @@ enum Constants {
         static let showInMenuBar = "showInMenuBar"
         static let showNotifications = "showNotifications"
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
+        static let autoApplyDesignChanges = "autoApplyDesignChanges"
         static let typographySettings = "typographySettings"
         static let applyToAllSpaces = "applyToAllSpaces"
         static let dynamicWallpaperEnabled = "dynamicWallpaperEnabled"

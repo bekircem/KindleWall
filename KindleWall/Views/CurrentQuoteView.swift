@@ -6,20 +6,26 @@ struct CurrentQuoteView: View {
     @State private var showTypographyPanel = false
 
     private var hasNoClippings: Bool {
-        viewModel.clippings.isEmpty && !viewModel.isLoading
+        // `isLoading` was never assigned by anything, so this used to be a plain emptiness
+        // check that flashed the "pick a file" screen during every import. The import's real
+        // state lives on `ImportState`.
+        viewModel.clippings.isEmpty && !viewModel.importState.isRunning
     }
 
     var body: some View {
         Group {
             if hasNoClippings {
-                NoFileEmptyStateView {
-                    let panel = NSOpenPanel()
-                    panel.title = "My Clippings.txt Dosyasını Seçin"
-                    panel.allowedContentTypes = [.plainText]
-                    panel.allowsMultipleSelection = false
-                    if panel.runModal() == .OK, let url = panel.url {
-                        viewModel.loadClippings(from: url)
-                    }
+                if viewModel.hasClippingsSource {
+                    // A file was chosen and produced nothing — usually the wrong text file.
+                    NoFileEmptyStateView(
+                        symbol: "doc.text.magnifyingglass",
+                        title: "Alıntı Bulunamadı",
+                        message: "Seçtiğin dosyada okunabilir bir alıntı yok.\nKindle'daki My Clippings.txt dosyasını\nseçtiğinden emin ol.",
+                        actionTitle: "Başka Dosya Seç…",
+                        onSelectFile: chooseClippingsFile
+                    )
+                } else {
+                    NoFileEmptyStateView(onSelectFile: chooseClippingsFile)
                 }
             } else {
                 hero
@@ -39,6 +45,16 @@ struct CurrentQuoteView: View {
         }
     }
 
+    private func chooseClippingsFile() {
+        let panel = NSOpenPanel()
+        panel.title = "My Clippings.txt Dosyasını Seçin"
+        panel.allowedContentTypes = [.plainText]
+        panel.allowsMultipleSelection = false
+        if panel.runModal() == .OK, let url = panel.url {
+            viewModel.loadClippings(from: url)
+        }
+    }
+
     // MARK: - Hero
 
     private var hero: some View {
@@ -55,14 +71,27 @@ struct CurrentQuoteView: View {
                     quoteBar(for: clipping)
                 }
 
-                if let error = viewModel.errorMessage {
-                    Text(error)
-                        .foregroundStyle(.red)
-                        .font(.caption)
-                }
+                // Errors are no longer drawn here — `AlertBanner` shows them on every page,
+                // instead of only on the one the user might not be looking at.
+                nextChangeLine
             }
             .frame(maxWidth: .infinity)
             .padding(.bottom, Theme.Spacing.xl)
+        }
+    }
+
+    /// When the next rotation lands. The scheduler already knew this; nothing showed it, so the
+    /// wallpaper appeared to change at random moments.
+    @ViewBuilder private var nextChangeLine: some View {
+        if viewModel.isSchedulerPaused {
+            Label("Otomatik değişim duraklatıldı", systemImage: Constants.Icons.pause)
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+        } else if let next = viewModel.nextWallpaperDate {
+            Text("Sonraki alıntı \(next, format: .dateTime.hour().minute())")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+                .monospacedDigit()
         }
     }
 
@@ -144,28 +173,7 @@ struct CurrentQuoteView: View {
 
     @ToolbarContentBuilder private var toolbarContent: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
-            Button {
-                viewModel.applyWallpaper()
-            } label: {
-                Group {
-                    if viewModel.isApplying {
-                        Label("Uygulanıyor...", systemImage: "arrow.clockwise")
-                    } else if viewModel.applySuccess {
-                        Label("Uygulandı", systemImage: "checkmark.circle.fill")
-                    } else {
-                        Label("Uygula", systemImage: Constants.Icons.wallpaper)
-                    }
-                }
-                .animation(Theme.Motion.snappy, value: viewModel.isApplying)
-                .animation(Theme.Motion.snappy, value: viewModel.applySuccess)
-            }
-            .labelStyle(.titleAndIcon)
-            .buttonStyle(.borderedProminent)
-            .tint(viewModel.applySuccess ? .green : .accentColor)
-            .disabled(viewModel.isApplying)
-            .keyboardShortcut(.return, modifiers: .command)
-            .help("Bu alıntıyı masaüstü duvar kağıdı olarak uygula")
-            .accessibilityLabel("Duvar kağıdı olarak uygula")
+            ApplyToolbarButton(viewModel: viewModel)
         }
 
         ToolbarItemGroup(placement: .secondaryAction) {

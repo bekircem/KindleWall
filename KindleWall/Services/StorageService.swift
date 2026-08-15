@@ -34,6 +34,9 @@ protocol StorageServiceProtocol {
     /// Whether to show notifications on wallpaper change.
     var showNotifications: Bool { get set }
 
+    /// Whether editing the design applies it to the desktop on its own, once the edits settle.
+    var autoApplyDesignChanges: Bool { get set }
+
     /// Whether the user has completed onboarding.
     var hasCompletedOnboarding: Bool { get set }
 
@@ -277,6 +280,14 @@ final class StorageService: StorageServiceProtocol {
     var hasCompletedOnboarding: Bool {
         get { defaults.bool(forKey: Constants.StorageKeys.hasCompletedOnboarding) }
         set { defaults.set(newValue, forKey: Constants.StorageKeys.hasCompletedOnboarding) }
+    }
+
+    var autoApplyDesignChanges: Bool {
+        get { defaults.object(forKey: Constants.StorageKeys.autoApplyDesignChanges) as? Bool ?? true }
+        set {
+            defaults.set(newValue, forKey: Constants.StorageKeys.autoApplyDesignChanges)
+            postUserStateChanged()
+        }
     }
 
     // MARK: - Spaces

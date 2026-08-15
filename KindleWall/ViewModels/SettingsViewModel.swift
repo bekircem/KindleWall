@@ -2,12 +2,17 @@ import SwiftUI
 import Observation
 import ServiceManagement
 
-/// Manages the state for the settings view.
+/// Application-level preferences: launch, menu bar, notifications, spaces, schedule cadence,
+/// rotation and long-quote handling.
+///
+/// Deliberately owns **no design state**. Style, typography, decoration and the background
+/// gradient live on `MainViewModel` alone. When both view models mirrored them, they drifted:
+/// picking a style from the menu bar left this one stale, and `saveSettings()` could write that
+/// stale value back over the user's real choice.
 @Observable
 final class SettingsViewModel {
     // MARK: - State
 
-    var selectedStyle: WallpaperStyle
     var scheduleInterval: ScheduleInterval
     var customScheduleDate: Date
     var launchAtLogin: Bool
@@ -17,9 +22,6 @@ final class SettingsViewModel {
     var syncAllSpaces: Bool
     var dynamicWallpaperEnabled: Bool
     var clippingsFilePath: String?
-    var decorativeStyle: TypographySettings.DecorationStyle
-    var backgroundStartColor: Color
-    var backgroundEndColor: Color
     var loginItemError: String? = nil
     var rotationMode: RotationMode
     var pinnedBookTitles: Set<String>
@@ -40,7 +42,6 @@ final class SettingsViewModel {
 
     init(storage: StorageServiceProtocol = StorageService()) {
         self.storage = storage
-        self.selectedStyle = storage.selectedStyle
         self.scheduleInterval = storage.scheduleInterval
         self.customScheduleDate = storage.customScheduleDate ?? Date()
         let smStatus = SMAppService.mainApp.status
@@ -52,10 +53,6 @@ final class SettingsViewModel {
         self.syncAllSpaces = storage.syncAllSpaces
         self.dynamicWallpaperEnabled = storage.dynamicWallpaperEnabled
         self.clippingsFilePath = storage.resolveClippingsFileURL()?.path
-        let t = storage.typography
-        self.decorativeStyle = t.decorativeStyle
-        self.backgroundStartColor = t.backgroundStartColorHex.flatMap { Color(hex: $0) } ?? Color(hex: "667EEA") ?? .purple
-        self.backgroundEndColor   = t.backgroundEndColorHex.flatMap   { Color(hex: $0) } ?? Color(hex: "764BA2") ?? .indigo
         self.rotationMode = storage.rotationMode
         self.pinnedBookTitles = Set(storage.pinnedBookTitles)
 
@@ -75,11 +72,11 @@ final class SettingsViewModel {
 
     // MARK: - Actions
 
-    /// Saves all current settings to storage.
+    /// Saves the app-level toggles to storage.
+    ///
+    /// Style and schedule are deliberately absent: they are written by whoever owns them
+    /// (`MainViewModel`), so a General-page toggle can no longer flush a stale copy of either.
     func saveSettings() {
-        storage.selectedStyle = selectedStyle
-        storage.scheduleInterval = scheduleInterval
-        storage.customScheduleDate = customScheduleDate
         storage.launchAtLogin = launchAtLogin
         storage.showInMenuBar = showInMenuBar
         storage.showNotifications = showNotifications
@@ -89,71 +86,31 @@ final class SettingsViewModel {
         updateLoginItem()
     }
 
-    /// Saves the selected style and notifies.
-    func updateStyle(_ style: WallpaperStyle) {
-        selectedStyle = style
-        storage.selectedStyle = style
-    }
-
     /// Persists the dynamic-wallpaper toggle.
     func updateDynamicWallpaperEnabled() {
         storage.dynamicWallpaperEnabled = dynamicWallpaperEnabled
     }
 
-    /// Re-reads the typography values this view model mirrors.
-    ///
-    /// Needed because picking a wallpaper style now rewrites typography in `MainViewModel`;
-    /// without this the Tipografi controls would keep showing the pre-change decoration.
-    func reloadTypographyFromStorage() {
-        decorativeStyle = storage.typography.decorativeStyle
-    }
-
-    /// Saves the selected decoration style to storage.
-    func updateDecorativeStyle(_ style: TypographySettings.DecorationStyle) {
-        decorativeStyle = style
-        var t = storage.typography
-        t.decorativeStyle = style
-        storage.typography = t
-    }
-
-    /// Saves the custom background gradient colors to storage.
-    func updateBackgroundGradient() {
-        var t = storage.typography
-        t.backgroundStartColorHex = backgroundStartColor.hexString
-        t.backgroundEndColorHex   = backgroundEndColor.hexString
-        storage.typography = t
-    }
-
-    /// Clears the custom background gradient; style defaults are restored.
-    func resetBackgroundGradient() {
-        var t = storage.typography
-        t.backgroundStartColorHex = nil
-        t.backgroundEndColorHex   = nil
-        storage.typography = t
-        backgroundStartColor = Color(hex: "667EEA") ?? .purple
-        backgroundEndColor   = Color(hex: "764BA2") ?? .indigo
-    }
-
-    /// Updates the schedule interval.
+    /// Mirrors the schedule interval for the picker. Persisting is `MainViewModel`'s job, since
+    /// it also has to retune the running scheduler.
     func updateSchedule(_ interval: ScheduleInterval) {
         scheduleInterval = interval
-        storage.scheduleInterval = interval
     }
 
-    /// Persists the selected rotation mode.
+    /// Mirrors the rotation mode for the picker; `MainViewModel` persists it and resets the
+    /// book-by-book cursor.
     func updateRotationMode(_ mode: RotationMode) {
         rotationMode = mode
-        storage.rotationMode = mode
     }
 
-    /// Toggles a book title's pinned status and persists the updated list.
+    /// Toggles a book title's pinned status. Persisted by `MainViewModel` via the
+    /// `onPinnedBooksChanged` action, so the list is only ever written once.
     func togglePinnedBook(_ title: String) {
         if pinnedBookTitles.contains(title) {
             pinnedBookTitles.remove(title)
         } else {
             pinnedBookTitles.insert(title)
         }
-        storage.pinnedBookTitles = Array(pinnedBookTitles).sorted()
     }
 
     /// Returns true if the given book title is currently pinned.

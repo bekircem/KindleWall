@@ -51,7 +51,7 @@ struct BookDetailView: View {
                         Button("Önizle") {
                             onSelectClipping(clipping)
                         }
-                        Button("Wallpaper Yap") {
+                        Button("Duvar Kağıdı Yap") {
                             onApplyClipping(clipping)
                         }
                         .keyboardShortcut(.return, modifiers: .command)

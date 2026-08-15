@@ -20,9 +20,24 @@ protocol WallpaperManagerProtocol {
     func setWallpaper(image: NSImage) throws
 
     /// Sets the desktop wallpaper from a file URL on all screens.
-    /// - Parameter fileURL: The URL of the wallpaper image file.
+    /// - Parameters:
+    ///   - fileURL: The URL of the wallpaper image file.
+    ///   - propagateToAllSpaces: Whether to also push the image to every Mission Control Space
+    ///     right now (only meaningful when the user enabled "Anında Eşitleme"). Pass `false`
+    ///     for rapid automatic applies and call `syncCurrentWallpaperToAllSpaces()` once the
+    ///     edits settle — see that method for why.
     /// - Throws: KindleWallError if the wallpaper cannot be applied.
-    func setWallpaper(fileURL: URL) throws
+    func setWallpaper(fileURL: URL, propagateToAllSpaces: Bool) throws
+
+    /// Pushes the wallpaper currently on the desktop out to every Space.
+    ///
+    /// Split out from `setWallpaper` because propagating is enormously more expensive than
+    /// setting: it rewrites macOS's wallpaper store and restarts `WallpaperAgent`, which
+    /// reloads the wallpaper on every Space. The existing generation coalescing only helps
+    /// when syncs *overlap*, and at a ~1 s edit cadence each one finishes before the next
+    /// starts — so browsing six styles would mean six full-system wallpaper reloads. Deferring
+    /// until the design stops changing turns that back into one.
+    func syncCurrentWallpaperToAllSpaces()
 
     /// Returns the URL of the current desktop wallpaper (before KindleWall changed it).
     var previousWallpaperURL: URL? { get }
@@ -36,6 +51,16 @@ protocol WallpaperManagerProtocol {
     /// would risk deleting the file the desktop is about to point at.
     /// - Parameter keep: URLs that must survive; anything else in the directory goes.
     func pruneWallpapers(keeping keep: [URL])
+
+    /// Throws away a wallpaper file that was rendered but will never reach the desktop,
+    /// and stops protecting it from pruning.
+    ///
+    /// A superseded apply has already written its file by the time it notices it lost the
+    /// race. Without this the file sits there until some later prune happens to sweep it —
+    /// which, once design changes apply automatically, means a burst of edits leaves a
+    /// trail of multi-megabyte orphans behind.
+    /// - Parameter url: A URL previously obtained from `wallpaperFileURL(extension:)`.
+    func discardPendingWallpaper(at url: URL)
 
     /// Whether the given URL is a wallpaper KindleWall generated (i.e. lives in our directory).
     /// - Parameter url: Any file URL.
@@ -70,6 +95,14 @@ protocol WallpaperManagerProtocol {
     /// Creates the wallpapers directory if it does not exist.
     /// - Throws: `KindleWallError.directoryCreationFailed`.
     func prepareWallpaperDirectory() throws
+}
+
+extension WallpaperManagerProtocol {
+    /// Applies a wallpaper and propagates it to every Space, which is what almost every caller
+    /// wants. Only the automatic design-apply path passes `false`.
+    func setWallpaper(fileURL: URL) throws {
+        try setWallpaper(fileURL: fileURL, propagateToAllSpaces: true)
+    }
 }
 
 // MARK: - Implementation
@@ -118,6 +151,22 @@ final class WallpaperManager: WallpaperManagerProtocol {
     private let syncLock = NSLock()
     private var syncGeneration = 0
 
+    /// Files handed out by `wallpaperFileURL` that are not on the desktop yet, with the time
+    /// they were claimed.
+    ///
+    /// Pruning enumerates the directory on a background queue, so without this an earlier
+    /// apply's prune could run *after* a later apply wrote its file but *before* that apply
+    /// recorded it as current — deleting the very file the desktop is about to point at.
+    /// macOS then keeps drawing the deleted image from cache with no way to refresh it, which
+    /// is exactly the "wallpaper froze and stopped changing" failure this app has already been
+    /// bitten by. Applies used to be minutes apart, which made the window academic; once design
+    /// edits apply on their own they arrive a second apart, in bursts.
+    ///
+    /// Entries are ignored once older than `pendingWriteTTL`, so a render that dies without
+    /// releasing its URL can never block pruning permanently.
+    private var pendingWrites: [String: Date] = [:]
+    private static let pendingWriteTTL: TimeInterval = 120
+
     private let logger = Logger(subsystem: Constants.App.bundleIdentifier, category: "wallpaper")
 
     init(storageService: StorageServiceProtocol,
@@ -145,7 +194,37 @@ final class WallpaperManager: WallpaperManagerProtocol {
     }
 
     func wallpaperFileURL(extension ext: String) -> URL {
-        wallpapersDirectory.appendingPathComponent("kindlewall_\(UUID().uuidString).\(ext)")
+        let url = wallpapersDirectory.appendingPathComponent("kindlewall_\(UUID().uuidString).\(ext)")
+        notePendingWrite(url)
+        return url
+    }
+
+    func discardPendingWallpaper(at url: URL) {
+        clearPendingWrite(url)
+        try? FileManager.default.removeItem(at: url)
+    }
+
+    // MARK: - Pending write bookkeeping
+
+    private func notePendingWrite(_ url: URL) {
+        syncLock.lock()
+        defer { syncLock.unlock() }
+        pendingWrites[url.standardizedFileURL.path] = Date()
+    }
+
+    private func clearPendingWrite(_ url: URL) {
+        syncLock.lock()
+        defer { syncLock.unlock() }
+        pendingWrites.removeValue(forKey: url.standardizedFileURL.path)
+    }
+
+    /// Paths still being written, dropping anything past the TTL.
+    private func livePendingWritePaths() -> Set<String> {
+        syncLock.lock()
+        defer { syncLock.unlock() }
+        let cutoff = Date().addingTimeInterval(-Self.pendingWriteTTL)
+        pendingWrites = pendingWrites.filter { $0.value > cutoff }
+        return Set(pendingWrites.keys)
     }
 
     func prepareWallpaperDirectory() throws {
@@ -154,8 +233,15 @@ final class WallpaperManager: WallpaperManagerProtocol {
 
     func writeWallpaperPNG(image: NSImage) throws -> URL {
         let fileURL = wallpaperFileURL(extension: "png")
-        try ensureWallpaperDirectoryExists()
-        try Perf.measure("png.write") { try image.savePNG(to: fileURL) }
+        do {
+            try ensureWallpaperDirectoryExists()
+            try Perf.measure("png.write") { try image.savePNG(to: fileURL) }
+        } catch {
+            // Release the claim, or a write that never happened would shield a nonexistent
+            // path from pruning until the TTL expires.
+            discardPendingWallpaper(at: fileURL)
+            throw error
+        }
         return fileURL
     }
 
@@ -167,12 +253,15 @@ final class WallpaperManager: WallpaperManagerProtocol {
         try setWallpaper(fileURL: fileURL)
     }
 
-    func setWallpaper(fileURL: URL) throws {
+    func setWallpaper(fileURL: URL, propagateToAllSpaces: Bool = true) throws {
         // Capture current wallpaper before changing
         captureCurrentWallpaper()
 
         // Track so the space-change observer knows which wallpaper to re-apply
         currentWallpaperURL = fileURL
+        // On the desktop now, so it no longer needs the pending-write shield; `currentWallpaperURL`
+        // protects it from here on.
+        clearPendingWrite(fileURL)
 
         let screens = NSScreen.screens
         guard !screens.isEmpty else {
@@ -194,9 +283,14 @@ final class WallpaperManager: WallpaperManagerProtocol {
         // deleting the file the desktop is about to point at.
         pruneWallpapers(keeping: [fileURL])
 
-        if storageService.syncAllSpaces {
+        if propagateToAllSpaces && storageService.syncAllSpaces {
             syncEverySpace(to: fileURL)
         }
+    }
+
+    func syncCurrentWallpaperToAllSpaces() {
+        guard storageService.syncAllSpaces, let fileURL = currentWallpaperURL else { return }
+        syncEverySpace(to: fileURL)
     }
 
     /// Pushes `fileURL` to every Mission Control Space, off the main thread.
@@ -249,10 +343,15 @@ final class WallpaperManager: WallpaperManagerProtocol {
         // wallpaper agent on the main thread, on every single apply.
         let directory = wallpapersDirectory
         let logger = self.logger
-        DispatchQueue.global(qos: .utility).async {
+        DispatchQueue.global(qos: .utility).async { [weak self] in
             guard let entries = try? FileManager.default.contentsOfDirectory(
                 at: directory, includingPropertiesForKeys: nil
             ) else { return }   // directory missing or unreadable — nothing to prune
+
+            // Read the in-flight set *here*, not at dispatch time: the whole point is to see
+            // files claimed after this prune was scheduled.
+            var keepPaths = keepPaths
+            if let self { keepPaths.formUnion(self.livePendingWritePaths()) }
 
             let doomed = entries.filter { !keepPaths.contains($0.standardizedFileURL.path) }
             guard !doomed.isEmpty else { return }

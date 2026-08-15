@@ -10,14 +10,48 @@ final class MainViewModel {
     var currentWallpaperImage: NSImage?
     var selectedStyle: WallpaperStyle
     var typography: TypographySettings = .default
-    var isLoading: Bool = false
-    var isApplying: Bool = false
-    var applySuccess: Bool = false
+    /// Where the desktop stands relative to the design on screen. The single thing every
+    /// surface reads to answer "did my change actually take?".
+    private(set) var applyStatus: ApplyStatus = .idle
+
+    var isApplying: Bool { applyStatus.isApplying }
+    var applySuccess: Bool { applyStatus.isApplied }
+
+    /// Whether editing the design pushes it to the desktop on its own.
+    ///
+    /// Stored rather than forwarded to `storage`, because a computed passthrough to a
+    /// non-observable service would not tell SwiftUI the toggle moved.
+    var autoApplyDesignChanges: Bool {
+        didSet {
+            guard autoApplyDesignChanges != oldValue else { return }
+            storage.autoApplyDesignChanges = autoApplyDesignChanges
+            if autoApplyDesignChanges {
+                // Turning it on should settle the difference the user is already looking at.
+                if applyStatus.needsManualApply { applyDesignNow() }
+            } else {
+                autoApplyTask?.cancel()
+                autoApplyTask = nil
+            }
+        }
+    }
+
     var errorMessage: String?
     var clippings: [Clipping] = []
     var pinnedBookTitles: Set<String> = []
     private(set) var isSchedulerPaused: Bool = false
     var pendingCaptureText: String? = nil
+
+    /// When the scheduler will next change the wallpaper.
+    ///
+    /// Stored rather than forwarded to `scheduler.nextChangeDate`: `SchedulerService` is not
+    /// `@Observable`, so a computed passthrough never told SwiftUI anything had changed and
+    /// every view showing the countdown sat frozen until some unrelated redraw.
+    private(set) var nextWallpaperDate: Date?
+
+    /// Whether a pre-KindleWall wallpaper is on file to restore. Stored for the same reason —
+    /// `WallpaperManager` is not observable either, so the "Geri Yükle" button used to keep
+    /// whatever enabled state it happened to be built with.
+    private(set) var canRestorePreviousWallpaper: Bool = false
 
     /// Set when a style change overwrote the user's typography; drives the undo banner.
     /// Cleared on undo, on the next style change that changes nothing, or after a few seconds.
@@ -46,13 +80,54 @@ final class MainViewModel {
 
     private var previewTask: Task<Void, Never>?
     private var previewGeneration: Int = 0
-    private var typographyUpdateTask: Task<Void, Never>?
+    private var previewDebounceTask: Task<Void, Never>?
     private var styleUndoDismissTask: Task<Void, Never>?
 
     // MARK: - Apply task management
 
     private var applyTask: Task<Void, Never>?
     private var applyGeneration: Int = 0
+
+    /// Waits out the settle delay, then applies a design edit on its own.
+    private var autoApplyTask: Task<Void, Never>?
+    /// Returns `applyStatus` to `.idle` after a finished state has been on screen long enough.
+    private var statusDwellTask: Task<Void, Never>?
+    /// Defers the all-Spaces propagation until editing stops — see `Self.syncSettleDelay`.
+    private var autoSyncSettleTask: Task<Void, Never>?
+
+    // MARK: - Auto-apply tuning
+
+    /// How long the design has to hold still before it applies itself.
+    ///
+    /// Chosen against the cadence of *deliberate* clicks, not slider drags: a drag emits every
+    /// 8–16 ms, so almost any delay coalesces it, while comparing styles takes roughly
+    /// 400–700 ms per click. Below that, every click during a browse would cost a full apply.
+    /// At 900 ms — plus the 150 ms coalesce inside `applyWallpaper` and ~215 ms of render and
+    /// write — the desktop follows about 1.3 s after the user stops, and the live preview has
+    /// already reacted long before that.
+    static let autoApplyDelay: TimeInterval = 0.9
+
+    /// Extra quiet time before pushing the wallpaper to every Space.
+    ///
+    /// Propagating is far more expensive than applying — it rewrites macOS's wallpaper store
+    /// and restarts `WallpaperAgent`, reloading the wallpaper on every Space. The generation
+    /// coalescing in `WallpaperManager` only helps when syncs overlap, and at this cadence each
+    /// finishes before the next begins, so browsing six styles would otherwise mean six
+    /// full-system reloads.
+    static let syncSettleDelay: TimeInterval = 3
+
+    /// What a design change replaced, so the whole change-set can be put back.
+    struct DesignSnapshot: Equatable {
+        let style: WallpaperStyle
+        let typography: TypographySettings
+    }
+
+    /// The design as it was before the current run of edits began.
+    ///
+    /// Captured when a burst *starts* and deliberately not overwritten while it is in flight:
+    /// after clicking through six styles the user means "put it back how it was", not "back
+    /// one click".
+    private(set) var designUndo: DesignSnapshot?
 
     // MARK: - Import task management
 
@@ -86,6 +161,7 @@ final class MainViewModel {
         self.heicEncoder = heicEncoder
         self.selectedStyle = storage.selectedStyle
         self.typography = storage.typography
+        self.autoApplyDesignChanges = storage.autoApplyDesignChanges
         self.pinnedBookTitles = Set(storage.pinnedBookTitles)
         self.importState = importState
 
@@ -102,6 +178,8 @@ final class MainViewModel {
         if let customDate = storage.customScheduleDate {
             self.scheduler.customDate = customDate
         }
+        self.nextWallpaperDate = self.scheduler.nextChangeDate
+        self.canRestorePreviousWallpaper = self.wallpaperManager.previousWallpaperURL != nil
 
         // Listen for text captured via Services menu or global hotkey
         captureTextObserver = NotificationCenter.default.addObserver(
@@ -239,6 +317,23 @@ final class MainViewModel {
     /// Loads clippings from a specific file URL (e.g., from onboarding).
     func loadClippings(from url: URL) {
         importClippings(from: url)
+    }
+
+    /// Seeds the library with a few public-domain highlights, for someone setting the app up
+    /// without their Kindle to hand. Stored as manual clippings so they survive a relaunch and
+    /// can be deleted one by one from the library.
+    func loadSampleClippings() {
+        var manual = storage.manualClippings
+        let existing = Set(manual.map(\.id))
+        let fresh = SampleLibrary.clippings.filter { !existing.contains($0.id) }
+        guard !fresh.isEmpty || !clippings.isEmpty else { return }
+
+        manual.append(contentsOf: fresh)
+        storage.manualClippings = manual
+        clippings.append(contentsOf: fresh)
+        storage.persistedClippingIDs.formUnion(fresh.map(\.id))
+
+        if currentClipping == nil { selectRandomClipping() }
     }
 
     // MARK: - Actions
@@ -463,18 +558,154 @@ final class MainViewModel {
         applyWallpaper()
     }
 
+    // MARK: - Apply status
+
+    /// The one place `applyStatus` is ever written.
+    ///
+    /// Invariant: only code already inside an `applyGeneration == generation` guard may call
+    /// this, plus the synchronous entry in `applyWallpaper`, which is the newest generation by
+    /// construction. That is what stops a slow, superseded apply from narrating over a newer
+    /// one's state.
+    private func transition(to status: ApplyStatus) {
+        statusDwellTask?.cancel()
+        applyStatus = status
+
+        // Only settled states fade on their own. `.unapplied` waits for the user, and
+        // `.pending` / `.applying` are ended by the apply itself.
+        let dwell: Duration?
+        switch status {
+        case let .applied(_, reason, _):             dwell = reason.completionDwell
+        case .failed:                                dwell = .seconds(6)
+        case .idle, .pending, .applying, .unapplied: dwell = nil
+        }
+        guard let dwell else { return }
+
+        statusDwellTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: dwell)
+            guard !Task.isCancelled else { return }
+            self?.applyStatus = .idle
+            self?.designUndo = nil
+        }
+    }
+
+    /// How urgently a design edit needs the preview refreshed.
+    enum DesignChangeKind {
+        /// One deliberate action — a style click, a decoration chip, an undo. Refresh now:
+        /// putting a blanket debounce in front of these made the app feel laggy.
+        case discrete
+        /// A drag — slider or colour picker. Refresh once it stops moving.
+        case continuous
+    }
+
+    /// The single point every design edit funnels through.
+    ///
+    /// Before this, four mutators each rolled their own debounce, and two of them shared one
+    /// task handle — so a decoration chip could cancel an in-flight slider debounce and vice
+    /// versa. Now one place refreshes the preview and one place decides whether the desktop
+    /// should follow.
+    private func designDidChange(_ kind: DesignChangeKind, undoing previous: DesignSnapshot? = nil) {
+        previewDebounceTask?.cancel()
+        switch kind {
+        case .discrete:
+            generatePreview()
+        case .continuous:
+            previewDebounceTask = Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .milliseconds(200))
+                guard !Task.isCancelled else { return }
+                self?.generatePreview()
+            }
+        }
+
+        // Editing invalidates any deferred propagation: it would push a design the user has
+        // already moved past out to every Space.
+        autoSyncSettleTask?.cancel()
+
+        guard storage.autoApplyDesignChanges else {
+            autoApplyTask?.cancel()
+            autoApplyTask = nil
+            transition(to: .unapplied)
+            return
+        }
+
+        // Only the first edit of a burst records where to go back to.
+        if designUndo == nil, let previous { designUndo = previous }
+
+        autoApplyTask?.cancel()
+        transition(to: .pending(reason: .automatic,
+                                deadline: Date().addingTimeInterval(Self.autoApplyDelay)))
+        autoApplyTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(Self.autoApplyDelay))
+            guard !Task.isCancelled, let self else { return }
+            self.autoApplyTask = nil
+            self.applyWallpaper(reason: .automatic)
+        }
+    }
+
+    /// A design-affecting setting that lives outside this view model changed — the dynamic
+    /// wallpaper toggle is the one case. Refreshes the preview and lets the desktop follow,
+    /// without touching the quote.
+    func externalDesignSettingChanged() {
+        designDidChange(.discrete)
+    }
+
+    /// A snapshot of the design as it stands right now.
+    private var currentDesign: DesignSnapshot {
+        DesignSnapshot(style: selectedStyle, typography: typography)
+    }
+
+    /// Puts the whole design back to where the current run of edits started.
+    func undoDesign() {
+        guard let snapshot = designUndo else { return }
+        designUndo = nil
+        styleUndoDismissTask?.cancel()
+        styleTypographyUndo = nil
+
+        selectedStyle = snapshot.style
+        typography = snapshot.typography
+        storage.selectedStyle = snapshot.style
+        storage.typography = snapshot.typography
+
+        generatePreview()
+        applyWallpaper(reason: .manual)
+    }
+
+    /// Applies the design to the desktop now, regardless of the auto-apply preference.
+    func applyDesignNow() {
+        autoApplyTask?.cancel()
+        autoApplyTask = nil
+        applyWallpaper(reason: .manual)
+    }
+
+    /// Pushes the applied wallpaper out to every Space once the design has held still.
+    private func scheduleAllSpacesSync() {
+        autoSyncSettleTask?.cancel()
+        autoSyncSettleTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(Self.syncSettleDelay))
+            guard !Task.isCancelled, let self else { return }
+            self.autoSyncSettleTask = nil
+            self.wallpaperManager.syncCurrentWallpaperToAllSpaces()
+        }
+    }
+
     /// Applies the wallpaper to the desktop.
     ///
     /// Full-resolution render + PNG encode + disk write now run on a detached task (mirroring
     /// `generatePreview`) so the main thread never blocks — the window stays responsive while a
     /// wallpaper is applied, including on every scheduler tick. Only the actual desktop swap
     /// (`NSWorkspace`, which must stay on the main actor) and the success/error UI run on main.
-    func applyWallpaper() {
+    func applyWallpaper(reason: ApplyReason = .manual) {
         guard let clipping = currentClipping else { return }
         guard let screen = NSScreen.main else {
             errorMessage = KindleWallError.screenNotAvailable.errorDescription
             return
         }
+
+        // Any apply already carries the user's in-progress design, because every design
+        // mutator commits its state synchronously and defers only the render. So a pending
+        // auto-apply has nothing left to contribute — including when a scheduler tick lands
+        // in the middle of an edit.
+        autoApplyTask?.cancel()
+        autoApplyTask = nil
 
         // Latest-wins. The old synchronous body could not re-enter, so `guard !isApplying`
         // sufficed. Now that the render runs off-main we instead supersede any in-flight apply
@@ -484,8 +715,13 @@ final class MainViewModel {
         applyGeneration &+= 1
         let generation = applyGeneration
 
-        isApplying = true
+        transition(to: .applying(reason: reason))
         errorMessage = nil
+
+        // An automatic apply writes the active Space immediately but defers the all-Spaces
+        // propagation, which is orders of magnitude more expensive. Manual and scheduled
+        // applies keep the original behaviour exactly.
+        let propagateNow = reason != .automatic
 
         // Snapshot every input on the main actor before crossing to the background task.
         let fullSize = screen.frame.size * screen.backingScaleFactor
@@ -524,7 +760,10 @@ final class MainViewModel {
 
                 // A superseded apply must stop here. Falling through to the static render would
                 // undo the cancellation we just honoured and do the expensive work anyway.
-                if Task.isCancelled { return }
+                if Task.isCancelled {
+                    if let dynamicURL { wallpaperManager.discardPendingWallpaper(at: dynamicURL) }
+                    return
+                }
 
                 if let dynamicURL {
                     url = dynamicURL
@@ -549,32 +788,40 @@ final class MainViewModel {
             } catch {
                 await MainActor.run { [weak self] in
                     guard let self, self.applyGeneration == generation else { return }
-                    self.isApplying = false
-                    self.errorMessage = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
+                    self.transition(to: .failed(
+                        message: (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
+                    ))
                 }
                 return
             }
 
             await MainActor.run { [weak self] in
-                guard let self, self.applyGeneration == generation else { return }
+                guard let self, self.applyGeneration == generation else {
+                    // Lost the race after the file was already written. Nothing will ever point
+                    // at it, so throw it away rather than leave it for a later prune to notice.
+                    wallpaperManager.discardPendingWallpaper(at: url)
+                    return
+                }
                 do {
                     // NSWorkspace swap + captureCurrentWallpaper stay on the main actor.
-                    try self.wallpaperManager.setWallpaper(fileURL: url)
+                    try self.wallpaperManager.setWallpaper(fileURL: url, propagateToAllSpaces: propagateNow)
                     if notify {
                         self.notificationService.sendWallpaperChangedNotification(clipping: displayClipping)
                     }
-                    self.applySuccess = true
-                    self.isApplying = false
-                    if fellBackToStatic {
-                        self.errorMessage = "Dinamik duvar kağıdı üretilemedi, statik uygulandı."
-                    }
-                    Task { @MainActor [weak self] in
-                        try? await Task.sleep(for: .seconds(1.5))
-                        self?.applySuccess = false
-                    }
+                    self.refreshDerivedServiceState()
+                    // A fallback is reported as a caveat on success, not as an error: the
+                    // wallpaper really did change, and pushing this into `errorMessage` used to
+                    // put a red line next to the green "Uygulandı".
+                    self.transition(to: .applied(
+                        at: Date(),
+                        reason: reason,
+                        degraded: fellBackToStatic ? "Dinamik duvar kağıdı üretilemedi, statik uygulandı." : nil
+                    ))
+                    if !propagateNow { self.scheduleAllSpacesSync() }
                 } catch {
-                    self.errorMessage = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
-                    self.isApplying = false
+                    self.transition(to: .failed(
+                        message: (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
+                    ))
                 }
             }
         }
@@ -639,16 +886,23 @@ final class MainViewModel {
             style: style, typography: typography
         ), !Task.isCancelled else { return nil }
 
+        let url = manager.wallpaperFileURL(extension: "heic")
         do {
-            let url = manager.wallpaperFileURL(extension: "heic")
             try manager.prepareWallpaperDirectory()
             // Frames are produced one at a time inside the encoder, so peak memory is one frame
             // (39 MB at 3840×2560) rather than the whole set.
             try encoder.write(phaseTimes: phaseTimes, to: url) { index in
                 Task.isCancelled ? nil : frameSource(phases[index])
             }
-            return Task.isCancelled ? nil : url
+            guard !Task.isCancelled else {
+                manager.discardPendingWallpaper(at: url)
+                return nil
+            }
+            return url
         } catch {
+            // A half-written HEIC is useless and, at several megabytes, worth removing now
+            // rather than at whatever prune happens next.
+            manager.discardPendingWallpaper(at: url)
             return nil
         }
     }
@@ -697,12 +951,13 @@ final class MainViewModel {
         )
     }
 
-    /// Updates the wallpaper style and regenerates the preview.
+    /// Updates the wallpaper style, refreshes the preview, and lets the desktop follow.
     func updateStyle(_ style: WallpaperStyle) {
+        let previous = currentDesign
         selectedStyle = style
         storage.selectedStyle = style
         applyStyleTypography(for: style)
-        generatePreview()
+        designDidChange(.discrete, undoing: previous)
     }
 
     /// Writes the style's own font and decoration into the typography settings.
@@ -741,20 +996,73 @@ final class MainViewModel {
         styleTypographyUndo = nil
         typography = undo.previous
         storage.typography = undo.previous
-        generatePreview()
+        // Through the funnel, not straight to `generatePreview` — otherwise undoing would fix
+        // the preview and leave the desktop showing the typography the user just rejected.
+        designDidChange(.discrete)
+    }
+
+    /// Commits typography, persists it, and routes the change through the shared funnel.
+    private func commitTypography(_ settings: TypographySettings, kind: DesignChangeKind) {
+        let previous = currentDesign
+        typography = settings
+        storage.typography = settings
+        designDidChange(kind, undoing: previous)
     }
 
     /// Updates typography settings, persists them, and regenerates the preview.
-    /// Debounced 250ms so rapid slider changes don't flood the render pipeline.
     func updateTypography(_ settings: TypographySettings) {
-        typography = settings
-        storage.typography = settings
-        typographyUpdateTask?.cancel()
-        typographyUpdateTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(250))
-            guard !Task.isCancelled else { return }
-            self?.generatePreview()
+        commitTypography(settings, kind: .continuous)
+    }
+
+    // MARK: - Design state (single owner)
+
+    /// Gradient used when the user has not chosen custom colors.
+    static let defaultGradientStart = Color(hex: "667EEA") ?? .purple
+    static let defaultGradientEnd   = Color(hex: "764BA2") ?? .indigo
+
+    /// Start / end of the custom background gradient.
+    ///
+    /// Every piece of design state — style, typography, decoration, gradient — is owned here and
+    /// nowhere else. It used to be mirrored on `SettingsViewModel` too, which is how the
+    /// Tipografi page could keep highlighting a decoration a style change had already replaced,
+    /// and how toggling an unrelated General switch could write a stale style back over the one
+    /// picked from the menu bar.
+    var backgroundStartColor: Color {
+        get { typography.backgroundStartColorHex.flatMap { Color(hex: $0) } ?? Self.defaultGradientStart }
+        set {
+            var updated = typography
+            updated.backgroundStartColorHex = newValue.hexString
+            commitTypography(updated, kind: .continuous)
         }
+    }
+
+    var backgroundEndColor: Color {
+        get { typography.backgroundEndColorHex.flatMap { Color(hex: $0) } ?? Self.defaultGradientEnd }
+        set {
+            var updated = typography
+            updated.backgroundEndColorHex = newValue.hexString
+            commitTypography(updated, kind: .continuous)
+        }
+    }
+
+    /// True when the user has overridden the style's own background.
+    var hasCustomGradient: Bool {
+        typography.backgroundStartColorHex != nil || typography.backgroundEndColorHex != nil
+    }
+
+    /// Clears the custom gradient so the selected style's own background returns.
+    func resetBackgroundGradient() {
+        var updated = typography
+        updated.backgroundStartColorHex = nil
+        updated.backgroundEndColorHex = nil
+        commitTypography(updated, kind: .discrete)
+    }
+
+    /// Sets the decorative element drawn around the quote.
+    func updateDecorationStyle(_ style: TypographySettings.DecorationStyle) {
+        var updated = typography
+        updated.decorativeStyle = style
+        commitTypography(updated, kind: .discrete)
     }
 
     /// Updates the rotation mode and clears bookByBook state so the next selection starts fresh.
@@ -770,6 +1078,15 @@ final class MainViewModel {
         storage.pinnedBookTitles = Array(titles).sorted()
     }
 
+    /// Whether a source has ever been chosen — a bookmarked file, our cached copy of one, or
+    /// hand-entered quotes. Distinguishes "you haven't picked a file" from "the file you picked
+    /// had nothing in it", which are very different things to tell someone.
+    var hasClippingsSource: Bool {
+        storage.resolveClippingsFileURL() != nil
+            || storage.localClippingsFileURL() != nil
+            || !storage.manualClippings.isEmpty
+    }
+
     /// Sorted list of unique books (title + first found author) from loaded clippings.
     var availableBooks: [(title: String, author: String?)] {
         var seen: [String: String?] = [:]
@@ -780,18 +1097,12 @@ final class MainViewModel {
             .sorted { $0.title < $1.title }
     }
 
-    /// Re-reads typography from storage and regenerates the preview.
-    /// Called when SettingsView changes decoration style or gradient colors.
-    /// Debounced 200ms (reusing `typographyUpdateTask`) so continuous gradient color-picker
-    /// drags don't flood the render pipeline now that the preview is visible on these pages.
+    /// Re-reads typography that was written to storage out of band — the long-quote controls
+    /// and CloudKit sync both do that — and routes it through the funnel.
     func reloadTypography() {
+        let previous = currentDesign
         typography = storage.typography
-        typographyUpdateTask?.cancel()
-        typographyUpdateTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(200))
-            guard !Task.isCancelled else { return }
-            self?.generatePreview()
-        }
+        designDidChange(.continuous, undoing: previous)
     }
 
     /// Updates the scheduler interval (and optional custom date) from SettingsView.
@@ -802,6 +1113,7 @@ final class MainViewModel {
             scheduler.customDate = date
             storage.customScheduleDate = date
         }
+        refreshDerivedServiceState()
     }
 
     // MARK: - Manual Clipping CRUD
@@ -869,18 +1181,25 @@ final class MainViewModel {
         return storage.favoriteClippingIDs.contains(clipping.id)
     }
 
-    /// Returns true if there is a previous wallpaper URL available to restore.
-    var canRestorePreviousWallpaper: Bool {
-        wallpaperManager.previousWallpaperURL != nil
-    }
-
     /// Restores the desktop wallpaper to the one before KindleWall last changed it.
     func restorePreviousWallpaper() {
         do {
             try wallpaperManager.restorePreviousWallpaper()
+            // Reported like any other desktop change; it used to happen in total silence.
+            transition(to: .applied(at: Date(), reason: .manual, degraded: nil))
         } catch {
-            errorMessage = (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
+            transition(to: .failed(
+                message: (error as? KindleWallError)?.errorDescription ?? error.localizedDescription
+            ))
         }
+        refreshDerivedServiceState()
+    }
+
+    /// Pulls the two values that live behind non-observable services back into stored state.
+    /// Call after anything that can move them: an apply, a restore, a scheduler change.
+    private func refreshDerivedServiceState() {
+        nextWallpaperDate = scheduler.nextChangeDate
+        canRestorePreviousWallpaper = wallpaperManager.previousWallpaperURL != nil
     }
 
     /// Deletes wallpapers left behind by previous runs. Called once at launch.
@@ -913,7 +1232,7 @@ final class MainViewModel {
                 || !wallpaperManager.hasWallpaperOnDisk else { return }
         if currentClipping == nil && !clippings.isEmpty { selectRandomClipping() }
         guard currentClipping != nil else { return }
-        applyWallpaper()
+        applyWallpaper(reason: .repair)
     }
 
     /// Starts the automatic wallpaper change scheduler.
@@ -921,23 +1240,24 @@ final class MainViewModel {
         isSchedulerPaused = false
         scheduler.start { [weak self] in
             self?.selectRandomClipping()
-            self?.applyWallpaper()
+            self?.applyWallpaper(reason: .scheduler)
+            self?.refreshDerivedServiceState()
         }
+        refreshDerivedServiceState()
     }
 
     /// Stops the scheduler.
     func stopScheduler() {
         scheduler.stop()
+        refreshDerivedServiceState()
     }
 
     /// Pauses or resumes the automatic wallpaper scheduler.
     func toggleSchedulerPause() {
         scheduler.togglePause()
         isSchedulerPaused = !scheduler.isActive
+        refreshDerivedServiceState()
     }
-
-    /// The next scheduled wallpaper change date.
-    var nextWallpaperDate: Date? { scheduler.nextChangeDate }
 }
 
 // MARK: - CGSize Helper
