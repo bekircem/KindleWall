@@ -77,6 +77,7 @@
 		9B1B3A8E3F53D844CFD00087 /* ApplyStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 595E663AFEB25269247290BF /* ApplyStatus.swift */; };
 		9DE22B1856C11CB0CFB1B3AD /* SolarPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7564696BBF27D1BCF480289 /* SolarPhase.swift */; };
 		9E8580BC977DADCDA5FFE898 /* DynamicWallpaperExportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD367FB49D3786BFD9B13B3D /* DynamicWallpaperExportTests.swift */; };
+		A38FF529AC17962EDE97C601 /* SchedulerServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A37118CAF7B499E0D6782A /* SchedulerServiceTests.swift */; };
 		A5C08C1977C2EB95151FC087 /* ManualClippingFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08544AB0ED3C57DE9712136 /* ManualClippingFormView.swift */; };
 		A8CED08AAC6B125176A024C5 /* ScheduleSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DF7D386F7F6F76D6B4F7B5D /* ScheduleSection.swift */; };
 		A962097EB8345F616F154E1D /* TypographyPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CC248CBF037C8D7A6A2 /* TypographyPanelView.swift */; };
@@ -214,6 +215,7 @@
 		C08C08DD38C5C63EFCF3D337 /* Book.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Book.swift; sourceTree = "<group>"; };
 		C0F3D1EA37E85A032BAA32FE /* SourceFileSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceFileSection.swift; sourceTree = "<group>"; };
 		C1085B7B5BAC2DE5E33C2299 /* SettingsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPage.swift; sourceTree = "<group>"; };
+		C1A37118CAF7B499E0D6782A /* SchedulerServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedulerServiceTests.swift; sourceTree = "<group>"; };
 		C67D88843C99683BB01723A7 /* LongQuoteSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongQuoteSection.swift; sourceTree = "<group>"; };
 		C85406937B127664EA7E9D66 /* SettingsGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsGroup.swift; sourceTree = "<group>"; };
 		C99A62B30D7B8B2984E22E46 /* QuickCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCaptureView.swift; sourceTree = "<group>"; };
@@ -494,6 +496,7 @@
 				FD367FB49D3786BFD9B13B3D /* DynamicWallpaperExportTests.swift */,
 				A9148332127C6E2E34E9988C /* DynamicWallpaperTests.swift */,
 				6AEB753CED4F86B5A608E6F9 /* InteractionStressTests.swift */,
+				C1A37118CAF7B499E0D6782A /* SchedulerServiceTests.swift */,
 				15BF48C1423B84E5E5D4C510 /* SolarTests.swift */,
 				84B8DCCB21715F04D7F1F47B /* StyleRenderSnapshotTests.swift */,
 				083758A57448F8B09F4C4FBB /* WallpaperPruningTests.swift */,
@@ -609,6 +612,7 @@
 				2607C2BCA90D9ACD1DF0A047 /* DynamicWallpaperTests.swift in Sources */,
 				C36CD93870242EAE9CDDACB7 /* FakeWallpaperManager.swift in Sources */,
 				C85E4AA9D43F10237EFECDB6 /* InteractionStressTests.swift in Sources */,
+				A38FF529AC17962EDE97C601 /* SchedulerServiceTests.swift in Sources */,
 				DA4D9ACED55083BA56A4F627 /* SolarTests.swift in Sources */,
 				CE315013D6AFFCFE08D077FE /* StyleRenderSnapshotTests.swift in Sources */,
 				4514F7C5B2736643BCC3ECC0 /* WallpaperPruningTests.swift in Sources */,

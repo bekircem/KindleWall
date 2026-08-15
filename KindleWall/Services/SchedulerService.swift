@@ -116,6 +116,11 @@ final class SchedulerService: SchedulerServiceProtocol {
                 self?.nextChangeDate = Date().addingTimeInterval(timeInterval)
             }
         }
+        // Without a tolerance the system must wake precisely for us. Nothing about a wallpaper
+        // rotation needs that: 10% of the interval — 3 minutes on a half-hourly schedule — lets
+        // the timer coalesce with wakeups the machine was going to have anyway. Apple's own
+        // guidance is to always set one on a repeating timer that is not time-critical.
+        timer?.tolerance = timeInterval * 0.1
         // Ensure the timer fires even when the app is in the background
         RunLoop.main.add(timer!, forMode: .common)
     }
@@ -144,6 +149,9 @@ final class SchedulerService: SchedulerServiceProtocol {
                 self?.scheduleCustom(onChange: onChange)
             }
         }
+        // Tighter than the interval schedule: the user picked a wall-clock time, so drifting
+        // minutes past it would be visible. 15 seconds still lets the system coalesce.
+        timer?.tolerance = min(15, delay * 0.05)
         RunLoop.main.add(timer!, forMode: .common)
     }
 
