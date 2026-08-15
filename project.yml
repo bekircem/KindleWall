@@ -8,7 +8,12 @@ options:
 
 settings:
   base:
-    SWIFT_VERSION: "5.9"
+    # Swift 6 language mode: isolation violations are errors, not warnings, so the
+    # concurrency work done to get here cannot quietly regress. Reached in two steps —
+    # SWIFT_STRICT_CONCURRENCY under 5.9 first, to see the whole inventory as warnings
+    # before anything had to compile.
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
     MACOSX_DEPLOYMENT_TARGET: "26.0"
     GENERATE_INFOPLIST_FILE: false
     CODE_SIGN_IDENTITY: "Apple Development"

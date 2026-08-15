@@ -5,7 +5,8 @@ import UniformTypeIdentifiers
 // MARK: - Protocol
 
 /// Writes a multi-frame HEIC that macOS treats as a dynamic desktop picture.
-protocol HEICWallpaperEncoderProtocol {
+/// `Sendable`: HEIC encoding runs on the off-main render path.
+protocol HEICWallpaperEncoderProtocol: Sendable {
     /// Writes one HEIC, tagging it so macOS switches frames by time of day.
     ///
     /// Frames arrive one at a time from `nextFrame` and are appended as they come, so only one

@@ -9,7 +9,10 @@ import ServiceManagement
 /// gradient live on `MainViewModel` alone. When both view models mirrored them, they drifted:
 /// picking a style from the menu bar left this one stale, and `saveSettings()` could write that
 /// stale value back over the user's real choice.
+/// Main-actor isolated for the same reason as `MainViewModel`: SwiftUI reads these properties
+/// during layout, and `presentFilePicker` drives an `NSOpenPanel` modal — both main-thread-only.
 @Observable
+@MainActor
 final class SettingsViewModel {
     // MARK: - State
 

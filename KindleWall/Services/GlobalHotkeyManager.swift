@@ -6,6 +6,12 @@ import SwiftUI
 /// Registers a configurable global hotkey using the Carbon RegisterEventHotKey API.
 /// Unlike NSEvent.addGlobalMonitorForEvents, Carbon hotkeys require NO Accessibility permission
 /// and work in any app context. Accessibility is used only to pre-fill selected text (optional).
+///
+/// Main-actor isolated. This describes what the class already did rather than changing it: the
+/// Carbon callback is file-scope C and hops to the main queue before touching anything here,
+/// and `showCapturePanel` builds an `NSPanel` and an `NSHostingView` — AppKit work that is only
+/// ever valid on the main thread. The annotation makes that a checked rule instead of a habit.
+@MainActor
 final class GlobalHotkeyManager {
     static let shared = GlobalHotkeyManager()
 
@@ -183,7 +189,12 @@ private func globalHotkeyEventCallback(
         &hkID
     )
     if hkID.signature == 0x4B574C4C {
-        DispatchQueue.main.async { GlobalHotkeyManager.shared.handleHotkeyFired() }
+        // Already hopping to the main queue; `assumeIsolated` states that fact for the compiler
+        // rather than adding a second hop through a Task, which would let two rapid presses
+        // arrive out of order.
+        DispatchQueue.main.async {
+            MainActor.assumeIsolated { GlobalHotkeyManager.shared.handleHotkeyFired() }
+        }
     }
     return noErr
 }

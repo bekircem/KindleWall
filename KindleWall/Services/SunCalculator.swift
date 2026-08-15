@@ -4,7 +4,8 @@ import OSLog
 // MARK: - Protocol
 
 /// Computes the wall-clock times a dynamic wallpaper's frames are anchored to.
-protocol SunCalculatorProtocol {
+/// `Sendable`: solar times are computed on the off-main render path.
+protocol SunCalculatorProtocol: Sendable {
     /// The six phase times for the given day at the given location.
     /// - Parameters:
     ///   - date: Any instant on the day of interest.
@@ -181,7 +182,7 @@ extension GeoCoordinate {
     /// Parsed coordinates by time-zone identifier. `nil` values are cached too, so a zone that
     /// is missing from the file is not re-parsed on every lookup.
     nonisolated(unsafe) private static var cache: [String: GeoCoordinate?] = [:]
-    nonisolated(unsafe) private static let cacheLock = NSLock()
+    private static let cacheLock = NSLock()
 
     /// Parses `±DDMM±DDDMM` or `±DDMMSS±DDDMMSS`.
     static func parseISO6709(_ value: String) -> GeoCoordinate? {

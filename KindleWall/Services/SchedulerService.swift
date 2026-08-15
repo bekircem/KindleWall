@@ -4,6 +4,11 @@ import Combine
 // MARK: - Protocol
 
 /// Protocol for managing wallpaper change scheduling.
+///
+/// Main-actor isolated: the implementation drives a `Timer` on `RunLoop.main`, so every callback
+/// already arrives on the main thread. Stating it lets the compiler check what was previously
+/// just a convention.
+@MainActor
 protocol SchedulerServiceProtocol {
     /// The current schedule interval.
     var interval: ScheduleInterval { get set }
@@ -19,7 +24,7 @@ protocol SchedulerServiceProtocol {
 
     /// Starts the scheduler with the given callback.
     /// - Parameter onChange: A closure called when it's time to change the wallpaper.
-    func start(onChange: @escaping () -> Void)
+    func start(onChange: @escaping @MainActor @Sendable () -> Void)
 
     /// Stops the scheduler.
     func stop()
@@ -34,6 +39,7 @@ protocol SchedulerServiceProtocol {
 // MARK: - Implementation
 
 /// Manages timed wallpaper changes using Timer.
+@MainActor
 final class SchedulerService: SchedulerServiceProtocol {
     var interval: ScheduleInterval {
         didSet { reschedule() }
@@ -44,15 +50,16 @@ final class SchedulerService: SchedulerServiceProtocol {
     private(set) var isActive: Bool = false
     private(set) var nextChangeDate: Date?
 
-    private var timer: Timer?
-    private var onChange: (() -> Void)?
+    /// `nonisolated(unsafe)` so `deinit` can reach it — see the note there.
+    nonisolated(unsafe) private var timer: Timer?
+    private var onChange: (@MainActor @Sendable () -> Void)?
     private var isPaused: Bool = false
 
     init(interval: ScheduleInterval = .hourly) {
         self.interval = interval
     }
 
-    func start(onChange: @escaping () -> Void) {
+    func start(onChange: @escaping @MainActor @Sendable () -> Void) {
         self.onChange = onChange
         self.isPaused = false
         reschedule()
@@ -103,14 +110,17 @@ final class SchedulerService: SchedulerServiceProtocol {
         isActive = true
 
         timer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { [weak self] _ in
-            onChange()
-            self?.nextChangeDate = Date().addingTimeInterval(timeInterval)
+            // Added to RunLoop.main below, so this body is on the main thread already.
+            MainActor.assumeIsolated {
+                onChange()
+                self?.nextChangeDate = Date().addingTimeInterval(timeInterval)
+            }
         }
         // Ensure the timer fires even when the app is in the background
         RunLoop.main.add(timer!, forMode: .common)
     }
 
-    private func scheduleCustom(onChange: @escaping () -> Void) {
+    private func scheduleCustom(onChange: @escaping @MainActor @Sendable () -> Void) {
         guard let customDate = customDate else {
             isActive = false
             return
@@ -128,14 +138,24 @@ final class SchedulerService: SchedulerServiceProtocol {
         isActive = true
 
         timer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
-            onChange()
-            // Reschedule for next day
-            self?.scheduleCustom(onChange: onChange)
+            MainActor.assumeIsolated {
+                onChange()
+                // Reschedule for next day
+                self?.scheduleCustom(onChange: onChange)
+            }
         }
         RunLoop.main.add(timer!, forMode: .common)
     }
 
     deinit {
-        stop()
+        // Not `stop()`: deinit is not actor-isolated. Invalidation still has to happen here.
+        // A timer that is never invalidated stays retained by the run loop and keeps firing,
+        // and its closure holds `onChange` strongly — so a discarded scheduler would go on
+        // changing the wallpaper for the rest of the process. That is harmless with one
+        // scheduler per app, and is exactly how a test suite ends up fighting for the desktop.
+        //
+        // Deinit of a main-actor object released on the main actor runs there too, which is the
+        // run loop that installed the timer.
+        timer?.invalidate()
     }
 }

@@ -13,13 +13,13 @@ final class AutoApplyTests: XCTestCase {
     private var defaults: UserDefaults!
     private var manager: FakeWallpaperManager!
 
-    override func setUpWithError() throws {
+    override func setUp() async throws {
         suiteName = "KindleWallTests-\(UUID().uuidString)"
         defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         manager = FakeWallpaperManager()
     }
 
-    override func tearDownWithError() throws {
+    override func tearDown() async throws {
         defaults.removePersistentDomain(forName: suiteName)
     }
 

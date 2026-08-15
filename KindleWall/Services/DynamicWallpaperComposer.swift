@@ -4,7 +4,8 @@ import CoreImage
 // MARK: - Protocol
 
 /// Turns the two rendered layers into one frame per solar phase.
-protocol DynamicWallpaperComposerProtocol {
+/// `Sendable`: frame composition runs on the off-main render path.
+protocol DynamicWallpaperComposerProtocol: Sendable {
     /// Prepares the shared, expensive setup once and returns a closure that produces **one frame
     /// per call**.
     ///

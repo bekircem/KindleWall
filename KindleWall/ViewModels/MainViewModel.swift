@@ -2,7 +2,14 @@ import SwiftUI
 import Observation
 
 /// Manages the state for the main application view and coordinates services.
+///
+/// Main-actor isolated: every stored property here is read by SwiftUI during layout, so the
+/// only safe home for them is the actor SwiftUI already runs on. The two expensive paths that
+/// must not block the UI — preview render and apply render — are `Task.detached` and capture
+/// the services they need rather than `self`, so isolating the class does not put rendering
+/// back on the main thread.
 @Observable
+@MainActor
 final class MainViewModel {
     // MARK: - Published State
 
@@ -135,7 +142,23 @@ final class MainViewModel {
 
     // MARK: - Notification observers
 
-    private var captureTextObserver: NSObjectProtocol?
+    /// Written once in `init`, read once in `deinit`, never touched in between.
+    ///
+    /// `nonisolated(unsafe)` because `deinit` is not actor-isolated and this is the one property
+    /// it must reach. The exemption is sound rather than convenient: a deinit runs only after the
+    /// last reference is gone, so by construction nothing else can be touching this token.
+    /// Block-based observers are not auto-removed the way selector-based ones are, so the deinit
+    /// has to stay.
+    /// Written once in `init`, read once in `deinit`, never touched in between.
+    ///
+    /// `@ObservationIgnored` keeps the `@Observable` macro from turning it into a tracked
+    /// computed property — `nonisolated` cannot be applied to one, and no view observes an
+    /// observer token anyway. `nonisolated(unsafe)` is then sound rather than convenient:
+    /// `deinit` is not actor-isolated and runs only after the last reference is gone, so by
+    /// construction nothing else can be touching this token. The deinit has to stay because
+    /// block-based observers are not auto-removed the way selector-based ones are.
+    @ObservationIgnored
+    private nonisolated(unsafe) var captureTextObserver: NSObjectProtocol?
 
     // MARK: - Init
 
@@ -187,7 +210,12 @@ final class MainViewModel {
             object: nil,
             queue: .main
         ) { [weak self] notification in
-            self?.pendingCaptureText = notification.userInfo?["text"] as? String
+            let text = notification.userInfo?["text"] as? String
+            // `queue: .main` guarantees this body runs on the main thread, but the closure is
+            // typed `@Sendable` so the compiler cannot see that. Asserting the isolation we
+            // already have is cheaper and safer than hopping to a Task, which would let two
+            // captures arrive out of order.
+            MainActor.assumeIsolated { self?.pendingCaptureText = text }
         }
     }
 
@@ -795,6 +823,10 @@ final class MainViewModel {
                 return
             }
 
+            // Frozen before the hop: `fellBackToStatic` is a mutable local, and capturing one in
+            // a closure that runs on another actor is a race the compiler cannot rule out.
+            let didFallBackToStatic = fellBackToStatic
+
             await MainActor.run { [weak self] in
                 guard let self, self.applyGeneration == generation else {
                     // Lost the race after the file was already written. Nothing will ever point
@@ -815,7 +847,7 @@ final class MainViewModel {
                     self.transition(to: .applied(
                         at: Date(),
                         reason: reason,
-                        degraded: fellBackToStatic ? "Dinamik duvar kağıdı üretilemedi, statik uygulandı." : nil
+                        degraded: didFallBackToStatic ? "Dinamik duvar kağıdı üretilemedi, statik uygulandı." : nil
                     ))
                     if !propagateNow { self.scheduleAllSpacesSync() }
                 } catch {
@@ -832,7 +864,7 @@ final class MainViewModel {
     /// Runs entirely off the main actor. Returns nil rather than throwing on any failure, so
     /// the caller can fall back to the static path — a wallpaper that changed is always better
     /// than an error dialog and an unchanged desktop.
-    private static func renderDynamicWallpaper(
+    private nonisolated static func renderDynamicWallpaper(
         clipping: Clipping, style: WallpaperStyle, screenSize: CGSize,
         typography: TypographySettings, longQuote: LongQuoteSettings,
         rewriteHorizon: Date?,
@@ -918,9 +950,10 @@ final class MainViewModel {
     /// One frame past the horizon is kept so a late rewrite still has somewhere to go, and the
     /// result never drops below two frames while the day still has two left — a single-frame
     /// HEIC is just a static wallpaper.
-    static func framesWorthWriting(_ phaseTimes: [SolarPhaseTime],
-                                   now: Date,
-                                   until horizon: Date?) -> [SolarPhaseTime] {
+    /// `nonisolated`: a pure function of its arguments, called from the off-main render path.
+    nonisolated static func framesWorthWriting(_ phaseTimes: [SolarPhaseTime],
+                                               now: Date,
+                                               until horizon: Date?) -> [SolarPhaseTime] {
         let sorted = phaseTimes.sorted { $0.date < $1.date }
         guard sorted.count > 1 else { return sorted }
 

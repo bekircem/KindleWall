@@ -5,7 +5,10 @@ import OSLog
 // MARK: - Protocol
 
 /// Protocol for applying wallpaper images to the desktop.
-protocol WallpaperManagerProtocol {
+///
+/// `Sendable` because the render path hands the manager to a detached task: PNG/HEIC encoding
+/// and the write both happen off the main actor, and only the `NSWorkspace` swap comes back.
+protocol WallpaperManagerProtocol: Sendable {
     /// Renders the wallpaper image to a PNG on disk and returns its file URL, without
     /// applying it. Safe to call off the main actor — touches no instance state, only the
     /// filesystem — so the expensive PNG encode + write can run on a background task.
@@ -125,7 +128,19 @@ extension WallpaperManagerProtocol {
 ///
 /// Other Spaces are covered by `activeSpaceDidChange` instead: each one gets the current
 /// wallpaper the first time it is visited, and only if it is not already showing it.
-final class WallpaperManager: WallpaperManagerProtocol {
+/// **Isolation contract.** `@unchecked Sendable` is claimed here, not assumed, and it rests on
+/// two disciplines that the code keeps and this comment names so a future edit cannot break one
+/// without noticing:
+///
+/// 1. State reachable from background work — `pendingWrites` and `syncGeneration` — is touched
+///    only while `syncLock` is held. Those are the two the render path and the prune path race
+///    over.
+/// 2. Everything else — `currentWallpaperURL`, `previousWallpaperURL`, `spaceChangeWork`,
+///    `storageService` — is main-thread-only, because it is written from the `NSWorkspace` swap
+///    and the space-change observer, both of which are main-thread by construction.
+///
+/// Adding a stored property means choosing a side: lock it, or keep it on the main thread.
+final class WallpaperManager: WallpaperManagerProtocol, @unchecked Sendable {
     private var storageService: StorageServiceProtocol
 
     /// Where generated wallpapers live. Injectable so pruning can be tested against a
@@ -335,8 +350,11 @@ final class WallpaperManager: WallpaperManagerProtocol {
         // it. Deleting the file the desktop points at does not blank it — macOS keeps drawing the
         // image from cache — it freezes it, permanently, with no way to refresh. That is what
         // "the wallpaper stopped changing" was.
-        var keepPaths = Set(keep.map(\.standardizedFileURL.path))
-        if let current = currentWallpaperURL { keepPaths.insert(current.standardizedFileURL.path) }
+        // Built as a `let` so the closure below captures an immutable value: a mutable local
+        // reaching concurrently-executing code is a data race the compiler cannot rule out,
+        // even when — as here — every mutation happens before the dispatch.
+        let keepPaths = Set(keep.map(\.standardizedFileURL.path))
+            .union(currentWallpaperURL.map { [$0.standardizedFileURL.path] } ?? [])
 
         // Everything below is filesystem work with no AppKit in it, so the whole body runs off
         // the main thread. It used to list the directory and make a synchronous XPC call to the

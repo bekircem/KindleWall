@@ -5,7 +5,9 @@ import OSLog
 // MARK: - Protocol
 
 /// Protocol for generating wallpaper images from clippings.
-protocol WallpaperGeneratorProtocol {
+/// `Sendable` because rendering runs on a detached task — a stateless renderer is what makes
+/// moving the expensive work off the main actor safe rather than merely convenient.
+protocol WallpaperGeneratorProtocol: Sendable {
     /// Generates a wallpaper image from a clipping using the specified style.
     func generateWallpaper(clipping: Clipping, style: WallpaperStyle, screenSize: CGSize, typography: TypographySettings, longQuote: LongQuoteSettings) -> NSImage?
 

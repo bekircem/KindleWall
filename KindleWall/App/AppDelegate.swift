@@ -45,6 +45,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     /// Invoked when the user selects "KindleWall'a Alıntı Ekle" from the Services menu.
     /// macOS passes the selected text via `pasteboard`.
+    ///
+    /// `@MainActor` because it activates the app and orders a window front — AppKit calls that
+    /// were always main-thread-only. macOS delivers Services invocations on the main thread, so
+    /// this states the existing contract rather than adding a hop.
+    @MainActor
     @objc func addClippingFromService(
         _ pasteboard: NSPasteboard,
         userData: String?,

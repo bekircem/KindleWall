@@ -17,6 +17,10 @@ import XCTest
 ///
 /// The guard fixes both halves: the captured wallpaper is only ever a real one (never a temp
 /// path), and it is captured once for the whole bundle rather than per test.
+/// Main-actor isolated: it reads `NSScreen` and drives `NSWorkspace`, and the state it keeps is
+/// shared across the whole bundle. XCTest runs `setUp`/`tearDown` on the main thread, so this
+/// costs nothing and makes the shared state safe rather than merely unobserved.
+@MainActor
 enum DesktopWallpaperGuard {
 
     /// The wallpaper that was on the desktop before any test touched it. Captured once.

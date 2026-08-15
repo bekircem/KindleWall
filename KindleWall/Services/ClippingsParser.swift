@@ -3,7 +3,10 @@ import Foundation
 // MARK: - Protocol
 
 /// Protocol for parsing Kindle clippings files.
-protocol ClippingsParserProtocol {
+///
+/// `Sendable` because importing hands the parser to a background task: parsing a large
+/// My Clippings.txt on the main actor is exactly the freeze this app has been removing.
+protocol ClippingsParserProtocol: Sendable {
     /// Parses the contents of a My Clippings.txt file and returns an array of clippings.
     /// - Parameter fileURL: The URL of the clippings file.
     /// - Returns: An array of parsed Clipping objects.
@@ -27,14 +30,22 @@ protocol ClippingsParserProtocol {
 final class ClippingsParser: ClippingsParserProtocol {
     private static let separator = "=========="
 
-    // Regex patterns for metadata line
-    private static let highlightPattern = /- Your Highlight on(?: [Pp]age (\d+))?\s*\|?\s*(?:[Ll]ocation (\d+(?:-\d+)?))?\s*\|?\s*Added on (.+)/
-    private static let notePattern = /- Your Note on(?: [Pp]age (\d+))?\s*\|?\s*(?:[Ll]ocation (\d+(?:-\d+)?))?\s*\|?\s*Added on (.+)/
-    private static let bookmarkPattern = /- Your Bookmark on(?: [Pp]age (\d+))?\s*\|?\s*(?:[Ll]ocation (\d+(?:-\d+)?))?\s*\|?\s*Added on (.+)/
+    /// Metadata-line patterns, built per parse call rather than stored.
+    ///
+    /// `Regex` is not `Sendable`. Held as a stored property — static or instance — it would make
+    /// the parser itself unsendable, and the parser is handed to a background task on every
+    /// import. Building them per call leaves the type with no shared state at all, so it is
+    /// safe by construction instead of by assertion. The cost is five regex compilations per
+    /// import, not per entry.
+    private struct Patterns {
+        let highlight = /- Your Highlight on(?: [Pp]age (\d+))?\s*\|?\s*(?:[Ll]ocation (\d+(?:-\d+)?))?\s*\|?\s*Added on (.+)/
+        let note = /- Your Note on(?: [Pp]age (\d+))?\s*\|?\s*(?:[Ll]ocation (\d+(?:-\d+)?))?\s*\|?\s*Added on (.+)/
+        let bookmark = /- Your Bookmark on(?: [Pp]age (\d+))?\s*\|?\s*(?:[Ll]ocation (\d+(?:-\d+)?))?\s*\|?\s*Added on (.+)/
 
-    // Turkish equivalents
-    private static let highlightPatternTR = /- (\d+)\. sayfadaki vurgulama(?:\s*\|\s*konum (\d+(?:-\d+)?))?.+Eklenme Tarihi: (.+)/
-    private static let notePatternTR = /- (\d+)\. sayfadaki not(?:\s*\|\s*konum (\d+(?:-\d+)?))?.+Eklenme Tarihi: (.+)/
+        // Turkish equivalents
+        let highlightTR = /- (\d+)\. sayfadaki vurgulama(?:\s*\|\s*konum (\d+(?:-\d+)?))?.+Eklenme Tarihi: (.+)/
+        let noteTR = /- (\d+)\. sayfadaki not(?:\s*\|\s*konum (\d+(?:-\d+)?))?.+Eklenme Tarihi: (.+)/
+    }
 
     func parse(fileURL: URL) throws -> [Clipping] {
         let content: String
@@ -45,11 +56,12 @@ final class ClippingsParser: ClippingsParserProtocol {
         }
 
         let rawEntries = content.components(separatedBy: Self.separator)
+        let patterns = Patterns()
         var clippings: [Clipping] = []
         var seenTexts: Set<String> = []
 
         for entry in rawEntries {
-            guard let clipping = parseEntry(entry) else { continue }
+            guard let clipping = parseEntry(entry, patterns: patterns) else { continue }
 
             // Filter out bookmarks, notes, and empty texts — only highlights shown
             guard clipping.type != .bookmark, clipping.type != .note, !clipping.text.trimmed.isEmpty else { continue }
@@ -77,6 +89,7 @@ final class ClippingsParser: ClippingsParserProtocol {
         }
 
         let rawEntries = content.components(separatedBy: Self.separator)
+        let patterns = Patterns()
         let total = max(rawEntries.count, 1)
         var clippings: [Clipping] = []
         var seenTexts: Set<String> = []
@@ -91,7 +104,7 @@ final class ClippingsParser: ClippingsParserProtocol {
                 await progressHandler(progress, firstLine)
             }
 
-            guard let clipping = parseEntry(entry) else { continue }
+            guard let clipping = parseEntry(entry, patterns: patterns) else { continue }
             guard clipping.type != .bookmark, clipping.type != .note, !clipping.text.trimmed.isEmpty else { continue }
 
             let normalizedText = clipping.text.trimmed.lowercased()
@@ -106,7 +119,7 @@ final class ClippingsParser: ClippingsParserProtocol {
 
     // MARK: - Private
 
-    private func parseEntry(_ entry: String) -> Clipping? {
+    private func parseEntry(_ entry: String, patterns: Patterns) -> Clipping? {
         let lines = entry.components(separatedBy: "\n")
             .map { $0.trimmed }
             .filter { !$0.isEmpty }
@@ -124,7 +137,7 @@ final class ClippingsParser: ClippingsParserProtocol {
         let (bookTitle, author) = parseTitleLine(titleLine)
 
         // Parse metadata (type, page, location, date)
-        let metadata = parseMetadataLine(metadataLine)
+        let metadata = parseMetadataLine(metadataLine, patterns: patterns)
 
         let id = Clipping.deterministicID(bookTitle: bookTitle, text: text)
 
@@ -162,9 +175,9 @@ final class ClippingsParser: ClippingsParserProtocol {
         let date: Date?
     }
 
-    private func parseMetadataLine(_ line: String) -> EntryMetadata {
+    private func parseMetadataLine(_ line: String, patterns: Patterns) -> EntryMetadata {
         // Try English highlight pattern
-        if let match = line.firstMatch(of: Self.highlightPattern) {
+        if let match = line.firstMatch(of: patterns.highlight) {
             return EntryMetadata(
                 type: .highlight,
                 page: match.1.map(String.init),
@@ -174,7 +187,7 @@ final class ClippingsParser: ClippingsParserProtocol {
         }
 
         // Try English note pattern
-        if let match = line.firstMatch(of: Self.notePattern) {
+        if let match = line.firstMatch(of: patterns.note) {
             return EntryMetadata(
                 type: .note,
                 page: match.1.map(String.init),
@@ -184,7 +197,7 @@ final class ClippingsParser: ClippingsParserProtocol {
         }
 
         // Try English bookmark pattern
-        if let match = line.firstMatch(of: Self.bookmarkPattern) {
+        if let match = line.firstMatch(of: patterns.bookmark) {
             return EntryMetadata(
                 type: .bookmark,
                 page: match.1.map(String.init),
@@ -194,7 +207,7 @@ final class ClippingsParser: ClippingsParserProtocol {
         }
 
         // Try Turkish highlight pattern
-        if let match = line.firstMatch(of: Self.highlightPatternTR) {
+        if let match = line.firstMatch(of: patterns.highlightTR) {
             return EntryMetadata(
                 type: .highlight,
                 page: String(match.1),
@@ -204,7 +217,7 @@ final class ClippingsParser: ClippingsParserProtocol {
         }
 
         // Try Turkish note pattern
-        if let match = line.firstMatch(of: Self.notePatternTR) {
+        if let match = line.firstMatch(of: patterns.noteTR) {
             return EntryMetadata(
                 type: .note,
                 page: String(match.1),
