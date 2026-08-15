@@ -26,6 +26,7 @@
 		259FF941840162FFDEEFF7DD /* TypographySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E42E9459982478064850C542 /* TypographySettings.swift */; };
 		2607C2BCA90D9ACD1DF0A047 /* DynamicWallpaperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9148332127C6E2E34E9988C /* DynamicWallpaperTests.swift */; };
 		2950FAE0D5F4268D3BCCD85B /* ClippingsParserRobustnessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D7BAC90108E950C8EC007DE /* ClippingsParserRobustnessTests.swift */; };
+		2B203BD6E0766554EEED1A1B /* StorageServiceRobustnessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83508E1D0A9DDB61FB42F174 /* StorageServiceRobustnessTests.swift */; };
 		2E8656739C0CDAD9F2762721 /* ScheduleInterval.swift in Sources */ = {isa = PBXBuildFile; fileRef = 593962AF2E824A1465721F5D /* ScheduleInterval.swift */; };
 		31B910262E7F04F9464AF857 /* LibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D5E30DC05F026C1E649A53 /* LibraryViewModel.swift */; };
 		344706C2926BAB6CB998A58A /* StylePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1651C641E93F65D094CE096 /* StylePickerView.swift */; };
@@ -186,6 +187,7 @@
 		811E26389F17F084542DAAF7 /* KindleWall.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KindleWall.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8143673FE823CDFA4DAABFAD /* ClippingsParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClippingsParser.swift; sourceTree = "<group>"; };
 		82FC09C6904F9FF3E40C4905 /* SyncSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSchema.swift; sourceTree = "<group>"; };
+		83508E1D0A9DDB61FB42F174 /* StorageServiceRobustnessTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageServiceRobustnessTests.swift; sourceTree = "<group>"; };
 		84B8DCCB21715F04D7F1F47B /* StyleRenderSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleRenderSnapshotTests.swift; sourceTree = "<group>"; };
 		84BB3CC248CBF037C8D7A6A2 /* TypographyPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypographyPanelView.swift; sourceTree = "<group>"; };
 		84FA598536FDE02399641964 /* Clipping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipping.swift; sourceTree = "<group>"; };
@@ -498,6 +500,7 @@
 				6AEB753CED4F86B5A608E6F9 /* InteractionStressTests.swift */,
 				C1A37118CAF7B499E0D6782A /* SchedulerServiceTests.swift */,
 				15BF48C1423B84E5E5D4C510 /* SolarTests.swift */,
+				83508E1D0A9DDB61FB42F174 /* StorageServiceRobustnessTests.swift */,
 				84B8DCCB21715F04D7F1F47B /* StyleRenderSnapshotTests.swift */,
 				083758A57448F8B09F4C4FBB /* WallpaperPruningTests.swift */,
 				6A9FB95141964FB00C6D72B8 /* WallpaperStoreSyncTests.swift */,
@@ -614,6 +617,7 @@
 				C85E4AA9D43F10237EFECDB6 /* InteractionStressTests.swift in Sources */,
 				A38FF529AC17962EDE97C601 /* SchedulerServiceTests.swift in Sources */,
 				DA4D9ACED55083BA56A4F627 /* SolarTests.swift in Sources */,
+				2B203BD6E0766554EEED1A1B /* StorageServiceRobustnessTests.swift in Sources */,
 				CE315013D6AFFCFE08D077FE /* StyleRenderSnapshotTests.swift in Sources */,
 				4514F7C5B2736643BCC3ECC0 /* WallpaperPruningTests.swift in Sources */,
 				ADE4F4E878A7CA5DC10F2430 /* WallpaperStoreSyncTests.swift in Sources */,
