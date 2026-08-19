@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>KindleWall</title>
+    <link>https://bekircem.github.io/KindleWall/appcast.xml</link>
+    <description>KindleWall updates</description>
+    <language>tr</language>
+  </channel>
+</rss>
