@@ -4,8 +4,16 @@ build/
 DerivedData/
 .xcode-derived/
 *.xcuserdata
-*.xcworkspace
-!*.xcworkspace/contents.xcworkspacedata
+# Xcode workspace: keep the shared parts, drop the per-user state.
+#
+# Not `*.xcworkspace` with negations underneath — git never descends into an excluded
+# directory, so `!*.xcworkspace/contents.xcworkspacedata` never did anything and neither
+# would a rule for the SPM pin file. That pin has to be tracked: without it a fresh clone
+# resolves Sparkle to whatever `from: 2.9.6` allows, and the dependency that ships inside
+# the notarized bundle and verifies update signatures would not be the one this was tested
+# against.
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 xcuserdata/
 
 # macOS
