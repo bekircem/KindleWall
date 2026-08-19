@@ -3,11 +3,12 @@ import CryptoKit
 import Foundation
 import Observation
 
-/// Synchronizes user state, manual clippings, and book metadata overrides across the
-/// authenticated user's Macs via CloudKit private database.
+/// Synchronizes user state, manual clippings, and book metadata overrides across the user's
+/// Macs via the CloudKit private database.
 ///
-/// **Lifecycle:** Started after Sign in with Apple completes; stopped on sign-out
-/// (data stays locally — sign-in again merges with cloud).
+/// **Lifecycle:** Started unconditionally at launch. The system iCloud account is the only
+/// credential involved — `checkAccountAndBootstrap` reads `CKContainer.accountStatus()` and
+/// puts every unavailable case into `SyncState` with a reason the UI can show.
 ///
 /// **Conflict resolution:** Last-write-wins on scalars (server's `modificationDate`
 /// is authoritative); set fields (favorites, shown, pinned, persistedIDs) take
@@ -82,7 +83,10 @@ final class CloudKitSyncService {
     // MARK: - Lifecycle
 
     /// Starts the sync engine. Idempotent; safe to call repeatedly.
-    /// Caller should invoke after `AuthState.status == .authenticated`.
+    ///
+    /// Call it unconditionally: `checkAccountAndBootstrap` reads `CKContainer.accountStatus()`
+    /// and reports every unavailable case to `SyncState` itself, so there is nothing useful for
+    /// a caller to check first.
     func start() {
         guard !isRunning else { return }
         isRunning = true
@@ -103,6 +107,11 @@ final class CloudKitSyncService {
     }
 
     /// Stops the sync engine. Local data is preserved.
+    ///
+    /// Nothing calls this today — the sign-out that used to was removed with Sign in with
+    /// Apple. It stays as `start()`'s counterpart, and because the teardown it performs is
+    /// real: an un-invalidated `Timer` outliving its owner is a bug this codebase has already
+    /// shipped once, in `SchedulerService`.
     func stop() {
         guard isRunning else { return }
         isRunning = false
@@ -110,7 +119,7 @@ final class CloudKitSyncService {
         pendingPushTimer?.invalidate()
         pendingPushTimer = nil
         pendingDirty.removeAll()
-        syncState.status = .disabled(reason: "Çıkış yapıldı")
+        syncState.status = .disabled(reason: "Eşitleme durduruldu")
     }
 
     /// User-initiated sync. Pushes any pending changes then pulls remote updates,

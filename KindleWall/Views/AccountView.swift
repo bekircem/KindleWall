@@ -1,194 +1,101 @@
 import SwiftUI
 
-/// Displays user account info when signed in, or a sign-in prompt when not.
+/// iCloud sync status.
+///
+/// This screen used to be an account page built on Sign in with Apple. That capability is not
+/// available to apps distributed with a Developer ID — Apple will not issue a provisioning
+/// profile for one — and it never carried its weight here anyway: CloudKit's private database
+/// runs on the system iCloud account, so signing in a second time bought nothing but a gate.
 struct AccountView: View {
-    @Environment(AuthState.self) private var authState
-    @Environment(AuthService.self) private var authService
     @Environment(SyncState.self) private var syncState
     @Environment(CloudKitSyncService.self) private var cloudKitSync
-    @State private var showDeleteConfirm = false
 
     var body: some View {
         ScrollView {
             VStack(spacing: Theme.Spacing.xl) {
-                switch authState.status {
-                case .unknown:
-                    ProgressView("Kontrol ediliyor…")
-                        .padding(.top, Theme.Spacing.xxl)
-
-                case .unauthenticated:
-                    signInSection
-
-                case .authenticated(let profile):
-                    profileSection(profile: profile)
+                header
+                statusCard
+                if case .disabled = syncState.status {
+                    systemSettingsHint
                 }
             }
             .frame(maxWidth: .infinity)
             .padding(Theme.Spacing.xxl)
         }
         .scrollEdgeEffectStyle(.soft, for: .top)
-        .navigationTitle("Hesap")
+        .navigationTitle("iCloud")
     }
 
-    // MARK: - Sign In
+    // MARK: - Header
 
-    private var signInSection: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "person.crop.circle")
-                .font(.system(size: 64))
-                .foregroundStyle(.secondary)
+    private var header: some View {
+        VStack(spacing: Theme.Spacing.m) {
+            IconTile(symbol: "icloud", color: .blue, size: 56)
 
-            Text("Hesabınıza Giriş Yapın")
-                .font(.title2)
-                .fontWeight(.bold)
+            Text("iCloud Eşitleme")
+                .font(.title2.weight(.bold))
 
-            Text("Apple Hesabınızla giriş yaparak favorilerinizi, ayarlarınızı ve düzenlemelerinizi cihazlarınız arasında senkronize edin.")
-                .font(.body)
+            Text("Favorilerin, gösterilmiş alıntıların ve düzenlemelerin Mac'lerin arasında eşitlenir. Veriler yalnızca senin özel iCloud veritabanına yazılır; bu projenin bir sunucusu yok.")
+                .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-                .frame(maxWidth: 360)
-
-            SignInWithAppleButton {
-                authService.signIn()
-            }
-            .frame(width: 240, height: 44)
+                .frame(maxWidth: 380)
         }
     }
 
-    // MARK: - Profile
+    // MARK: - Status
 
-    private func profileSection(profile: UserProfile) -> some View {
-        VStack(spacing: Theme.Spacing.xl) {
-            // Avatar placeholder
-            ZStack {
-                Circle()
-                    .fill(.quaternary)
-                    .frame(width: 80, height: 80)
-                Text(avatarInitials(profile))
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-            }
-
-            VStack(spacing: 4) {
-                Text(profile.greeting)
-                    .font(.title2)
-                    .fontWeight(.bold)
-
-                if let email = profile.email {
-                    Text(email)
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
-
-                Text("Üye: \(profile.createdAt.formatted(.dateTime.month(.wide).year()))")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
-
-            Divider()
-                .frame(maxWidth: 300)
-
-            // Sync status
-            SettingsCard {
-                HStack(spacing: Theme.Spacing.m) {
-                    syncStatusIcon
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Senkronizasyon")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        Text(syncStatusDescription)
-                            .font(.caption)
-                            .foregroundStyle(syncStatusForeground)
-                    }
-                    Spacer()
-                    if case .idle = syncState.status {
-                        Button("Şimdi") {
-                            Task { await cloudKitSync.syncNow() }
-                        }
-                        .buttonStyle(.borderless)
+    private var statusCard: some View {
+        SettingsCard {
+            HStack(spacing: Theme.Spacing.m) {
+                statusIcon
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Durum")
+                        .font(.subheadline.weight(.medium))
+                    Text(statusDescription)
                         .font(.caption)
+                        .foregroundStyle(statusForeground)
+                }
+                Spacer()
+                if case .idle = syncState.status {
+                    Button("Şimdi") {
+                        Task { await cloudKitSync.syncNow() }
                     }
+                    .buttonStyle(.borderless)
+                    .font(.caption)
                 }
-                .padding(Theme.Spacing.l)
             }
-            .frame(maxWidth: 320)
-
-            // Subscription status (Phase 5)
-            SettingsCard {
-                HStack(spacing: Theme.Spacing.m) {
-                    IconTile(symbol: "crown.fill", color: .yellow)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Abonelik")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        Text("Ücretsiz Plan")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
-                    Spacer()
-                }
-                .padding(Theme.Spacing.l)
-            }
-            .frame(maxWidth: 320)
-
-            // Actions
-            VStack(spacing: Theme.Spacing.m) {
-                Button("Çıkış Yap") {
-                    authService.signOut()
-                }
-                .foregroundStyle(.primary)
-
-                Button("Hesabı Sil") {
-                    showDeleteConfirm = true
-                }
-                .foregroundStyle(.red)
-                .font(.caption)
-            }
+            .padding(Theme.Spacing.l)
         }
-        .confirmationDialog(
-            "Hesabınızı silmek istediğinize emin misiniz?",
-            isPresented: $showDeleteConfirm,
-            titleVisibility: .visible
-        ) {
-            Button("Hesabı Sil", role: .destructive) {
-                authService.deleteAccount()
-            }
-            Button("İptal", role: .cancel) {}
-        } message: {
-            Text("Bu işlem yerel oturumunuzu sonlandırır. Apple ID bağlantısını tamamen kaldırmak için appleid.apple.com adresinden uygulamayı yetkili uygulamalar listesinden çıkarabilirsiniz.")
-        }
+        .frame(maxWidth: 360)
     }
 
-    // MARK: - Helpers
-
-    private func avatarInitials(_ profile: UserProfile) -> String {
-        guard let name = profile.displayName else { return "?" }
-        let parts = name.components(separatedBy: " ")
-        let initials = parts.prefix(2).compactMap { $0.first }.map(String.init)
-        return initials.joined().uppercased()
+    /// Only shown while sync is unavailable — the fix is always in System Settings, never here.
+    private var systemSettingsHint: some View {
+        Button("Sistem Ayarları'nda iCloud'u Aç") {
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preferences.AppleIDPrefPane") {
+                NSWorkspace.shared.open(url)
+            }
+        }
+        .buttonStyle(.glass)
     }
 
-    // MARK: - Sync status presentation
+    // MARK: - Presentation
 
-    @ViewBuilder private var syncStatusIcon: some View {
+    @ViewBuilder private var statusIcon: some View {
         switch syncState.status {
         case .disabled:
-            Image(systemName: "icloud.slash")
-                .foregroundStyle(.secondary)
+            Image(systemName: "icloud.slash").foregroundStyle(.secondary)
         case .idle:
-            Image(systemName: "checkmark.icloud")
-                .foregroundStyle(.green)
+            Image(systemName: "checkmark.icloud").foregroundStyle(.green)
         case .syncing:
-            ProgressView()
-                .controlSize(.small)
+            ProgressView().controlSize(.small)
         case .error:
-            Image(systemName: "exclamationmark.icloud")
-                .foregroundStyle(.red)
+            Image(systemName: "exclamationmark.icloud").foregroundStyle(.red)
         }
     }
 
-    private var syncStatusDescription: String {
+    private var statusDescription: String {
         switch syncState.status {
         case .disabled(let reason):
             return reason
@@ -197,20 +104,20 @@ struct AccountView: View {
             // A just-completed sync reads as "az önce". RelativeDateTimeFormatter would
             // otherwise render the near-now instant as the nonsensical "0 saniye sonra".
             if Date().timeIntervalSince(date) < 10 {
-                return "Son senkronizasyon: az önce"
+                return "Son eşitleme: az önce"
             }
             let formatter = RelativeDateTimeFormatter()
             formatter.unitsStyle = .full
             formatter.locale = Locale(identifier: "tr_TR")
-            return "Son senkronizasyon: " + formatter.localizedString(for: date, relativeTo: Date())
+            return "Son eşitleme: " + formatter.localizedString(for: date, relativeTo: Date())
         case .syncing:
-            return "Senkronize ediliyor…"
+            return "Eşitleniyor…"
         case .error(let msg):
             return msg
         }
     }
 
-    private var syncStatusForeground: HierarchicalShapeStyle {
+    private var statusForeground: HierarchicalShapeStyle {
         if case .error = syncState.status { return .primary }
         return .tertiary
     }

@@ -7,7 +7,7 @@ import Observation
 @Observable
 final class SyncState {
     enum Status: Equatable {
-        /// iCloud account unavailable or user signed out — sync engine is dormant.
+        /// iCloud account unavailable — sync engine is dormant.
         case disabled(reason: String)
         /// Engine is running, last sync (if any) completed successfully.
         case idle
@@ -17,6 +17,6 @@ final class SyncState {
         case error(String)
     }
 
-    var status: Status = .disabled(reason: "Hesabınızla giriş yapın")
+    var status: Status = .disabled(reason: "iCloud durumu kontrol ediliyor…")
     var lastSyncedAt: Date?
 }

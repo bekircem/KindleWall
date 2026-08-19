@@ -2,12 +2,15 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>aps-environment</key>
+	<!-- Debug. Hand-maintained: project.yml no longer generates this file, because doing so
+	     overwrote the corrected push key on every `xcodegen generate`.
+
+	     The key is `com.apple.developer.aps-environment`, not the bare `aps-environment` —
+	     the latter is the iOS spelling, and it is what this file used to carry. The
+	     provisioning profile has always granted the macOS key, so the entitlement the app
+	     requested and the one it was granted never matched. -->
+	<key>com.apple.developer.aps-environment</key>
 	<string>development</string>
-	<key>com.apple.developer.applesignin</key>
-	<array>
-		<string>Default</string>
-	</array>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>
 		<string>iCloud.com.kindlewall.app</string>

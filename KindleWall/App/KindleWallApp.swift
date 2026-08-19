@@ -5,8 +5,6 @@ struct KindleWallApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     @State private var importState: ImportState
-    @State private var authState: AuthState
-    @State private var authService: AuthService
     @State private var syncState: SyncState
     @State private var cloudKitSync: CloudKitSyncService
     @State private var viewModel: MainViewModel
@@ -21,12 +19,9 @@ struct KindleWallApp: App {
 
     init() {
         let importSt = ImportState()
-        let authSt = AuthState()
         let syncSt = SyncState()
         let storage = StorageService()
         _importState = State(initialValue: importSt)
-        _authState = State(initialValue: authSt)
-        _authService = State(initialValue: AuthService(authState: authSt))
         _syncState = State(initialValue: syncSt)
         _cloudKitSync = State(initialValue: CloudKitSyncService(syncState: syncSt, storage: storage))
         _viewModel = State(initialValue: MainViewModel(importState: importSt))
@@ -49,8 +44,6 @@ struct KindleWallApp: App {
                 } else {
                     MainView(viewModel: viewModel, settingsVM: settingsVM)
                         .environment(importState)
-                        .environment(authState)
-                        .environment(authService)
                         .environment(syncState)
                         .environment(cloudKitSync)
                         .onAppear {
@@ -58,18 +51,13 @@ struct KindleWallApp: App {
                             viewModel.sweepOrphanedWallpapers()
                             AppEnvironment.shared.mainViewModel = viewModel
                         }
+                        // Sync is gated on the iCloud account and nothing else. It used to be
+                        // gated on Sign in with Apple as well, which was always redundant —
+                        // `CloudKitSyncService` checks `CKContainer.accountStatus()` itself and
+                        // reports every unavailable case — and Apple does not issue Developer ID
+                        // provisioning profiles for apps requesting that capability at all.
                         .task {
-                            await authService.checkCredentialState()
-                            if authState.isAuthenticated {
-                                cloudKitSync.start()
-                            }
-                        }
-                        .onChange(of: authState.isAuthenticated) { _, isAuth in
-                            if isAuth {
-                                cloudKitSync.start()
-                            } else {
-                                cloudKitSync.stop()
-                            }
+                            cloudKitSync.start()
                         }
                 }
             }
