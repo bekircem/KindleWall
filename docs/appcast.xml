@@ -5,5 +5,17 @@
     <link>https://bekircem.github.io/KindleWall/appcast.xml</link>
     <description>KindleWall updates</description>
     <language>tr</language>
+    <item>
+      <title>1.0.0</title>
+      <pubDate>Thu, 20 Aug 2026 02:44:24 +0300</pubDate>
+      <sparkle:version>2</sparkle:version>
+      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/bekircem/KindleWall/releases/tag/v1.0.0</link>
+      <enclosure url="https://github.com/bekircem/KindleWall/releases/download/v1.0.0/KindleWall-1.0.0.dmg"
+                 sparkle:edSignature="ezFULCtvwqDmKRICAFPwomZ5cwFIC184xzIVnDE4ORdZauh1f4qHie13mPuD0C+cT1aJB2AyqLS2zPh6C3awAQ=="
+                 length="2888571"
+                 type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
