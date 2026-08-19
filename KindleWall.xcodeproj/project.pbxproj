@@ -67,6 +67,7 @@
 		7C96AAFBB05F86AF8051E7D2 /* BookDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4998D9FDFE0CCA5977A85336 /* BookDetailView.swift */; };
 		7D51CE4F5A5460C8B457975A /* KindleWallApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30563F762B62B9440A7A5F20 /* KindleWallApp.swift */; };
 		8099BE8A05EC92FB6A2FAC4B /* ShortcutsSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AB85D06ED87FE137A442F69 /* ShortcutsSettingsPage.swift */; };
+		821214E4A3E734CC0C180CCD /* AppIconTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CDBA9D4852B9D85B2899E5 /* AppIconTests.swift */; };
 		8247DBF6BD759F92B0AB0822 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B9AB0C0A2966684DAFF6270 /* AuthenticationServices.framework */; };
 		83428CC80EF2475795300C80 /* BookMetadataOverride.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5772E1FA5C94F11086188F5 /* BookMetadataOverride.swift */; };
 		85A8A4FAC630912B4C7A67AD /* SolarPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB44C6FA220FF7EDB6A02AA2 /* SolarPalette.swift */; };
@@ -172,6 +173,7 @@
 		4558BCC5328980AB09CF0F0A /* WallpaperGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperGenerator.swift; sourceTree = "<group>"; };
 		45AAAB1873D99B68FFE40196 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		4998D9FDFE0CCA5977A85336 /* BookDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookDetailView.swift; sourceTree = "<group>"; };
+		52CDBA9D4852B9D85B2899E5 /* AppIconTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconTests.swift; sourceTree = "<group>"; };
 		593962AF2E824A1465721F5D /* ScheduleInterval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleInterval.swift; sourceTree = "<group>"; };
 		595E663AFEB25269247290BF /* ApplyStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplyStatus.swift; sourceTree = "<group>"; };
 		5997AF748EE780B1867F264C /* BackgroundSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundSection.swift; sourceTree = "<group>"; };
@@ -520,6 +522,7 @@
 		EE208586DADE5060BA8C0B24 /* KindleWallTests */ = {
 			isa = PBXGroup;
 			children = (
+				52CDBA9D4852B9D85B2899E5 /* AppIconTests.swift */,
 				F20FB65F4C86BE8D4070D9F8 /* ApplyWallpaperBranchTests.swift */,
 				C4701D1EFAFE2A47611932AA /* AppVersionTests.swift */,
 				074D8B216EBCC082E2D9E9C4 /* AutoApplyTests.swift */,
@@ -640,6 +643,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				821214E4A3E734CC0C180CCD /* AppIconTests.swift in Sources */,
 				6004618F897BEC21531088E0 /* AppVersionTests.swift in Sources */,
 				FE7DA0EC873D3C272B160296 /* ApplyWallpaperBranchTests.swift in Sources */,
 				B60CCD1BD4E0B5D606CBD043 /* AutoApplyTests.swift in Sources */,
