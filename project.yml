@@ -18,8 +18,11 @@ settings:
     GENERATE_INFOPLIST_FILE: false
     CODE_SIGN_STYLE: Automatic
     DEVELOPMENT_TEAM: CB9V39VP62
-    # Fixed output path so .app location never changes between builds.
-    SYMROOT: $(PROJECT_DIR)/.build
+    # No SYMROOT override. A custom build location puts Xcode in its "legacy build locations"
+    # mode, and Swift package dependencies are flat-out unsupported there — adding Sparkle
+    # fails with "Packages are not supported when using legacy build locations". Builds go to
+    # the standard DerivedData path, which is what CLAUDE.md documents and what
+    # build-and-run.sh already fell back to.
     # Xcode 15+ recommended setting — opt out of user script sandboxing
     # (this app has no Run Script build phases, so the value is academic;
     #  setting it explicitly silences the "Update to recommended settings" warning).
@@ -39,6 +42,11 @@ settings:
       # with `method: developer-id` re-signs the archive and pulls the matching profile,
       # which is also how Xcode's own Organizer does it.
       ENABLE_HARDENED_RUNTIME: "YES"
+
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.9.6
 
 targets:
   KindleWall:
@@ -76,6 +84,7 @@ targets:
     dependencies:
       - sdk: UserNotifications.framework
       - sdk: CloudKit.framework
+      - package: Sparkle
     scheme:
       testTargets:
         - KindleWallTests

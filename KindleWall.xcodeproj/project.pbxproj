@@ -60,6 +60,7 @@
 		73DD1E958ACF6F7249921FCF /* RotationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BC1AC3AB1D70358AAA494F /* RotationMode.swift */; };
 		753E707AB5CA58B4C22B18C2 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7635B35F9DE4F2A6600E5BCC /* String+Extensions.swift */; };
 		75C8BD83C969F447831FE36A /* BehaviorSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA714C7CA0CDC37EB70CB227 /* BehaviorSettingsPage.swift */; };
+		7808512C8B6DD9352F9107D5 /* UpdaterConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0687135708CDDE0AD26830 /* UpdaterConfigurationTests.swift */; };
 		78C5B8A9D501D3ECE4AA6AF1 /* Perf.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19B94CDD81F218CFD3985956 /* Perf.swift */; };
 		7AB59BF6A6869EC22BFE61D6 /* ClippingType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 770ABFDC8681FE24C185194E /* ClippingType.swift */; };
 		7AC95EBE2DC811E52F85F442 /* SunCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8606F8E3F5DF3CA36E62D9C1 /* SunCalculator.swift */; };
@@ -75,6 +76,7 @@
 		8ECE7FC3A8754FF894A9FF88 /* LongQuoteSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 984C8795ADD8004778BAE856 /* LongQuoteSettings.swift */; };
 		92DCFE36216B9E32C0EA0D24 /* SyncState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B3EE04C5D958F5D3DCE5CC6 /* SyncState.swift */; };
 		94526E695FD2F54B501DDE54 /* BookCoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6912F0FE5249E086AD30831D /* BookCoverView.swift */; };
+		94CC9FB8FB6EBC012BCC159D /* UpdaterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA50E1D9E4FFFCF196C6E26 /* UpdaterManager.swift */; };
 		9651EB08A73B52831A149DA0 /* SchedulerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960F9C40AEAD0DFA2A98BB65 /* SchedulerService.swift */; };
 		98AB2EA312F9487E4D3C913E /* DesignSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F72EB6BC11B4758B332D1506 /* DesignSettingsPage.swift */; };
 		9B1B3A8E3F53D844CFD00087 /* ApplyStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 595E663AFEB25269247290BF /* ApplyStatus.swift */; };
@@ -115,6 +117,7 @@
 		E04A4DEA617725CC965DA1D1 /* SyncSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82FC09C6904F9FF3E40C4905 /* SyncSchema.swift */; };
 		E21C24FBC3A9021754146296 /* LongQuoteSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C67D88843C99683BB01723A7 /* LongQuoteSection.swift */; };
 		E2FB7682A7E87AD7D9862C6F /* DesignTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23CBA85F5BC491252CE83E1C /* DesignTab.swift */; };
+		E9181E2AB7C4C596E1EAD8AD /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 5C446E3C8A8616C927A01098 /* Sparkle */; };
 		EA59F1A90173E25AB7E1010B /* ImportState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9CBDB10D1233006904C5296 /* ImportState.swift */; };
 		EEA6AFCE1699E43EAA1F01F9 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E37D518982D3991558473A69 /* AccountView.swift */; };
 		EFD64790AC7E187DD7F7642F /* ConcurrentRenderStressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F87F1C74F73529B64A2125 /* ConcurrentRenderStressTests.swift */; };
@@ -154,6 +157,7 @@
 		24D3ABD0568BA2950AF7234A /* HoverHighlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoverHighlight.swift; sourceTree = "<group>"; };
 		291C09E8EDBE31FD7F182F19 /* RotationSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotationSection.swift; sourceTree = "<group>"; };
 		296B492F9E41F4006D10C7EB /* ApplyStatusBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplyStatusBar.swift; sourceTree = "<group>"; };
+		2D0687135708CDDE0AD26830 /* UpdaterConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterConfigurationTests.swift; sourceTree = "<group>"; };
 		2E77A0B0FE97E55C4326EE31 /* KindleWallError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KindleWallError.swift; sourceTree = "<group>"; };
 		2F7ACB0B51A8CAE90FF9069F /* TypographySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypographySection.swift; sourceTree = "<group>"; };
 		30563F762B62B9440A7A5F20 /* KindleWallApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KindleWallApp.swift; sourceTree = "<group>"; };
@@ -225,6 +229,7 @@
 		C67D88843C99683BB01723A7 /* LongQuoteSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongQuoteSection.swift; sourceTree = "<group>"; };
 		C85406937B127664EA7E9D66 /* SettingsGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsGroup.swift; sourceTree = "<group>"; };
 		C99A62B30D7B8B2984E22E46 /* QuickCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCaptureView.swift; sourceTree = "<group>"; };
+		CAA50E1D9E4FFFCF196C6E26 /* UpdaterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterManager.swift; sourceTree = "<group>"; };
 		CB44C6FA220FF7EDB6A02AA2 /* SolarPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolarPalette.swift; sourceTree = "<group>"; };
 		CD04AC0B2940E7CE8B550B11 /* MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewModel.swift; sourceTree = "<group>"; };
 		CFFF4DE309F9E7D0FBC4B71F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -263,6 +268,7 @@
 			files = (
 				72003FDBD4B000F07A5B6729 /* UserNotifications.framework in Frameworks */,
 				096F503CFE34FF57212BBF0D /* CloudKit.framework in Frameworks */,
+				E9181E2AB7C4C596E1EAD8AD /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -446,6 +452,7 @@
 				72A2D110DB6BF0DB579C313E /* SolarColorTransform.swift */,
 				D9692B0E282F04AFDCA0FF3D /* StorageService.swift */,
 				8606F8E3F5DF3CA36E62D9C1 /* SunCalculator.swift */,
+				CAA50E1D9E4FFFCF196C6E26 /* UpdaterManager.swift */,
 				4558BCC5328980AB09CF0F0A /* WallpaperGenerator.swift */,
 				1F9733AA9E3A8A2D3F79AA5B /* WallpaperManager.swift */,
 				B56C074986BC74054C0431E6 /* WallpaperStoreSync.swift */,
@@ -521,6 +528,7 @@
 				83508E1D0A9DDB61FB42F174 /* StorageServiceRobustnessTests.swift */,
 				84B8DCCB21715F04D7F1F47B /* StyleRenderSnapshotTests.swift */,
 				FAE5ACCD4353C9FC35A14B64 /* TestDefaults.swift */,
+				2D0687135708CDDE0AD26830 /* UpdaterConfigurationTests.swift */,
 				083758A57448F8B09F4C4FBB /* WallpaperPruningTests.swift */,
 				6A9FB95141964FB00C6D72B8 /* WallpaperStoreSyncTests.swift */,
 				F16FF470B4AB5E726C2E10FE /* WallpaperStyleMigrationTests.swift */,
@@ -546,6 +554,7 @@
 			);
 			name = KindleWall;
 			packageProductDependencies = (
+				5C446E3C8A8616C927A01098 /* Sparkle */,
 			);
 			productName = KindleWall;
 			productReference = 811E26389F17F084542DAAF7 /* KindleWall.app */;
@@ -597,6 +606,9 @@
 			);
 			mainGroup = 2C2B7B77EDAA73932A89F526;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				FBF74EB9FB620420AC83C328 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D079063320403131A75753EC /* Products */;
 			projectDirPath = "";
@@ -643,6 +655,7 @@
 				2B203BD6E0766554EEED1A1B /* StorageServiceRobustnessTests.swift in Sources */,
 				CE315013D6AFFCFE08D077FE /* StyleRenderSnapshotTests.swift in Sources */,
 				AFDCC5033D6A6387D2DEE572 /* TestDefaults.swift in Sources */,
+				7808512C8B6DD9352F9107D5 /* UpdaterConfigurationTests.swift in Sources */,
 				4514F7C5B2736643BCC3ECC0 /* WallpaperPruningTests.swift in Sources */,
 				ADE4F4E878A7CA5DC10F2430 /* WallpaperStoreSyncTests.swift in Sources */,
 				38C0ECADDA7E3731D5AA9B3B /* WallpaperStyleMigrationTests.swift in Sources */,
@@ -739,6 +752,7 @@
 				A962097EB8345F616F154E1D /* TypographyPanelView.swift in Sources */,
 				D4827583C3491EE89F3BCB5C /* TypographySection.swift in Sources */,
 				259FF941840162FFDEEFF7DD /* TypographySettings.swift in Sources */,
+				94CC9FB8FB6EBC012BCC159D /* UpdaterManager.swift in Sources */,
 				47BCE0DAAFECA271BE891C24 /* WallpaperGenerator.swift in Sources */,
 				FF824A08ED9FF9F5BAE2F774 /* WallpaperManager.swift in Sources */,
 				177E4B9C4F0F735AEAF9BEF1 /* WallpaperPreviewView.swift in Sources */,
@@ -842,7 +856,6 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
-				SYMROOT = "$(PROJECT_DIR)/.build";
 			};
 			name = Debug;
 		};
@@ -940,7 +953,6 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
-				SYMROOT = "$(PROJECT_DIR)/.build";
 			};
 			name = Release;
 		};
@@ -993,6 +1005,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		FBF74EB9FB620420AC83C328 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.9.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5C446E3C8A8616C927A01098 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FBF74EB9FB620420AC83C328 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D4F779AA0A26DE43440ECF4E /* Project object */;
 }

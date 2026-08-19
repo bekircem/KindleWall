@@ -66,6 +66,15 @@ struct KindleWallApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1060, height: 700)
+        .commands {
+            // Directly under "KindleWall Hakkında", where every Mac app puts it.
+            CommandGroup(after: .appInfo) {
+                Button("Güncellemeleri Denetle…") {
+                    UpdaterManager.shared.checkForUpdates()
+                }
+                .disabled(!UpdaterManager.shared.canCheckForUpdates)
+            }
+        }
 
         // Menu bar extra — visibility controlled by user preference via isInserted binding
         MenuBarExtra(isInserted: $showInMenuBar) {

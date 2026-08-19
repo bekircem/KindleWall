@@ -36,5 +36,13 @@
 			</array>
 		</dict>
 	</array>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://bekircem.github.io/KindleWall/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>slltjO8Q+Y7mD5qLA+YAimOxnpaEj7d2Kpdmn0cCnMo=</string>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
 </dict>
 </plist>

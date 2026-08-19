@@ -14,6 +14,15 @@ enum Constants {
         static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
     }
 
+    /// Sparkle's update feed.
+    ///
+    /// The address also lives in `Info.plist` as `SUFeedURL`, because Sparkle reads the plist
+    /// and never sees this. `UpdaterConfigurationTests` keeps the two from drifting — a feed
+    /// URL nobody publishes to looks exactly like "you are up to date".
+    enum Updates {
+        static let feedURL = "https://bekircem.github.io/KindleWall/appcast.xml"
+    }
+
     /// Directory and file paths
     enum Paths {
         static let appSupportDirectory: URL = {

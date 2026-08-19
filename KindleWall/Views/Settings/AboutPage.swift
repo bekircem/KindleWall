@@ -24,6 +24,24 @@ struct AboutPage: View {
                 .frame(maxWidth: .infinity)
                 .padding(Theme.Spacing.xl)
             }
+
+            SettingsCard {
+                VStack(spacing: Theme.Spacing.m) {
+                    Button("Güncellemeleri Denetle") {
+                        UpdaterManager.shared.checkForUpdates()
+                    }
+                    .buttonStyle(.glass)
+                    .disabled(!UpdaterManager.shared.canCheckForUpdates)
+
+                    Toggle("Güncellemeleri otomatik denetle", isOn: Binding(
+                        get: { UpdaterManager.shared.automaticallyChecksForUpdates },
+                        set: { UpdaterManager.shared.automaticallyChecksForUpdates = $0 }
+                    ))
+                    .toggleStyle(.switch)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(Theme.Spacing.xl)
+            }
         }
     }
 }
