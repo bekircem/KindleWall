@@ -54,7 +54,7 @@ enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
         case .behavior:     return "Davranış"
         case .settings:     return "Ayarlar"
         case .shortcuts:    return "Kısayollar"
-        case .account:      return "Hesap"
+        case .account:      return "iCloud"
         case .about:        return "Hakkında"
         }
     }
@@ -67,7 +67,7 @@ enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
         case .behavior:     return "slider.horizontal.3"
         case .settings:     return "gearshape.fill"
         case .shortcuts:    return "keyboard.fill"
-        case .account:      return "person.crop.circle.fill"
+        case .account:      return "icloud.fill"
         case .about:        return "info.circle.fill"
         }
     }
