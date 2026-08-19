@@ -1,40 +1,30 @@
 import SwiftUI
 
-/// "Döngü Modu" page — how the next quote is chosen (sequential, random, favorites, pinned books).
+/// "Döngü Modu" — how the next quote is chosen, and what pool it comes from.
 ///
-/// Layout is split into two cards so the segmented mode picker keeps a constant height:
-/// a "Mod" card (picker only) and a "Kapsam" card whose content adapts to the selected mode.
-/// This avoids the abrupt resize that happened when the pinned-books list lived inside the
-/// picker card, and fills the page with meaningful per-mode context.
+/// Two cards: the modes with their explanations, and a scope card whose content follows the
+/// selected mode. Neither scrolls; the book chooser that used to scroll inside this page now
+/// opens as a popover.
 struct RotationSection: View {
     @Bindable var settingsVM: SettingsViewModel
-    let availableBooks: [(title: String, author: String?)]
+    let availableBooks: [RotationBook]
     let totalQuoteCount: Int
-    let pinnedQuoteCount: Int
     let actions: SettingsActions
+
+    @State private var isPickingBooks = false
+
+    private var pinnedBooks: [RotationBook] {
+        availableBooks.filter { settingsVM.isBookPinned($0.title) }
+    }
+
+    private var pinnedQuoteCount: Int {
+        pinnedBooks.reduce(0) { $0 + $1.quoteCount }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.l) {
-            // MARK: Mode picker — constant height across all modes.
-            SettingsCard(footnote: modeFootnote) {
-                Picker("Mod", selection: Binding(
-                    get: { settingsVM.rotationMode },
-                    set: {
-                        settingsVM.updateRotationMode($0)
-                        actions.onRotationModeChanged($0)
-                    }
-                )) {
-                    ForEach(RotationMode.allCases.filter { $0 != .favorites || settingsVM.hasFavorites }) { mode in
-                        Text(mode.displayName).tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(maxWidth: .infinity)
-                .padding(Theme.Spacing.l)
-            }
+            RotationModeCard(settingsVM: settingsVM, actions: actions)
 
-            // MARK: Scope — per-mode summary / tools.
             scopeCard
                 .transition(.opacity.combined(with: .move(edge: .top)))
         }
@@ -44,55 +34,113 @@ struct RotationSection: View {
         }
     }
 
-    // MARK: - Scope card
+    // MARK: - Scope
 
     @ViewBuilder private var scopeCard: some View {
         switch settingsVM.rotationMode {
         case .pinnedBooks:
-            SettingsCard(
-                title: "Sabit Kitaplar",
-                footnote: settingsVM.pinnedBookTitles.isEmpty
-                    ? nil
-                    : "Seçili kitaplardan \(pinnedQuoteCount) alıntı havuzda."
-            ) {
-                PinnedBooksSectionView(viewModel: settingsVM, availableBooks: availableBooks)
-                    .padding(Theme.Spacing.l)
+            SettingsCard(title: "Sabit Kitaplar", footnote: pinnedFootnote) {
+                pinnedScope.padding(Theme.Spacing.l)
             }
 
         case .favorites:
             SettingsCard(title: "Kapsam") {
-                statRow(icon: "heart.fill", color: .pink, title: "Favori Alıntı", value: settingsVM.favoriteCount)
+                statRow(icon: "heart.fill", title: "Favori Alıntı", value: settingsVM.favoriteCount)
             }
 
         case .allRandom, .bookByBook:
             SettingsCard(title: "Kapsam") {
-                statRow(icon: "books.vertical.fill", color: .orange, title: "Kitap", value: availableBooks.count)
+                statRow(icon: "books.vertical.fill", title: "Kitap", value: availableBooks.count)
                 RowDivider()
-                statRow(icon: "quote.bubble.fill", color: .indigo, title: "Alıntı", value: totalQuoteCount)
+                statRow(icon: "quote.bubble.fill", title: "Alıntı", value: totalQuoteCount)
             }
         }
     }
 
-    private func statRow(icon: String, color: Color, title: String, value: Int) -> some View {
-        SettingsRow(icon: icon, iconColor: color, title: title) {
+    @ViewBuilder private var pinnedScope: some View {
+        if availableBooks.isEmpty {
+            Text("Henüz alıntı yüklenmedi. Önce bir My Clippings.txt dosyası seç.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        } else {
+            VStack(alignment: .leading, spacing: Theme.Spacing.m) {
+                if pinnedBooks.isEmpty {
+                    Label("Hiç kitap seçilmedi — şimdilik tüm kitaplardan gösterilecek.",
+                          systemImage: "exclamationmark.triangle.fill")
+                        .font(.callout)
+                        .foregroundStyle(.orange)
+                } else {
+                    // Chips rather than a list: the selection is the thing you glance at, and
+                    // each one removes itself in a click without opening the chooser.
+                    FlowLayout {
+                        ForEach(pinnedBooks) { book in
+                            chip(for: book)
+                        }
+                    }
+                }
+
+                HStack {
+                    Button("Kitap Seç…") { isPickingBooks = true }
+                        .popover(isPresented: $isPickingBooks, arrowEdge: .bottom) {
+                            BookScopePicker(books: availableBooks, viewModel: settingsVM)
+                        }
+
+                    Spacer()
+
+                    if !pinnedBooks.isEmpty {
+                        Text("\(pinnedBooks.count) kitap · \(pinnedQuoteCount) alıntı")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                }
+            }
+        }
+    }
+
+    /// A removable pinned book. Shows its quote count, so the pool's makeup is readable
+    /// without opening anything.
+    private func chip(for book: RotationBook) -> some View {
+        Button {
+            settingsVM.togglePinnedBook(book.title)
+        } label: {
+            HStack(spacing: 5) {
+                Text(book.title)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                Text("\(book.quoteCount)")
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                Image(systemName: "xmark")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            .font(.callout)
+            .padding(.leading, Theme.Spacing.m)
+            .padding(.trailing, Theme.Spacing.s)
+            .padding(.vertical, 5)
+            // Capped so one long title cannot claim a whole line to itself.
+            .frame(maxWidth: 240)
+            .background(Theme.Palette.cardFill, in: Capsule())
+            .overlay(Capsule().strokeBorder(Theme.Palette.cardStroke, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .help("\(book.title) — listeden çıkar")
+        .accessibilityLabel("\(book.title), \(book.quoteCount) alıntı. Listeden çıkarmak için tıkla")
+    }
+
+    private func statRow(icon: String, title: String, value: Int) -> some View {
+        SettingsRow(icon: icon, iconColor: Theme.Palette.neutralTile, title: title) {
             Text("\(value)")
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
         }
     }
 
-    // MARK: - Mode description
-
-    /// Dynamic explanation shown under the picker. Folds in the favorites hint when the user
-    /// has no favorites yet (the Favoriler segment is hidden in that case).
-    private var modeFootnote: String {
-        if settingsVM.rotationMode == .favorites {
-            return "\(settingsVM.favoriteCount) favori alıntı arasından rastgele seçer."
-        }
-        var text = settingsVM.rotationMode.modeDescription
-        if !settingsVM.hasFavorites {
-            text += "\n\nFavoriler modu için Kütüphane'den alıntılara kalp ekleyin."
-        }
-        return text
+    private var pinnedFootnote: String? {
+        guard !availableBooks.isEmpty else { return nil }
+        return pinnedBooks.isEmpty
+            ? "Seçtiğin kitaplar burada görünür; birine tıklayınca listeden çıkar."
+            : "Alıntılar yalnızca bu \(pinnedBooks.count) kitaptan seçilir."
     }
 }

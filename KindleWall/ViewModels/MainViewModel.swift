@@ -1121,13 +1121,17 @@ final class MainViewModel {
     }
 
     /// Sorted list of unique books (title + first found author) from loaded clippings.
-    var availableBooks: [(title: String, author: String?)] {
-        var seen: [String: String?] = [:]
-        for clipping in clippings where seen[clipping.bookTitle] == nil {
-            seen[clipping.bookTitle] = clipping.author
+    var availableBooks: [RotationBook] {
+        var authors: [String: String?] = [:]
+        var counts: [String: Int] = [:]
+        for clipping in clippings {
+            if authors[clipping.bookTitle] == nil { authors[clipping.bookTitle] = clipping.author }
+            counts[clipping.bookTitle, default: 0] += 1
         }
-        return seen.map { (title: $0.key, author: $0.value) }
-            .sorted { $0.title < $1.title }
+        return counts.map { title, count in
+            RotationBook(title: title, author: authors[title] ?? nil, quoteCount: count)
+        }
+        .sorted { $0.title < $1.title }
     }
 
     /// Re-reads typography that was written to storage out of band — the long-quote controls

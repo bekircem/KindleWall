@@ -72,12 +72,18 @@ final class ApplyWallpaperBranchTests: XCTestCase {
         XCTAssertEqual(written.pathExtension, "heic", "dinamik modda HEIC yazılmalı")
 
         let source = try XCTUnwrap(CGImageSourceCreateWithURL(written as CFURL, nil))
-        // Not necessarily six. The file is rewritten on every quote rotation, so frames that
-        // fall after the next rotation — and frames from earlier today, which `h24` can never
-        // select again — are written and decoded for nothing. What matters is that the file is
-        // genuinely multi-frame and carries the dynamic tag.
+        // Derived from the same rule the apply path uses, not hardcoded.
+        //
+        // This assertion used to be a flat `> 1`, which made the test fail every night: past
+        // the day's last phase `framesWorthWriting` legitimately returns a single frame — the
+        // behaviour `test_framesWorthWriting_inTheLastPhase_returnsWhatIsLeft` pins — so the
+        // two tests contradicted each other for a few hours a day. Caught at 22:19.
+        let phasesToday = SunCalculator().phases(for: Date(), at: GeoCoordinate.fromSystemTimeZone())
+        let expected = MainViewModel.framesWorthWriting(phasesToday, now: Date(), until: nil).count
+
         let frameCount = CGImageSourceGetCount(source)
-        XCTAssertGreaterThan(frameCount, 1, "dinamik modda çok kareli olmalı")
+        XCTAssertEqual(frameCount, expected,
+                       "kare sayısı framesWorthWriting'in bu saatte söylediğiyle eşleşmeli")
         XCTAssertLessThanOrEqual(frameCount, SolarPhase.allCases.count,
                                  "faz sayısından fazla kare yazılamaz")
         XCTAssertNotNil(

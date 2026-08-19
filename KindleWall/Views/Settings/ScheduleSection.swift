@@ -20,7 +20,7 @@ struct ScheduleSection: View {
                         }
                     )) {
                         ForEach(ScheduleInterval.allCases) { interval in
-                            Text(interval.rawValue).tag(interval)
+                            Text(interval.displayName).tag(interval)
                         }
                     }
                     .pickerStyle(.segmented)

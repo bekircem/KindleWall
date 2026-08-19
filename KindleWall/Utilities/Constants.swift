@@ -91,8 +91,11 @@ enum Constants {
         static let hotkeyModifiers      = "hotkeyModifiers"
         static let longQuoteSettings    = "longQuoteSettings"
 
-        /// UI-only preference: whether the live preview inspector on the appearance pages is open.
-        static let appearancePreviewVisible = "appearancePreviewVisible"
+        /// UI-only preferences for the design editor's inspector: which tab, and whether it
+        /// is open. Replaces `appearancePreviewVisible`, which named a preview panel that no
+        /// longer exists — the preview is the canvas now, and the inspector holds the controls.
+        static let designInspectorTab     = "designInspectorTab"
+        static let designInspectorVisible = "designInspectorVisible"
 
         // CloudKit sync engine state (not synced — bookkeeping only)
         static let cloudKitChangeToken          = "cloudKitChangeToken"

@@ -10,6 +10,21 @@ enum SidebarSection: String, CaseIterable, Identifiable {
     case app       = "Uygulama"
 
     var id: String { rawValue }
+
+    /// The one hue every item in this section wears.
+    ///
+    /// The section the app exists for gets the brand accent; the rest step back in cool and
+    /// neutral tones so the sidebar reads as four groups, not eight decorations. All three of
+    /// those are dark enough to keep the white glyph `IconTile` gives them — the amber is not,
+    /// and its dark glyph is the one place that reversal is meant to be noticed.
+    var tint: Color {
+        switch self {
+        case .wallpaper: return Theme.Palette.accent
+        case .content:   return .indigo
+        case .behavior:  return .blue
+        case .app:       return Theme.Palette.neutralTile
+        }
+    }
 }
 
 /// A single sidebar destination. Carries its own title, icon, color, and section so the
@@ -57,18 +72,13 @@ enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
-    var color: Color {
-        switch self {
-        case .currentQuote: return .indigo
-        case .design:       return .purple
-        case .library:      return .orange
-        case .behavior:     return .blue
-        case .settings:     return Color(.systemGray)
-        case .shortcuts:    return .indigo
-        case .account:      return .cyan
-        case .about:        return .gray
-        }
-    }
+    /// Tile color, derived from the section instead of picked per item.
+    ///
+    /// The per-item list held eight entries drawn from six hues, two of them repeats
+    /// (indigo twice, gray twice), and the colors encoded nothing — so they read as
+    /// decoration rather than as landmarks. Deriving from the section makes the grouping
+    /// the thing the color says.
+    var color: Color { section.tint }
 
     static func items(in section: SidebarSection) -> [SidebarItem] {
         allCases.filter { $0.section == section }

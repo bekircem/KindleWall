@@ -22,6 +22,9 @@ struct StylePickerView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(style.displayName)
+                // The ring is the only thing that said "this one is selected", and VoiceOver
+                // cannot see a ring.
+                .accessibilityAddTraits(selectedStyle == style ? .isSelected : [])
             }
         }
     }
@@ -32,7 +35,10 @@ struct StylePickerView: View {
 struct StyleCard: View {
     let style: WallpaperStyle
     let isSelected: Bool
-    @State private var isHovered = false
+    /// Selection was signalled by an accent ring and an accent tint — both of which vanish
+    /// for a user who has asked the system to stop relying on color. A checkmark appears in
+    /// that case so the chosen style is still identifiable.
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
 
     var body: some View {
         VStack(spacing: 8) {
@@ -67,7 +73,16 @@ struct StyleCard: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
             .aspectRatio(16/10, contentMode: .fit)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous))
+            .overlay(alignment: .topTrailing) {
+                if isSelected && differentiateWithoutColor {
+                    Image(systemName: "checkmark.circle.fill")
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.white, .black)
+                        .padding(Theme.Spacing.xs)
+                        .accessibilityHidden(true)
+                }
+            }
 
             Text(style.displayName)
                 .font(.caption)
@@ -79,23 +94,22 @@ struct StyleCard: View {
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
         }
-        .padding(8)
+        .padding(Theme.Spacing.s)
+        // Shared hover treatment rather than a private `@State` + `.quaternaryLabelColor`:
+        // this card was the one interactive surface in the app whose hover used a different
+        // color and a different code path from every other row.
+        .hoverHighlight(cornerRadius: Theme.Radius.card)
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(cardBackground)
+            isSelected ? Theme.Palette.accent.opacity(0.12) : .clear,
+            in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
+            // `strokeBorder`, not `stroke`: the latter centers the 2pt line on the path, so
+            // half of the selection ring was drawn outside the card's own bounds.
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
+                .strokeBorder(isSelected ? Theme.Palette.accent : .clear, lineWidth: 2)
         )
-        .onHover { isHovered = $0 }
-        .animation(Theme.Motion.hover, value: isHovered)
-    }
-
-    private var cardBackground: Color {
-        if isSelected { return Color.accentColor.opacity(0.1) }
-        if isHovered { return Color(nsColor: .quaternaryLabelColor) }
-        return .clear
+        .animation(Theme.Motion.snappy, value: isSelected)
     }
 
     /// Card preview fill. Mirrors the real background each style renders, including Forest
@@ -107,7 +121,9 @@ struct StyleCard: View {
         case .night:
             LinearGradient(colors: [Color(white: 0.11), Color(white: 0.08)], startPoint: .top, endPoint: .bottom)
         case .paper:
-            LinearGradient(colors: [Color(red: 0.96, green: 0.91, blue: 0.76)], startPoint: .top, endPoint: .bottom)
+            // Flat, not a gradient: the single-stop LinearGradient this replaced rendered
+            // identically while claiming a gradient the real Paper background does not have.
+            Color(red: 0.96, green: 0.91, blue: 0.76)
         case .grid:
             LinearGradient(colors: [Color(white: 0.05), Color(white: 0.09)], startPoint: .top, endPoint: .bottom)
         case .dawn:

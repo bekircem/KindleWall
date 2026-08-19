@@ -129,8 +129,7 @@ struct MainView: View {
             }
 
         case .design:
-            DesignSettingsPage(viewModel: viewModel, settingsVM: settingsVM, actions: actions)
-                .livePreviewInspector(viewModel: viewModel)
+            DesignEditorView(viewModel: viewModel, settingsVM: settingsVM, actions: actions)
 
         case .behavior:
             BehaviorSettingsPage(viewModel: viewModel, settingsVM: settingsVM, actions: actions)

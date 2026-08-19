@@ -28,6 +28,18 @@ profile
 # Agent runtime directories (not project assets)
 .agents/
 
+# Skills installed by `npx skills add` without -g: the real files live under .agents/
+# (ignored above) and only a symlink is dropped here. Committing the symlink would hand
+# every cloner a dangling link. skills-lock.json is the record — `npx skills add` restores
+# them from it. Listed by name rather than globbed, so a project skill of our own can never
+# be swallowed by the pattern; add a line here when installing another pack.
+.claude/skills/macos-auto-update
+.claude/skills/macos-build
+.claude/skills/macos-notch-ui
+.claude/skills/macos-patterns
+.claude/skills/macos-release
+.claude/skills/macos-settings-ui
+
 # Claude Code tooling (local only)
 .claude/TODO.md
 .claude/settings.local.json

@@ -22,6 +22,16 @@ enum RotationMode: String, Codable, CaseIterable, Identifiable {
         }
     }
 
+    /// Leading glyph for the mode's row.
+    var icon: String {
+        switch self {
+        case .allRandom:    return "shuffle"
+        case .bookByBook:   return "book.closed.fill"
+        case .pinnedBooks:  return "pin.fill"
+        case .favorites:    return "heart.fill"
+        }
+    }
+
     var modeDescription: String {
         switch self {
         case .allRandom:

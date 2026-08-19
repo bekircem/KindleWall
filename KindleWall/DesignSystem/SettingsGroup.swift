@@ -18,7 +18,7 @@ struct SettingsGroup<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.m) {
             Text(title)
-                .font(.title3.weight(.semibold))
+                .font(Theme.Typography.groupTitle)
                 .foregroundStyle(.primary)
                 .padding(.leading, Theme.Spacing.xs)
 

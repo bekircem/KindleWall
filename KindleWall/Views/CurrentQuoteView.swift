@@ -67,8 +67,7 @@ struct CurrentQuoteView: View {
                     .padding(.top, Theme.Spacing.xl)
 
                 if let clipping = viewModel.currentClipping {
-                    quoteText(for: clipping)
-                    quoteBar(for: clipping)
+                    quoteCard(for: clipping)
                 }
 
                 // Errors are no longer drawn here — `AlertBanner` shows them on every page,
@@ -95,17 +94,32 @@ struct CurrentQuoteView: View {
         }
     }
 
-    /// The full quote text, shown as readable, selectable text beneath the preview.
-    private func quoteText(for clipping: Clipping) -> some View {
-        Text(clipping.text)
-            .font(.system(.title3, design: .serif))
-            .foregroundStyle(.primary)
-            .multilineTextAlignment(.center)
-            .lineSpacing(5)
-            .textSelection(.enabled)
-            .frame(maxWidth: 620)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, Theme.Spacing.xl)
+    /// The quote as selectable text plus its source, in one card.
+    ///
+    /// These used to be two separate centered blocks stacked under the preview, which — with
+    /// the preview already showing the same words — made the screen read as three repetitions
+    /// of one thing. Sharing a surface makes the text and its attribution one object, and the
+    /// screen two: the wallpaper, and what is on it.
+    private func quoteCard(for clipping: Clipping) -> some View {
+        VStack(spacing: Theme.Spacing.m) {
+            Text(clipping.text)
+                .font(.system(.title3, design: .serif))
+                .foregroundStyle(.primary)
+                .multilineTextAlignment(.center)
+                .lineSpacing(5)
+                .textSelection(.enabled)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Divider()
+                .frame(maxWidth: Theme.ruleWidth)
+
+            source(for: clipping)
+        }
+        .padding(.horizontal, Theme.Spacing.xl)
+        .padding(.vertical, Theme.Spacing.l)
+        .frame(maxWidth: 620)
+        .glassEffect(.regular, in: .rect(cornerRadius: Theme.Radius.hero))
+        .padding(.horizontal, Theme.Spacing.xl)
     }
 
     @ViewBuilder private var preview: some View {
@@ -123,23 +137,23 @@ struct CurrentQuoteView: View {
         }
     }
 
-    /// Compact source strip beneath the quote text: book · author plus date/page metadata.
-    private func quoteBar(for clipping: Clipping) -> some View {
+    /// Attribution inside the quote card: book · author over date/page metadata.
+    private func source(for clipping: Clipping) -> some View {
         VStack(spacing: 4) {
-            HStack(spacing: 4) {
-                Text(clipping.bookTitle)
-                    .font(.callout)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-                if let author = clipping.author {
-                    Text("— \(author)")
-                        .font(.callout)
-                        .italic()
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+            // Wraps instead of truncating: inside a 620-wide card a long title and author
+            // together overflow one line, and losing the author to an ellipsis costs more
+            // than a second line does.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 4) {
+                    bookTitleText(clipping)
+                    authorText(clipping)
+                }
+                VStack(spacing: 2) {
+                    bookTitleText(clipping)
+                    authorText(clipping)
                 }
             }
+            .multilineTextAlignment(.center)
 
             if let meta = metadataLine(for: clipping) {
                 Text(meta)
@@ -147,11 +161,24 @@ struct CurrentQuoteView: View {
                     .foregroundStyle(.tertiary)
             }
         }
-        .padding(.horizontal, Theme.Spacing.l)
-        .padding(.vertical, Theme.Spacing.m)
-        .frame(maxWidth: 560)
-        .glassEffect(.regular, in: .rect(cornerRadius: Theme.Radius.card))
-        .padding(.horizontal, Theme.Spacing.xl)
+    }
+
+    private func bookTitleText(_ clipping: Clipping) -> some View {
+        Text(clipping.bookTitle)
+            .font(.callout)
+            .fontWeight(.medium)
+            .foregroundStyle(.primary)
+            .lineLimit(2)
+    }
+
+    @ViewBuilder private func authorText(_ clipping: Clipping) -> some View {
+        if let author = clipping.author {
+            Text("— \(author)")
+                .font(.callout)
+                .italic()
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+        }
     }
 
     /// Date · page/location line for the caption strip, mirroring `ClippingCard`'s metadata.
@@ -177,7 +204,7 @@ struct CurrentQuoteView: View {
         }
 
         ToolbarItemGroup(placement: .secondaryAction) {
-            Picker("", selection: Binding(
+            Picker("Stil", selection: Binding(
                 get: { viewModel.selectedStyle },
                 set: { viewModel.updateStyle($0) }
             )) {
@@ -185,8 +212,10 @@ struct CurrentQuoteView: View {
                     Text(style.displayName).tag(style)
                 }
             }
+            .labelsHidden()
             .frame(width: 140)
-            .accessibilityLabel("Wallpaper stili")
+            .help("Duvar kağıdı stili")
+            .accessibilityLabel("Duvar kağıdı stili")
 
             Button {
                 showTypographyPanel.toggle()

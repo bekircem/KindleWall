@@ -22,8 +22,7 @@ struct NoFileEmptyStateView: View {
                 .foregroundStyle(Color.accentColor)
 
             Text(title)
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .font(.system(.largeTitle, design: .serif).weight(.semibold))
                 .multilineTextAlignment(.center)
 
             Text(message)

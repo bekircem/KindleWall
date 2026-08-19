@@ -23,11 +23,12 @@ struct BehaviorSettingsPage: View {
             }
 
             SettingsGroup("Döngü Modu") {
+                // The pinned-quote total is derived inside the section now: it reads it off
+                // the same `RotationBook` counts the picker shows, so the two cannot disagree.
                 RotationSection(
                     settingsVM: settingsVM,
                     availableBooks: viewModel.availableBooks,
                     totalQuoteCount: viewModel.clippings.count,
-                    pinnedQuoteCount: pinnedQuoteCount,
                     actions: actions
                 )
             }
