@@ -7,7 +7,11 @@ enum Constants {
     enum App {
         static let name = "KindleWall"
         static let bundleIdentifier = "com.kindlewall.app"
-        static let version = "1.1.0"
+        /// Read from the bundle so `Info.plist` is the only place a version number lives.
+        /// This used to be a literal and it drifted — the constant said 1.1.0 while the binary
+        /// was stamped 1.0, and the About page believed the constant. `release.sh` writes the
+        /// plist and nothing else.
+        static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
     }
 
     /// Directory and file paths

@@ -52,6 +52,7 @@
 		520F9C5AE91EB3D152AF1D05 /* WallpaperStoreSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56C074986BC74054C0431E6 /* WallpaperStoreSync.swift */; };
 		5B805C695839745A6B830206 /* QuoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C63B599395E9CA97BEFDDEC /* QuoteView.swift */; };
 		5E6E933DBBEDEFE2AD1EB31E /* ApplyStatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296B492F9E41F4006D10C7EB /* ApplyStatusBar.swift */; };
+		6004618F897BEC21531088E0 /* AppVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4701D1EFAFE2A47611932AA /* AppVersionTests.swift */; };
 		6146C5AAA7B240DC0A33B13D /* RotationBook.swift in Sources */ = {isa = PBXBuildFile; fileRef = C21A22CA4DF2C7FA3E00EA1F /* RotationBook.swift */; };
 		6B6ECE76AD67F919968B29B6 /* RotationSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291C09E8EDBE31FD7F182F19 /* RotationSection.swift */; };
 		6FC035119DFD19E28CAC453D /* ClippingsCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1F5E9D31DF4B0A32D011AC /* ClippingsCacheTests.swift */; };
@@ -230,6 +231,7 @@
 		C1085B7B5BAC2DE5E33C2299 /* SettingsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPage.swift; sourceTree = "<group>"; };
 		C1A37118CAF7B499E0D6782A /* SchedulerServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedulerServiceTests.swift; sourceTree = "<group>"; };
 		C21A22CA4DF2C7FA3E00EA1F /* RotationBook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotationBook.swift; sourceTree = "<group>"; };
+		C4701D1EFAFE2A47611932AA /* AppVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionTests.swift; sourceTree = "<group>"; };
 		C67D88843C99683BB01723A7 /* LongQuoteSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongQuoteSection.swift; sourceTree = "<group>"; };
 		C85406937B127664EA7E9D66 /* SettingsGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsGroup.swift; sourceTree = "<group>"; };
 		C99A62B30D7B8B2984E22E46 /* QuickCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCaptureView.swift; sourceTree = "<group>"; };
@@ -519,6 +521,7 @@
 			isa = PBXGroup;
 			children = (
 				F20FB65F4C86BE8D4070D9F8 /* ApplyWallpaperBranchTests.swift */,
+				C4701D1EFAFE2A47611932AA /* AppVersionTests.swift */,
 				074D8B216EBCC082E2D9E9C4 /* AutoApplyTests.swift */,
 				6F1F5E9D31DF4B0A32D011AC /* ClippingsCacheTests.swift */,
 				7D7BAC90108E950C8EC007DE /* ClippingsParserRobustnessTests.swift */,
@@ -637,6 +640,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6004618F897BEC21531088E0 /* AppVersionTests.swift in Sources */,
 				FE7DA0EC873D3C272B160296 /* ApplyWallpaperBranchTests.swift in Sources */,
 				B60CCD1BD4E0B5D606CBD043 /* AutoApplyTests.swift in Sources */,
 				6FC035119DFD19E28CAC453D /* ClippingsCacheTests.swift in Sources */,
