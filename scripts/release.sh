@@ -54,7 +54,7 @@ die()  { printf '\n\033[1;31m✗ %s\033[0m\n' "$*" >&2; exit 1; }
 contains() { [[ "$1" == *"$2"* ]]; }
 
 # ── 1. preflight ─────────────────────────────────────────────────────────────
-step "1/14  preflight"
+step "1/16  preflight"
 [ -z "$(git status --porcelain)" ] || die "working tree is dirty — commit or stash first"
 [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ] || die "not on main"
 for tool in xcodegen create-dmg gh xmllint; do
@@ -72,7 +72,7 @@ ok "clean tree, on main, tooling present"
 # Two-step on purpose. The single-step `xcodebuild test` does not stage the xctest bundle;
 # it fails with "Failed to create a bundle instance representing …", which reads like a test
 # failure but means the tests never ran at all.
-step "2/14  tests"
+step "2/16  tests"
 xcodebuild -project "$APP.xcodeproj" -scheme "$SCHEME" clean >/dev/null
 xcodebuild build-for-testing -project "$APP.xcodeproj" -scheme "$SCHEME" -destination "$DEST" >/dev/null
 TEST_LINE=$(xcodebuild test-without-building -project "$APP.xcodeproj" -scheme "$SCHEME" \
@@ -83,7 +83,7 @@ contains "$TEST_LINE" "with 0 failures" || die "tests failed"
 ok "tests green"
 
 # ── 3. version ───────────────────────────────────────────────────────────────
-step "3/14  stamping version $VERSION"
+step "3/16  stamping version $VERSION"
 BUILD_NO=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PLIST")
 BUILD_NO=$((BUILD_NO + 1))
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$PLIST"
@@ -91,7 +91,7 @@ BUILD_NO=$((BUILD_NO + 1))
 ok "short=$VERSION  build=$BUILD_NO"
 
 # ── 4. archive ───────────────────────────────────────────────────────────────
-step "4/14  archive (Release)"
+step "4/16  archive (Release)"
 rm -rf "$BUILD"; mkdir -p "$BUILD"
 xcodebuild archive -project "$APP.xcodeproj" -scheme "$SCHEME" \
   -configuration Release -archivePath "$ARCHIVE" -allowProvisioningUpdates >/dev/null
@@ -100,7 +100,7 @@ ok "archived"
 # ── 5. export ────────────────────────────────────────────────────────────────
 # The archive is signed for development; `method: developer-id` is what re-signs it with the
 # Developer ID certificate and fetches the matching profile.
-step "5/14  export (developer-id)"
+step "5/16  export (developer-id)"
 cat > "$BUILD/ExportOptions.plist" <<PLIST_EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -123,7 +123,7 @@ ok "exported"
 # ── 6. verify the signature, Sparkle's nested binaries included ──────────────
 # Xcode does not always harden what lives inside an embedded framework, and when it misses
 # one the only evidence is a line in a notarization log nobody reads. Checked here instead.
-step "6/14  verifying signatures"
+step "6/16  verifying signatures"
 codesign --verify --deep --strict --verbose=2 "$APP_PATH" 2>&1 | tail -2
 APP_SIG=$(codesign -dv --verbose=4 "$APP_PATH" 2>&1)
 APP_ENT=$(codesign -d --entitlements - "$APP_PATH" 2>&1)
@@ -148,40 +148,72 @@ for nested in "$FW/Autoupdate" "$FW/Updater.app" "$FW/XPCServices"/*.xpc; do
   ok "$NAME: Developer ID, hardened"
 done
 
-# ── 7. dmg ───────────────────────────────────────────────────────────────────
-step "7/14  building dmg"
+# Submits a file, waits, and prints Apple's log on failure instead of the useless summary.
+notarize() {
+  local target="$1"
+  if ! xcrun notarytool submit "$target" --keychain-profile "$NOTARY_PROFILE" --wait; then
+    local sub
+    sub=$(xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" --output-format json \
+          | python3 -c 'import json,sys; print(json.load(sys.stdin)["history"][0]["id"])' 2>/dev/null || true)
+    if [ -n "$sub" ]; then
+      echo "── notarization log ──────────────────────────────"
+      xcrun notarytool log "$sub" --keychain-profile "$NOTARY_PROFILE" || true
+    fi
+    die "notarization of $(basename "$target") failed (log above)"
+  fi
+}
+
+# ── 7. notarize and staple the app itself ────────────────────────────────────
+# The app is notarized and stapled BEFORE the DMG is built, so the ticket travels inside the
+# bundle. Stapling only the DMG is the common shortcut and it leaves a hole: Homebrew and
+# anyone dragging the icon copy the app *out* of the image, and the copy carries no ticket.
+# Gatekeeper then has to ask Apple online at first launch — fine on a good connection,
+# a "damaged app" dialog on a bad one.
+step "7/16  notarizing the app (waiting on Apple)"
+APP_ZIP="$BUILD/$APP-app.zip"
+ditto -c -k --keepParent "$APP_PATH" "$APP_ZIP"
+notarize "$APP_ZIP"
+xcrun stapler staple "$APP_PATH" >/dev/null
+xcrun stapler validate "$APP_PATH"
+ok "app notarized and stapled"
+
+# ── 8. dmg ───────────────────────────────────────────────────────────────────
+# Staged into a clean directory first. Pointing create-dmg at the export folder ships
+# Xcode's leftovers — DistributionSummary.plist, ExportOptions.plist, Packaging.log —
+# and the user sees all three when the image opens.
+step "8/16  building dmg"
+STAGE="$BUILD/stage"
+rm -rf "$STAGE"; mkdir -p "$STAGE"
+ditto "$APP_PATH" "$STAGE/$APP.app"
 create-dmg --volname "$APP $VERSION" --window-size 540 380 \
   --icon-size 110 --icon "$APP.app" 140 180 --app-drop-link 400 180 \
   --hide-extension "$APP.app" --no-internet-enable \
-  "$DMG" "$EXPORT" >/dev/null 2>&1 || die "create-dmg failed"
+  "$DMG" "$STAGE" >/dev/null 2>&1 || die "create-dmg failed"
+DMG_CONTENTS=$(hdiutil attach "$DMG" -nobrowse -readonly | grep -oE '/Volumes/.*$' | head -1)
+[ -n "$DMG_CONTENTS" ] || die "could not mount the dmg to check it"
+STRAY=$(find "$DMG_CONTENTS" -maxdepth 1 -mindepth 1 ! -name "$APP.app" ! -name "Applications" ! -name ".*" | wc -l | tr -d ' ')
+hdiutil detach "$DMG_CONTENTS" >/dev/null
+[ "$STRAY" = "0" ] || die "the dmg contains $STRAY file(s) that are not the app"
 codesign --sign "$IDENTITY" --timestamp "$DMG"
-ok "$(basename "$DMG") — $(du -h "$DMG" | cut -f1)"
+ok "$(basename "$DMG") — $(du -h "$DMG" | cut -f1), nothing but the app inside"
 
-# ── 8. notarize ──────────────────────────────────────────────────────────────
-step "8/14  notarizing (waiting on Apple)"
-if ! xcrun notarytool submit "$DMG" --keychain-profile "$NOTARY_PROFILE" --wait; then
-  SUB=$(xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" --output-format json \
-        | python3 -c 'import json,sys; print(json.load(sys.stdin)["history"][0]["id"])' 2>/dev/null || true)
-  if [ -n "$SUB" ]; then
-    echo "── notarization log ──────────────────────────────"
-    xcrun notarytool log "$SUB" --keychain-profile "$NOTARY_PROFILE" || true
-  fi
-  die "notarization failed (log above)"
-fi
-ok "notarized"
+# ── 9-11. notarize + staple + gatekeeper, this time the image ────────────────
+step "9/16  notarizing the dmg (waiting on Apple)"
+notarize "$DMG"
+ok "dmg notarized"
 
-# ── 9-10. staple + gatekeeper ────────────────────────────────────────────────
-step "9/14  stapling"
+step "10/16  stapling the dmg"
 xcrun stapler staple "$DMG" >/dev/null
 xcrun stapler validate "$DMG"
 ok "stapled"
 
-step "10/14  gatekeeper"
+step "11/16  gatekeeper"
 spctl -a -vvv -t open --context context:primary-signature "$DMG" 2>&1 | tail -3
-ok "accepted"
+spctl -a -vvv -t exec "$APP_PATH" 2>&1 | tail -3
+ok "both the image and the app are accepted"
 
 # ── 11. sparkle signature ────────────────────────────────────────────────────
-step "11/14  sparkle signature"
+step "12/16  sparkle signature"
 SIG_LINE=$("$SIGN_UPDATE" "$DMG")
 ED_SIG=$(echo "$SIG_LINE" | sed -n 's/.*sparkle:edSignature="\([^"]*\)".*/\1/p')
 LENGTH=$(echo "$SIG_LINE" | sed -n 's/.*length="\([^"]*\)".*/\1/p')
@@ -190,7 +222,7 @@ SHA=$(shasum -a 256 "$DMG" | awk '{print $1}')
 ok "signed · sha256 $SHA"
 
 # ── 12. appcast ──────────────────────────────────────────────────────────────
-step "12/14  appcast"
+step "13/16  appcast"
 PUBDATE=$(LC_ALL=C date -R)
 export KW_ITEM="    <item>
       <title>$VERSION</title>
@@ -229,7 +261,7 @@ if [ "$PUBLISH" != "--publish" ]; then
 fi
 
 # ── 13-14. publish ───────────────────────────────────────────────────────────
-step "13/14  commit, tag, push"
+step "14/16  commit, tag, push"
 git add "$PLIST" "$APPCAST"
 git commit -m "release: v$VERSION"
 git tag "v$VERSION"
@@ -237,11 +269,11 @@ git push origin main
 git push origin "v$VERSION"
 ok "pushed v$VERSION"
 
-step "14/14  github release"
+step "15/16  github release"
 gh release create "v$VERSION" "$DMG" --repo "$REPO" --title "v$VERSION" --generate-notes
 ok "release created"
 
-step "14/14  homebrew tap"
+step "16/16  homebrew tap"
 [ -d "$TAP_DIR" ] || die "tap not found at $TAP_DIR (set KINDLEWALL_TAP_DIR)"
 CASK="$TAP_DIR/Casks/kindlewall.rb"
 [ -f "$CASK" ] || die "cask not found at $CASK"
