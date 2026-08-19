@@ -11,6 +11,7 @@ masaüstüne basar ve senin belirlediğin aralıkla değiştirir.
 
 ```sh
 brew tap bekircem/tap
+brew trust bekircem/tap      # Homebrew 6 üçüncü taraf tap'ler için bunu istiyor
 brew install --cask kindlewall
 ```
 

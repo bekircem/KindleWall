@@ -14,6 +14,7 @@ library onto your desktop, rotating on a schedule you choose.
 
 ```sh
 brew tap bekircem/tap
+brew trust bekircem/tap      # Homebrew 6 requires this for third-party taps
 brew install --cask kindlewall
 ```
 
