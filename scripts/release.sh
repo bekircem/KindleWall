@@ -45,6 +45,14 @@ step() { printf '\n\033[1;33m▶ %s\033[0m\n' "$*"; }
 ok()   { printf '  \033[32m✓\033[0m %s\n' "$*"; }
 die()  { printf '\n\033[1;31m✗ %s\033[0m\n' "$*" >&2; exit 1; }
 
+# Substring test on a captured string — deliberately not `cmd | grep -q`.
+#
+# Under `set -o pipefail`, `grep -q` exits the moment it matches and closes the pipe; the
+# producer then dies of SIGPIPE (141), pipefail promotes that to the pipeline's status, and
+# the check reports failure *because* it succeeded. This script hit exactly that and refused
+# to continue with "the app is not hardened" for an app whose flags read 0x10000(runtime).
+contains() { [[ "$1" == *"$2"* ]]; }
+
 # ── 1. preflight ─────────────────────────────────────────────────────────────
 step "1/14  preflight"
 [ -z "$(git status --porcelain)" ] || die "working tree is dirty — commit or stash first"
@@ -71,7 +79,7 @@ TEST_LINE=$(xcodebuild test-without-building -project "$APP.xcodeproj" -scheme "
   -destination "$DEST" 2>&1 | grep -E "Executed [0-9]+ tests" | tail -1 || true)
 [ -n "$TEST_LINE" ] || die "no 'Executed N tests' line — the tests never ran"
 echo "  $TEST_LINE"
-echo "$TEST_LINE" | grep -q "with 0 failures" || die "tests failed"
+contains "$TEST_LINE" "with 0 failures" || die "tests failed"
 ok "tests green"
 
 # ── 3. version ───────────────────────────────────────────────────────────────
@@ -117,11 +125,14 @@ ok "exported"
 # one the only evidence is a line in a notarization log nobody reads. Checked here instead.
 step "6/14  verifying signatures"
 codesign --verify --deep --strict --verbose=2 "$APP_PATH" 2>&1 | tail -2
-codesign -dv --verbose=4 "$APP_PATH" 2>&1 | grep -q "flags=0x10000(runtime)" \
-  || die "the app is not hardened"
-codesign -dv --verbose=4 "$APP_PATH" 2>&1 | grep -q "Authority=Developer ID Application" \
+APP_SIG=$(codesign -dv --verbose=4 "$APP_PATH" 2>&1)
+APP_ENT=$(codesign -d --entitlements - "$APP_PATH" 2>&1)
+contains "$APP_SIG" "flags=0x10000(runtime)" || die "the app is not hardened"
+contains "$APP_SIG" "Authority=Developer ID Application" \
   || die "the app is not signed with a Developer ID certificate"
-if codesign -d --entitlements - "$APP_PATH" 2>&1 | grep -q "get-task-allow"; then
+# `if`, not `contains … && die`: under `set -e` a false left-hand side makes the whole
+# `&&` statement exit non-zero and kills the script.
+if contains "$APP_ENT" "get-task-allow"; then
   die "get-task-allow is present — notarization will reject this"
 fi
 ok "app: Developer ID, hardened, no get-task-allow"
@@ -131,8 +142,8 @@ for nested in "$FW/Autoupdate" "$FW/Updater.app" "$FW/XPCServices"/*.xpc; do
   [ -e "$nested" ] || continue
   NAME=$(basename "$nested")
   INFO=$(codesign -dv --verbose=4 "$nested" 2>&1)
-  echo "$INFO" | grep -q "runtime" || die "$NAME is not hardened — notarization will reject it"
-  echo "$INFO" | grep -q "Authority=Developer ID Application" \
+  contains "$INFO" "runtime" || die "$NAME is not hardened — notarization will reject it"
+  contains "$INFO" "Authority=Developer ID Application" \
     || die "$NAME is still ad-hoc signed — re-sign it with the Developer ID certificate"
   ok "$NAME: Developer ID, hardened"
 done
