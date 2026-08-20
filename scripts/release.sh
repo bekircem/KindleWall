@@ -221,11 +221,30 @@ LENGTH=$(echo "$SIG_LINE" | sed -n 's/.*length="\([^"]*\)".*/\1/p')
 SHA=$(shasum -a 256 "$DMG" | awk '{print $1}')
 ok "signed · sha256 $SHA"
 
-# ── 12. appcast ──────────────────────────────────────────────────────────────
+# ── 12. release notes ────────────────────────────────────────────────────────
+# Both the GitHub release and Sparkle's "what's new" pane read from here. Left to itself
+# `gh --generate-notes` emits a bare compare link, and the appcast item carried no
+# description at all: every existing user got an update prompt that could not say why.
+#
+# Hand-written notes win when `docs/release-notes/<version>.md` exists; otherwise the
+# subjects of the feat/fix/perf commits since the last tag are the changelog. Anything
+# tagged docs/test/chore/release is housekeeping and stays out.
+PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+export KW_RANGE="${PREV_TAG:+$PREV_TAG..}HEAD"
+export KW_NOTES_FILE="$ROOT/docs/release-notes/$VERSION.md"
+export KW_VERSION="$VERSION"
+NOTES_MD=$(python3 "$ROOT/scripts/release-notes.py" markdown) || die "could not build release notes"
+NOTES_HTML=$(python3 "$ROOT/scripts/release-notes.py" html) || die "could not build release notes"
+[ -n "$NOTES_MD" ] || die "release notes came out empty"
+echo "$NOTES_MD" | sed 's/^/  /'
+ok "notes built from ${PREV_TAG:-the beginning}"
+
+# ── 12b. appcast ─────────────────────────────────────────────────────────────
 step "13/16  appcast"
 PUBDATE=$(LC_ALL=C date -R)
 export KW_ITEM="    <item>
       <title>$VERSION</title>
+      <description><![CDATA[$NOTES_HTML]]></description>
       <pubDate>$PUBDATE</pubDate>
       <sparkle:version>$BUILD_NO</sparkle:version>
       <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
@@ -270,7 +289,9 @@ git push origin "v$VERSION"
 ok "pushed v$VERSION"
 
 step "15/16  github release"
-gh release create "v$VERSION" "$DMG" --repo "$REPO" --title "v$VERSION" --generate-notes
+printf '%s\n\n**Full changelog**: https://github.com/%s/compare/%s...v%s\n' \
+  "$NOTES_MD" "$REPO" "${PREV_TAG:-v$VERSION}" "$VERSION" > "$BUILD/notes.md"
+gh release create "v$VERSION" "$DMG" --repo "$REPO" --title "v$VERSION" --notes-file "$BUILD/notes.md"
 ok "release created"
 
 step "16/16  homebrew tap"

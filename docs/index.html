@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KindleWall — Kindle highlights as macOS wallpapers</title>
+<meta name="description" content="KindleWall turns your Kindle highlights into desktop wallpapers on macOS. Free, open source, no account.">
+<meta property="og:title" content="KindleWall">
+<meta property="og:description" content="Turns your Kindle highlights into desktop wallpapers on macOS.">
+<meta property="og:image" content="https://bekircem.github.io/KindleWall/social-card.png">
+<meta property="og:url" content="https://bekircem.github.io/KindleWall/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📖</text></svg>">
+<style>
+  :root {
+    --bg: #141414; --panel: #1c1c1c; --ink: #ededed; --muted: #9a9a9a;
+    --faint: #6d6d6d; --amber: #f2bd62; --line: #2c2c2c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+  header { padding: 88px 0 56px; text-align: center; }
+  h1 { font-size: 46px; margin: 0 0 12px; letter-spacing: -0.02em; }
+  .tagline { font-size: 21px; color: var(--muted); margin: 0 auto 32px; max-width: 34ch; }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
+  .btn {
+    display: inline-block; padding: 12px 22px; border-radius: 10px; text-decoration: none;
+    font-weight: 600; font-size: 15px;
+  }
+  .btn-primary { background: var(--amber); color: #1a1206; }
+  .btn-ghost { border: 1px solid var(--line); color: var(--ink); }
+  .req { color: var(--faint); font-size: 14px; margin: 0; }
+  pre {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 20px; overflow-x: auto; font-size: 14px; line-height: 1.7;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink);
+  }
+  .shot { width: 100%; border-radius: 14px; border: 1px solid var(--line); display: block; }
+  section { padding: 44px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--faint);
+       margin: 0 0 20px; font-weight: 600; }
+  ul.features { list-style: none; padding: 0; margin: 0; display: grid; gap: 18px;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  ul.features li strong { display: block; margin-bottom: 4px; }
+  ul.features li span { color: var(--muted); font-size: 15px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  td { padding: 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:first-child { width: 34%; color: var(--muted); padding-right: 20px; }
+  footer { padding: 40px 0 64px; color: var(--faint); font-size: 14px; text-align: center; }
+  a { color: var(--amber); }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>KindleWall</h1>
+    <p class="tagline">Turns your Kindle highlights into desktop wallpapers on macOS.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/bekircem/KindleWall/releases/latest">Download</a>
+      <a class="btn btn-ghost" href="https://github.com/bekircem/KindleWall">View source</a>
+    </div>
+    <p class="req">Free and open source · Requires macOS 26 (Tahoe) or later</p>
+  </header>
+
+  <img class="shot" src="screenshots/main.png" alt="KindleWall showing a highlight rendered as a wallpaper">
+
+  <section>
+    <h2>Install</h2>
+    <pre>brew tap bekircem/tap
+brew trust bekircem/tap
+brew install --cask kindlewall</pre>
+    <p class="req">Or take the signed, notarized DMG from
+      <a href="https://github.com/bekircem/KindleWall/releases/latest">Releases</a>.</p>
+  </section>
+
+  <section>
+    <h2>What it does</h2>
+    <ul class="features">
+      <li><strong>Reads your highlights</strong><span>Parses <code>My Clippings.txt</code> in the English and Turkish Kindle formats, skipping bookmarks and duplicates.</span></li>
+      <li><strong>Six styles</strong><span>Type size fitted to each passage rather than clipped to a fixed box.</span></li>
+      <li><strong>Follows the sun</strong><span>Optionally writes a dynamic wallpaper whose colour temperature tracks the solar position.</span></li>
+      <li><strong>Rotation you control</strong><span>Every book, one book at a time, pinned books, or favourites — from 30 minutes to daily.</span></li>
+      <li><strong>Capture from anywhere</strong><span>A global hotkey or the Services menu turns selected text in any app into a clipping.</span></li>
+      <li><strong>Lives in the menu bar</strong><span>Keeps running when you close the window, and updates itself.</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Privacy</h2>
+    <p style="color:var(--muted);margin-top:0">No analytics, no telemetry, no server operated by this project. Precisely what does and does not leave your Mac:</p>
+    <table>
+      <tr><td>Your highlights</td><td>Nowhere — unless you are signed into iCloud, in which case <strong>your own</strong> private CloudKit database, and nowhere else.</td></tr>
+      <tr><td>Book titles</td><td>Google Books and Open Library, as search queries, when the library screen fetches cover art.</td></tr>
+      <tr><td>Update checks</td><td>GitHub, to read the appcast.</td></tr>
+    </table>
+  </section>
+
+  <footer>
+    <a href="https://github.com/bekircem/KindleWall">GitHub</a> ·
+    <a href="https://github.com/bekircem/KindleWall/blob/main/LICENSE">GPL-3.0</a> ·
+    <a href="https://github.com/bekircem/KindleWall/issues">Report a bug</a>
+    <p style="margin-top:18px">Not affiliated with, endorsed by, or sponsored by Amazon.
+      Kindle is a registered trademark of Amazon.com, Inc.</p>
+  </footer>
+
+</div>
+</body>
+</html>

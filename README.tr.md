@@ -1,5 +1,11 @@
 # KindleWall
 
+[![Latest release](https://img.shields.io/github/v/release/bekircem/KindleWall?label=release&color=E8A33D)](https://github.com/bekircem/KindleWall/releases/latest)
+[![macOS 26+](https://img.shields.io/badge/macOS-26%2B-111111?logo=apple&logoColor=white)](https://www.apple.com/macos/)
+[![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)](https://www.swift.org)
+[![Homebrew](https://img.shields.io/badge/Homebrew-bekircem%2Ftap-FBB040?logo=homebrew&logoColor=white)](https://github.com/bekircem/homebrew-tap)
+[![License GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-4C8CBF)](LICENSE)
+
 Kindle alıntılarını macOS masaüstü duvar kağıdına dönüştürür.
 
 KindleWall'a Kindle'ındaki `My Clippings.txt` dosyasını göster; kendi kütüphanenden bir pasajı

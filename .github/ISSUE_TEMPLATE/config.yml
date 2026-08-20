@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Installation and update questions
+    url: https://github.com/bekircem/KindleWall#install
+    about: The README covers Homebrew, the DMG, and the macOS version requirement.

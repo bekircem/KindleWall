@@ -4,9 +4,10 @@
     <title>KindleWall</title>
     <link>https://bekircem.github.io/KindleWall/appcast.xml</link>
     <description>KindleWall updates</description>
-    <language>tr</language>
+    <language>en</language>
     <item>
       <title>1.1.2</title>
+      <description><![CDATA[<h3>Fixed</h3><ul><li>iCloud sync works. It never did in a released build: the CloudKit schema had only ever been deployed to the development environment, so every signed copy of KindleWall failed silently against production. Nothing you had was lost — nothing had been reaching the cloud to lose.</li><li>Sync recovers when the record zone goes missing instead of failing forever. The &quot;zone already created&quot; mark lived only on your Mac, so once the server no longer had the zone, the app stopped trying.</li></ul>]]></description>
       <pubDate>Thu, 20 Aug 2026 14:42:08 +0300</pubDate>
       <sparkle:version>5</sparkle:version>
       <sparkle:shortVersionString>1.1.2</sparkle:shortVersionString>
@@ -19,6 +20,7 @@
     </item>
     <item>
       <title>1.1.1</title>
+      <description><![CDATA[<h3>Fixed</h3><ul><li>A failed sync no longer forgets what it owed. A push that errored dropped its pending work, so a deleted quote could disappear locally and stay in the cloud with nothing left to retry the deletion.</li><li>Pulling no longer discards local changes that have not been sent yet.</li><li>Sync failures are reported instead of being swallowed. An unreachable record zone used to be indistinguishable from an empty one, which is how the problem above stayed invisible.</li></ul>]]></description>
       <pubDate>Thu, 20 Aug 2026 14:13:15 +0300</pubDate>
       <sparkle:version>4</sparkle:version>
       <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
@@ -31,6 +33,7 @@
     </item>
     <item>
       <title>1.1.0</title>
+      <description><![CDATA[<h3>New</h3><ul><li>KindleWall speaks English and Turkish, following your system language. macOS can give it a language of its own under System Settings → General → Language &amp; Region → Applications.</li></ul>]]></description>
       <pubDate>Thu, 20 Aug 2026 13:07:15 +0300</pubDate>
       <sparkle:version>3</sparkle:version>
       <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
