@@ -38,11 +38,11 @@ struct QuickCaptureView: View {
 
             // Book title field
             VStack(alignment: .leading, spacing: 6) {
-                Label("Kitap Adı", systemImage: "book.closed")
+                Label("Book Title", systemImage: "book.closed")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                TextField("Kitap adını girin...", text: $bookTitle)
+                TextField("Enter the book title…", text: $bookTitle)
                     .textFieldStyle(.roundedBorder)
                     .onChange(of: bookTitle) { _, _ in
                         showSuggestions = !filteredSuggestions.isEmpty
@@ -78,7 +78,7 @@ struct QuickCaptureView: View {
 
             // Quote text
             VStack(alignment: .leading, spacing: 6) {
-                Label("Alıntı Metni", systemImage: "quote.opening")
+                Label("Quote", systemImage: "quote.opening")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
@@ -101,7 +101,7 @@ struct QuickCaptureView: View {
 
             // Action buttons
             HStack {
-                Button("İptal", action: onCancel)
+                Button("Cancel", action: onCancel)
                     .keyboardShortcut(.cancelAction)
                 Spacer()
                 Button("Kaydet") {

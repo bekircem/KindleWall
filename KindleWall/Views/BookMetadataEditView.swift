@@ -35,7 +35,7 @@ struct BookMetadataEditView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Text("Metadata Düzenle")
+                Text("Edit Details")
                     .font(.headline)
                 Spacer()
             }
@@ -58,10 +58,10 @@ struct BookMetadataEditView: View {
 
                     // Edit fields
                     VStack(alignment: .leading, spacing: Theme.Spacing.s) {
-                        Text("Kitap Adı")
+                        Text("Book Title")
                             .font(.subheadline)
                             .fontWeight(.medium)
-                        TextField("Kitap adını girin", text: $editTitle)
+                        TextField("Enter the book title", text: $editTitle)
                             .textFieldStyle(.roundedBorder)
                     }
 
@@ -69,7 +69,7 @@ struct BookMetadataEditView: View {
                         Text("Yazar")
                             .font(.subheadline)
                             .fontWeight(.medium)
-                        TextField("Yazar adını girin", text: $editAuthor)
+                        TextField("Enter the author's name", text: $editAuthor)
                             .textFieldStyle(.roundedBorder)
                     }
 
@@ -77,7 +77,7 @@ struct BookMetadataEditView: View {
                     SettingsCard {
                         VStack(alignment: .leading, spacing: Theme.Spacing.s) {
                             HStack {
-                                Button("Otomatik Düzelt") {
+                                Button("Fix Automatically") {
                                     Task { await fetchSuggestion() }
                                 }
                                 .disabled(isSuggestionLoading)
@@ -93,7 +93,7 @@ struct BookMetadataEditView: View {
 
                             switch suggestionState {
                             case .idle:
-                                Text("Google Books'tan başlık ve yazar önerisi alır.")
+                                Text("Fetches a title and author suggestion from Google Books.")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
 
@@ -102,7 +102,7 @@ struct BookMetadataEditView: View {
 
                             case .found(let sugTitle, let sugAuthor):
                                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                                    Text("Öneri:")
+                                    Text("Suggestion:")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                     Text("Ad: \(sugTitle)")
@@ -115,14 +115,14 @@ struct BookMetadataEditView: View {
 
                                 // Not "Uygula": everywhere else in the app that word means
                                 // "put this on the desktop". Here it only fills two fields.
-                                Button("Öneriyi Kullan") {
+                                Button("Use Suggestion") {
                                     editTitle = sugTitle
                                     editAuthor = sugAuthor ?? ""
                                 }
                                 .buttonStyle(.bordered)
 
                             case .notFound:
-                                Text("Eşleşen kitap bulunamadı. Lütfen manuel düzeltin.")
+                                Text("No matching book found. Please correct it by hand.")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -139,7 +139,7 @@ struct BookMetadataEditView: View {
             // Action buttons
             HStack {
                 // Reset to original — only enabled if an override exists
-                Button("Varsayılana Dön") {
+                Button("Reset to Default") {
                     onReset()
                     dismiss()
                 }
@@ -148,7 +148,7 @@ struct BookMetadataEditView: View {
 
                 Spacer()
 
-                Button("İptal") { dismiss() }
+                Button("Cancel") { dismiss() }
                     .keyboardShortcut(.cancelAction)
 
                 Button("Kaydet") {

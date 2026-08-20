@@ -48,15 +48,15 @@ struct BookDetailView: View {
                     .contentShape(Rectangle())
                     .onTapGesture { onSelectClipping(clipping) }
                     .contextMenu {
-                        Button("Önizle") {
+                        Button("Preview") {
                             onSelectClipping(clipping)
                         }
-                        Button("Duvar Kağıdı Yap") {
+                        Button("Set as Wallpaper") {
                             onApplyClipping(clipping)
                         }
                         .keyboardShortcut(.return, modifiers: .command)
                         Divider()
-                        Button(vm.isFavorite(clipping) ? "Favorilerden Çıkar" : "Favorilere Ekle") {
+                        Button(vm.isFavorite(clipping) ? "Remove from Favorites" : "Add to Favorites") {
                             vm.toggleFavorite(clipping)
                         }
                         .keyboardShortcut("d", modifiers: .command)
@@ -68,7 +68,7 @@ struct BookDetailView: View {
 
                         if clipping.isManualEntry {
                             Divider()
-                            Button("Düzenle") {
+                            Button("Edit") {
                                 clippingToEdit = clipping
                             }
                             Button("Sil", role: .destructive) {
@@ -81,7 +81,7 @@ struct BookDetailView: View {
         .navigationTitle(displayBook.displayTitle)
         .onAppear { currentOverride = existingOverride }
         .confirmationDialog(
-            "Bu alıntıyı silmek istediğine emin misin?",
+            "Delete this quote?",
             isPresented: Binding(
                 get: { clippingToDelete != nil },
                 set: { if !$0 { clippingToDelete = nil } }
@@ -193,8 +193,8 @@ private struct BookDetailHeader: View {
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
-            .help("Bu kitaba manuel alıntı ekle")
-            .accessibilityLabel("Manuel alıntı ekle")
+            .help("Add a quote to this book by hand")
+            .accessibilityLabel("Add quote by hand")
 
             Button(action: onEdit) {
                 Image(systemName: "pencil.circle.fill")
@@ -203,8 +203,8 @@ private struct BookDetailHeader: View {
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
-            .help("Metadata Düzenle")
-            .accessibilityLabel("Kitap bilgilerini düzenle")
+            .help("Edit Details")
+            .accessibilityLabel("Edit book details")
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)

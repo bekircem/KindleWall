@@ -900,6 +900,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.kindlewall.app;
 				PRODUCT_NAME = KindleWall;
 				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Debug;
 		};
@@ -980,6 +981,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.kindlewall.app;
 				PRODUCT_NAME = KindleWall;
 				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
 		};

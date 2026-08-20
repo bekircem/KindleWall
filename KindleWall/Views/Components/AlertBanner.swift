@@ -4,7 +4,7 @@ import SwiftUI
 ///
 /// That message is produced from roughly fifteen places — a failed import, an empty rotation
 /// pool, a missing pinned book — but it used to be drawn in exactly one: a small red caption
-/// under the hero on "Şu Anki Alıntı". Anything that went wrong while the user was on another
+/// under the hero on "Current Quote". Anything that went wrong while the user was on another
 /// page simply never appeared. Sharing the bottom-overlay slot with `ImportProgressBanner` and
 /// `ApplyStatusBar` keeps every transient message in one predictable place.
 struct AlertBanner: View {
@@ -46,7 +46,7 @@ struct AlertBanner: View {
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
             .help("Kapat")
-            .accessibilityLabel("Uyarıyı kapat")
+            .accessibilityLabel("Dismiss alert")
         }
         .padding(.horizontal, Theme.Spacing.l)
         .padding(.vertical, Theme.Spacing.m)

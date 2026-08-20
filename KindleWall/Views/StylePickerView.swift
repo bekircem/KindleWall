@@ -54,9 +54,9 @@ struct StyleCard: View {
                         .padding(.bottom, -4)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Okunmak, binlerce")
-                        Text("farklı hayat yaşamak")
-                        Text("demektir.")
+                        Text("To read is to live")
+                        Text("a thousand different")
+                        Text("lives.")
                     }
                     .font(.system(size: 9, weight: .regular, design: previewFontDesign))
                     .foregroundColor(previewTextColor)
@@ -64,7 +64,7 @@ struct StyleCard: View {
 
                     Spacer()
 
-                    Text("— Yazar Adı")
+                    Text("— Author Name")
                         .font(.system(size: 8, weight: .light, design: previewFontDesign))
                         .foregroundColor(previewTextColor.opacity(0.6))
                         .italic()

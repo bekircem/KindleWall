@@ -54,7 +54,7 @@ struct ManualClippingFormView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Text(isEditMode ? "Alıntıyı Düzenle" : "Manuel Alıntı Ekle")
+                Text(isEditMode ? "Edit Quote" : "Add Quote by Hand")
                     .font(.headline)
                 Spacer()
             }
@@ -67,11 +67,11 @@ struct ManualClippingFormView: View {
 
                     // Book title + autocomplete
                     VStack(alignment: .leading, spacing: 6) {
-                        Label("Kitap Adı", systemImage: "book.closed")
+                        Label("Book Title", systemImage: "book.closed")
                             .font(.caption)
                             .foregroundStyle(.secondary)
 
-                        TextField("Kitap adını girin...", text: $bookTitle)
+                        TextField("Enter the book title…", text: $bookTitle)
                             .textFieldStyle(.roundedBorder)
                             .onChange(of: bookTitle) { _, _ in
                                 showSuggestions = !filteredSuggestions.isEmpty
@@ -125,13 +125,13 @@ struct ManualClippingFormView: View {
                         Label("Yazar (opsiyonel)", systemImage: "person")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        TextField("Yazar adı...", text: $author)
+                        TextField("Author's name…", text: $author)
                             .textFieldStyle(.roundedBorder)
                     }
 
                     // Quote text
                     VStack(alignment: .leading, spacing: 6) {
-                        Label("Alıntı Metni", systemImage: "quote.opening")
+                        Label("Quote", systemImage: "quote.opening")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         TextEditor(text: $text)
@@ -151,7 +151,7 @@ struct ManualClippingFormView: View {
                         Label("Sayfa (opsiyonel)", systemImage: "number")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        TextField("Sayfa numarası...", text: $page)
+                        TextField("Page number…", text: $page)
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 120)
                     }
@@ -163,7 +163,7 @@ struct ManualClippingFormView: View {
 
             // Action buttons
             HStack {
-                Button("İptal", action: onCancel)
+                Button("Cancel", action: onCancel)
                     .keyboardShortcut(.cancelAction)
                 Spacer()
                 Button("Kaydet") {

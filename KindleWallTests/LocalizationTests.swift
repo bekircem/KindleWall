@@ -17,8 +17,8 @@ final class LocalizationTests: XCTestCase {
         let path = try XCTUnwrap(Bundle.main.path(forResource: "tr", ofType: "lproj"),
                                  "no tr.lproj in the bundle")
         let trBundle = try XCTUnwrap(Bundle(path: path))
-        let translated = trBundle.localizedString(forKey: "About", value: nil, table: nil)
-        XCTAssertEqual(translated, "Hakkında",
+        let translated = trBundle.localizedString(forKey: "Current Quote", value: nil, table: nil)
+        XCTAssertEqual(translated, "Şu Anki Alıntı",
                        "the catalog's Turkish value did not reach the built bundle")
     }
 }

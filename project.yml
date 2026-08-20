@@ -76,6 +76,11 @@ targets:
         # `Color.accentColor` in the app silently falls back to the system blue —
         # which is what shipped, despite the warm amber sitting in Assets unused.
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        # Emit the localizable strings the compiler finds, as .stringsdata next to the objects.
+        # Xcode's IDE merges those into Localizable.xcstrings; from the command line they are
+        # still the complete inventory of what is localizable, which is how the catalog gets
+        # audited without opening Xcode.
+        SWIFT_EMIT_LOC_STRINGS: "YES"
       configs:
         Debug:
           CODE_SIGN_ENTITLEMENTS: KindleWall/Resources/KindleWall.entitlements
