@@ -287,7 +287,7 @@ struct OnboardingView: View {
                 stepTitle("How Often Should It Change?", subtitle: nil)
                     .frame(maxWidth: .infinity)
 
-                SettingsCard(footnote: "The quote changes on this interval. Appearance settings apply immediately.") {
+                SettingsCard(footnote: String(localized: "The quote changes on this interval. Appearance settings apply immediately.")) {
                     VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                         Picker("Change Interval", selection: Binding(
                             get: { settingsVM.scheduleInterval },
@@ -306,7 +306,7 @@ struct OnboardingView: View {
                     .padding(Theme.Spacing.l)
                 }
 
-                SettingsCard(title: "Preferences") {
+                SettingsCard(title: String(localized: "Preferences")) {
                     SettingsRow(icon: "menubar.rectangle", iconColor: .indigo,
                                 title: "Show in Menu Bar",
                                 subtitle: "Change the quote without opening the window") {

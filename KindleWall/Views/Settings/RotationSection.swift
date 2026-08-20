@@ -39,17 +39,17 @@ struct RotationSection: View {
     @ViewBuilder private var scopeCard: some View {
         switch settingsVM.rotationMode {
         case .pinnedBooks:
-            SettingsCard(title: "Pinned Books", footnote: pinnedFootnote) {
+            SettingsCard(title: String(localized: "Pinned Books"), footnote: pinnedFootnote) {
                 pinnedScope.padding(Theme.Spacing.l)
             }
 
         case .favorites:
-            SettingsCard(title: "Scope") {
+            SettingsCard(title: String(localized: "Scope")) {
                 statRow(icon: "heart.fill", title: "Favorite Quotes", value: settingsVM.favoriteCount)
             }
 
         case .allRandom, .bookByBook:
-            SettingsCard(title: "Scope") {
+            SettingsCard(title: String(localized: "Scope")) {
                 statRow(icon: "books.vertical.fill", title: "Books", value: availableBooks.count)
                 RowDivider()
                 statRow(icon: "quote.bubble.fill", title: "Quote", value: totalQuoteCount)
@@ -140,7 +140,7 @@ struct RotationSection: View {
     private var pinnedFootnote: String? {
         guard !availableBooks.isEmpty else { return nil }
         return pinnedBooks.isEmpty
-            ? "The books you pick show up here; click one to remove it."
+            ? String(localized: "The books you pick show up here; click one to remove it.")
             : String(localized: "Quotes are drawn only from these \(pinnedBooks.count) books.")
     }
 }

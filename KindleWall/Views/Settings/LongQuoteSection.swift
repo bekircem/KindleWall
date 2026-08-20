@@ -12,7 +12,7 @@ struct LongQuoteSection: View {
             SettingsCard(
                 title: "Skip Long Quotes",
                 footnote: settingsVM.skipLongQuotesEnabled
-                    ? "Quotes longer than this threshold are skipped when choosing a wallpaper."
+                    ? String(localized: "Quotes longer than this threshold are skipped when choosing a wallpaper.")
                     : nil
             ) {
                 SettingsRow(icon: "arrow.forward.to.line", iconColor: .orange,
@@ -55,7 +55,7 @@ struct LongQuoteSection: View {
             SettingsCard(
                 title: "Tighten Long Quotes",
                 footnote: settingsVM.autoTightenLongQuotes
-                    ? "Eşikten uzun alıntılar, font boyutu bu değere ve satır arası bu çarpana kadar daraltılır. Çok düşük değerler okunabilirliği azaltabilir."
+                    ? String(localized: "Quotes past the threshold are tightened down to this type size and this line-height multiplier. Very low values cost legibility.")
                     : nil
             ) {
                 SettingsRow(icon: "textformat.size.smaller", iconColor: .orange,

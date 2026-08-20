@@ -296,6 +296,16 @@
         }
       }
     },
+    "A decorative element placed around the quote.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alıntının çevresine eklenen dekoratif öğe."
+          }
+        }
+      }
+    },
     "Aa": {
       "shouldTranslate": false
     },
@@ -729,6 +739,26 @@
         }
       }
     },
+    "Changes reach the desktop on their own after a short pause. The quote does not change — only its appearance.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Değişiklikler kısa bir duraklamadan sonra masaüstüne kendiliğinden uygulanır. Alıntı değişmez — yalnızca görünüm."
+          }
+        }
+      }
+    },
+    "Changes stay in the preview; press Apply to send them to the desktop.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Değişiklikler yalnızca önizlemede kalır; masaüstüne yansıması için Uygula'ya bas."
+          }
+        }
+      }
+    },
     "Changes stay in the preview; press Apply to use them.": {
       "localizations": {
         "tr": {
@@ -805,6 +835,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "My Clippings.txt Dosyasını Seçin"
+          }
+        }
+      }
+    },
+    "Choose how often the wallpaper changes on its own.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duvar kağıdının otomatik olarak ne sıklıkla değişeceğini seç."
           }
         }
       }
@@ -945,6 +985,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Duvar kağıdı uygulanamadı: %@"
+          }
+        }
+      }
+    },
+    "Could not build the dynamic wallpaper; applied the static one.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dinamik duvar kağıdı üretilemedi, statik uygulandı."
           }
         }
       }
@@ -1119,6 +1169,16 @@
         }
       }
     },
+    "Custom Gradient": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Özel Gradient"
+          }
+        }
+      }
+    },
     "Custom Time": {
       "localizations": {
         "tr": {
@@ -1195,6 +1255,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Uyarıyı kapat"
+          }
+        }
+      }
+    },
+    "Dynamic Wallpaper": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dinamik Duvar Kağıdı"
           }
         }
       }
@@ -1495,6 +1565,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sonra hallederim"
+          }
+        }
+      }
+    },
+    "Immediate Sync": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anında Eşitleme"
           }
         }
       }
@@ -2039,6 +2119,16 @@
         }
       }
     },
+    "Ornament": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Süsleme"
+          }
+        }
+      }
+    },
     "Other Mission Control spaces update the first time you visit them.": {
       "localizations": {
         "tr": {
@@ -2179,12 +2269,32 @@
         }
       }
     },
+    "Pinned Books": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sabit Kitaplar"
+          }
+        }
+      }
+    },
     "Please choose your My Clippings.txt file.": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "Lütfen My Clippings.txt dosyasını seçin."
+          }
+        }
+      }
+    },
+    "Preferences": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tercihler"
           }
         }
       }
@@ -2279,6 +2389,26 @@
         }
       }
     },
+    "Quotes longer than this threshold are skipped when choosing a wallpaper.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu eşikten uzun alıntılar duvar kağıdı seçiminde atlanır."
+          }
+        }
+      }
+    },
+    "Quotes past the threshold are tightened down to this type size and this line-height multiplier. Very low values cost legibility.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eşikten uzun alıntılar, font boyutu bu değere ve satır arası bu çarpana kadar daraltılır. Çok düşük değerler okunabilirliği azaltabilir."
+          }
+        }
+      }
+    },
     "Read from the file:": {
       "localizations": {
         "tr": {
@@ -2325,6 +2455,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Favorilerden çıkar"
+          }
+        }
+      }
+    },
+    "Reopens the welcome flow. Your quotes, favorites and settings stay as they are.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Karşılama akışını yeniden açar. Alıntıların, favorilerin ve ayarların olduğu gibi kalır."
+          }
+        }
+      }
+    },
+    "Replace the selected style's background with colors of your own. The text color adjusts itself for legibility.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seçili stilin arka planını özel renklerle değiştir. Metin rengi otomatik olarak okunabilirliğe göre ayarlanır."
           }
         }
       }
@@ -2399,6 +2549,16 @@
         }
       }
     },
+    "Scope": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapsam"
+          }
+        }
+      }
+    },
     "Search books or authors…": {
       "localizations": {
         "tr": {
@@ -2435,6 +2595,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tümünü Seç"
+          }
+        }
+      }
+    },
+    "Select text in any app and press the shortcut to open the QuickCapture panel.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Herhangi bir uygulamada metin seçip kısayola basınca QuickCapture paneli açılır."
           }
         }
       }
@@ -2759,6 +2929,26 @@
         }
       }
     },
+    "The My Clippings.txt file from your Kindle. Choosing an updated copy of the same file adds only the new quotes; favorites and shown state are kept.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kindle'ından aldığın My Clippings.txt dosyası. Aynı dosyanın güncel hâlini tekrar seçersen yalnızca yeni alıntılar eklenir; favori ve gösterim durumları korunur."
+          }
+        }
+      }
+    },
+    "The books you pick show up here; click one to remove it.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seçtiğin kitaplar burada görünür; birine tıklayınca listeden çıkar."
+          }
+        }
+      }
+    },
     "The file bookmark is stale — please choose the file again": {
       "localizations": {
         "tr": {
@@ -2805,6 +2995,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kindle'da altını çizdiğin cümleler masaüstü duvar kağıdın olur ve belirlediğin aralıkla kendiliğinden değişir."
+          }
+        }
+      }
+    },
+    "The quote changes on this interval. Appearance settings apply immediately.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alıntı bu aralıkla değişir. Görünüm ayarların anında uygulanır."
           }
         }
       }
@@ -3019,6 +3219,16 @@
         }
       }
     },
+    "Wallpaper Style": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duvar Kağıdı Stili"
+          }
+        }
+      }
+    },
     "Wallpaper style": {
       "localizations": {
         "tr": {
@@ -3055,6 +3265,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kapalıyken her alan ilk ziyaret edildiğinde güncellenir."
+          }
+        }
+      }
+    },
+    "When on, every desktop changes at once. The only way to do that is to write macOS's own wallpaper store and restart the wallpaper service — which is what the Settings panel does too. The format is undocumented by Apple, so this is off by default. The store is backed up before the first write.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Açıkken tüm masaüstleri aynı anda değişir. Bunu yapmanın tek yolu macOS'un kendi duvar kağıdı kaydını yazıp duvar kağıdı servisini yeniden başlatmak — Ayarlar panelinin yaptığı da budur. Biçim Apple tarafından belgelenmemiştir, bu yüzden varsayılan kapalı. İlk kullanımda kaydın yedeği alınır."
+          }
+        }
+      }
+    },
+    "When on, the wallpaper is written as a six-frame HEIC instead of a single image, and macOS shifts the colors through the day by itself — even while the app is closed. How often the quote changes is a separate setting; this affects colors only.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Açıkken duvar kağıdı tek bir görüntü yerine altı kareli bir HEIC olarak yazılır ve macOS gün içinde renkleri kendisi değiştirir — uygulama kapalıyken bile. Alıntının ne sıklıkla değişeceği ayrı bir ayar; bu yalnızca renkleri etkiler."
           }
         }
       }

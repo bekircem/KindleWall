@@ -843,11 +843,11 @@ final class MainViewModel {
                     self.refreshDerivedServiceState()
                     // A fallback is reported as a caveat on success, not as an error: the
                     // wallpaper really did change, and pushing this into `errorMessage` used to
-                    // put a red line next to the green "Uygulandı".
+                    // put a red line next to the green "Applied".
                     self.transition(to: .applied(
                         at: Date(),
                         reason: reason,
-                        degraded: didFallBackToStatic ? "Dinamik duvar kağıdı üretilemedi, statik uygulandı." : nil
+                        degraded: didFallBackToStatic ? String(localized: "Could not build the dynamic wallpaper; applied the static one.") : nil
                     ))
                     if !propagateNow { self.scheduleAllSpacesSync() }
                 } catch {

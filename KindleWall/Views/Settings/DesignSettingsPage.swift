@@ -34,8 +34,8 @@ struct DesignSettingsPage: View {
     private var autoApplyCard: some View {
         SettingsCard(
             footnote: viewModel.autoApplyDesignChanges
-                ? "Değişiklikler kısa bir duraklamadan sonra masaüstüne kendiliğinden uygulanır. Alıntı değişmez — yalnızca görünüm."
-                : "Changes stay in the preview; press Apply to send them to the desktop."
+                ? String(localized: "Changes reach the desktop on their own after a short pause. The quote does not change — only its appearance.")
+                : String(localized: "Changes stay in the preview; press Apply to send them to the desktop.")
         ) {
             // Short title on purpose. A `SettingsRow`'s title reports its full intrinsic width,
             // and on this page — the only one sharing space with the preview inspector — a long

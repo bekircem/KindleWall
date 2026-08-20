@@ -6,7 +6,7 @@ struct StyleSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.s) {
-            SectionHeader("Wallpaper Style")
+            SectionHeader(String(localized: "Wallpaper Style"))
 
             // One binding, one owner. The style write, the typography it carries and the
             // preview all happen inside `updateStyle`, so nothing here can drift.
