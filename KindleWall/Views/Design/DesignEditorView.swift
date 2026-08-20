@@ -13,6 +13,11 @@ struct DesignEditorView: View {
     @Bindable var settingsVM: SettingsViewModel
     let actions: SettingsActions
 
+    /// Was `.inspectorColumnWidth(min: 300, ideal: 340, max: 520)` — this is that ideal, now
+    /// fixed. See the note on `body` for why the system inspector had to go; the drag handle
+    /// went with it.
+    private static let inspectorWidth: CGFloat = 340
+
     @AppStorage(Constants.StorageKeys.designInspectorTab)
     private var storedTab = DesignTab.style.rawValue
     @AppStorage(Constants.StorageKeys.designInspectorVisible)
@@ -25,22 +30,47 @@ struct DesignEditorView: View {
         )
     }
 
+    /// A plain trailing column rather than `.inspector`.
+    ///
+    /// `.inspector` positioned the entire split view one toolbar height too high on this page:
+    /// the sidebar's first section header collided with the traffic lights, the tab picker slid
+    /// under the toolbar where the Apply button drew straight over it, and the auto-apply
+    /// footer fell off the bottom edge. Measured at 1072x727 — the sidebar sat at y=330 with
+    /// the toolbar ending at 379, on every window height below roughly 850.
+    ///
+    /// Ruled out by measurement before rewriting: the window's `.hiddenTitleBar` style
+    /// (removing it changed nothing), the order of `.toolbar` against `.inspector` (both
+    /// orders reproduce), the inspector's own content height (the shortest tab overflows as
+    /// far as the tallest), and `.inspector` as such — the typography panel on the Current
+    /// Quote page is also an `.inspector` and lays out correctly at the same window size.
+    ///
+    /// So the trigger is something about *this* panel inside `.inspector` — a filling `VStack`
+    /// with a fixed picker above and a pinned footer below a `ScrollView`. That is worth
+    /// knowing but not worth another day: a plain column costs one modifier, behaves like
+    /// every other page, and cannot drift out of the window again. The price is the drag
+    /// handle, which `.inspectorColumnWidth` provided and a fixed width does not.
     var body: some View {
-        canvas
-            .navigationTitle("Design")
-            .inspector(isPresented: $isInspectorPresented) {
+        HStack(spacing: 0) {
+            canvas
+
+            if isInspectorPresented {
+                Divider()
+
                 DesignInspector(
                     viewModel: viewModel,
                     settingsVM: settingsVM,
                     actions: actions,
                     tab: tab
                 )
-                // Wider than the old preview panel: this column now holds the style grid and
-                // the type controls, and below 300 the grid drops to a single column.
-                .inspectorColumnWidth(min: 300, ideal: 340, max: 520)
+                // Wide enough for the style grid and the type controls; below 300 the grid
+                // drops to a single column.
+                .frame(width: Self.inspectorWidth)
             }
-            .toolbar { toolbarContent }
-            .onAppear {
+        }
+        .animation(Theme.Motion.smooth, value: isInspectorPresented)
+        .navigationTitle("Design")
+        .toolbar { toolbarContent }
+        .onAppear {
                 // The canvas is the whole point of this screen; never let it open empty.
                 if viewModel.currentWallpaperImage == nil {
                     viewModel.generatePreview()

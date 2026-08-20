@@ -25,11 +25,17 @@ struct DesignInspector: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .scrollEdgeEffectStyle(.soft, for: .top)
+            // The flexible element: the picker above and the footer below keep their natural
+            // heights and this absorbs the rest, so a short window shortens the scroll area
+            // rather than pushing the footer past the bottom edge.
+            .frame(maxHeight: .infinity)
 
             Divider()
 
             autoApplyFooter
         }
+        // Fill the column the parent hands us instead of sizing to content.
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.background)
     }
 

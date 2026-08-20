@@ -11,11 +11,14 @@ enum DesignTab: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// `String(localized:)`, not a bare literal. A `String`-typed title never reaches the
+    /// String Catalog on its own, so these three shipped in English inside an otherwise
+    /// Turkish window — the exact leak `CONTRIBUTING.md` warns about.
     var title: String {
         switch self {
-        case .style:      return "Style"
-        case .typography: return "Typography"
-        case .background: return "Background"
+        case .style:      return String(localized: "Style")
+        case .typography: return String(localized: "Typography")
+        case .background: return String(localized: "Background")
         }
     }
 
