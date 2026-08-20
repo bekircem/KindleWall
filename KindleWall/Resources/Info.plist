@@ -19,14 +19,14 @@
 	<key>CFBundleVersion</key>
 	<string>2</string>
 	<key>NSAccessibilityUsageDescription</key>
-	<string>Herhangi bir uygulamada seçtiğin metni KindleWall'a alıntı olarak eklemek için kullanılır.</string>
+	<string>Used to turn text you select in any app into a KindleWall quote.</string>
 	<key>NSServices</key>
 	<array>
 		<dict>
 			<key>NSMenuItem</key>
 			<dict>
 				<key>default</key>
-				<string>KindleWall'a Alıntı Ekle</string>
+				<string>Add Quote to KindleWall</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>addClippingFromService</string>

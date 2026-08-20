@@ -327,7 +327,7 @@ final class WallpaperManager: WallpaperManagerProtocol, @unchecked Sendable {
 
             let entries = self.storeSync.syncAllSpaces(to: fileURL)
             if entries == 0 {
-                self.logger.notice("tüm-space eşitlemesi bir şey değiştirmedi; diğer alanlar ziyaret edildiklerinde güncellenecek")
+                self.logger.notice("all-space sync changed nothing; other spaces will update when visited")
             }
         }
     }

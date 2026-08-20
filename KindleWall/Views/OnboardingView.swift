@@ -158,7 +158,7 @@ struct OnboardingView: View {
                 ProgressView(value: viewModel.importState.progress)
                     .frame(width: 240)
             } else if hasQuotes {
-                Label("\(viewModel.clippings.count) alıntı hazır", systemImage: "checkmark.circle.fill")
+                Label("\(viewModel.clippings.count) quotes ready", systemImage: "checkmark.circle.fill")
                     .font(.callout)
                     .foregroundStyle(.green)
             }

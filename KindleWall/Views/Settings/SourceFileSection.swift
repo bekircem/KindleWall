@@ -23,7 +23,7 @@ struct SourceFileSection: View {
                                     .lineLimit(1)
                                     .truncationMode(.middle)
                                 if clippingsCount > 0 {
-                                    Text("\(clippingsCount) alıntı yüklendi")
+                                    Text("\(clippingsCount) quotes imported")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }

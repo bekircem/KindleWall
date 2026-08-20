@@ -1,0 +1,28 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Add Quote to KindleWall" : {
+      "comment" : "Services menu item, shown by macOS in every app's Services submenu.",
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KindleWall'a Alıntı Ekle"
+          }
+        }
+      }
+    },
+    "NSAccessibilityUsageDescription" : {
+      "comment" : "Shown by macOS when the app first asks for Accessibility.",
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herhangi bir uygulamada seçtiğin metni KindleWall'a alıntı olarak eklemek için kullanılır."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

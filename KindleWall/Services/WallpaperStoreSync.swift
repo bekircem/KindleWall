@@ -76,12 +76,12 @@ final class WallpaperStoreSync: WallpaperStoreSyncProtocol {
         // Never point the store at something that is not there: every Space would freeze on a
         // cached image with no way back.
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            logger.error("eşitleme atlandı: dosya yok — \(fileURL.lastPathComponent, privacy: .public)")
+            logger.error("sync skipped: no such file — \(fileURL.lastPathComponent, privacy: .public)")
             return 0
         }
         guard let data = try? Data(contentsOf: storeURL),
               let root = try? PropertyListSerialization.propertyList(from: data, format: nil) else {
-            logger.notice("duvar kağıdı store'u okunamadı — eşitleme atlandı")
+            logger.notice("could not read the wallpaper store — sync skipped")
             return 0
         }
 
@@ -91,28 +91,28 @@ final class WallpaperStoreSync: WallpaperStoreSyncProtocol {
         let configuration = Self.makeConfiguration(for: fileURL)
         let updated = Self.rewritingImageChoices(in: root, to: configuration, count: &rewritten)
         guard rewritten > 0 else {
-            logger.notice("store'da görüntü girdisi yok — eşitleme atlandı")
+            logger.notice("no image entry in the store — sync skipped")
             return 0
         }
 
         guard let out = try? PropertyListSerialization.data(
             fromPropertyList: updated, format: .binary, options: 0
         ) else {
-            logger.error("store yeniden serileştirilemedi — eşitleme atlandı")
+            logger.error("could not re-serialize the store — sync skipped")
             return 0
         }
 
         do {
             try out.write(to: storeURL)
         } catch {
-            logger.error("store yazılamadı: \(error.localizedDescription, privacy: .public)")
+            logger.error("could not write the store: \(error.localizedDescription, privacy: .public)")
             return 0
         }
 
         // The agent holds the store in memory, so it has to be restarted to notice. SIP blocks
         // the polite route (`launchctl kickstart`), which is a large part of why this is opt-in.
         Perf.measure("spaces.storeSync", "\(rewritten) girdi") { reloadAgent() }
-        logger.info("\(rewritten, privacy: .public) space girdisi eşitlendi")
+        logger.info("synced \(rewritten, privacy: .public) space entries")
         return rewritten
     }
 
@@ -167,9 +167,9 @@ final class WallpaperStoreSync: WallpaperStoreSyncProtocol {
             try FileManager.default.createDirectory(
                 at: backupURL.deletingLastPathComponent(), withIntermediateDirectories: true)
             try original.write(to: backupURL)
-            logger.info("duvar kağıdı store'unun ilk yedeği alındı: \(self.backupURL.path, privacy: .public)")
+            logger.info("took the first backup of the wallpaper store: \(self.backupURL.path, privacy: .public)")
         } catch {
-            logger.error("store yedeği alınamadı: \(error.localizedDescription, privacy: .public)")
+            logger.error("could not back up the store: \(error.localizedDescription, privacy: .public)")
         }
     }
 

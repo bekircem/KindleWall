@@ -59,6 +59,7 @@
 		716844D08FB0543E4FCD7B8E /* SettingsNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5D53AA819F9AF3B8CA301A /* SettingsNavigation.swift */; };
 		72003FDBD4B000F07A5B6729 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6671FC544DE60EA44027BA57 /* UserNotifications.framework */; };
 		73DD1E958ACF6F7249921FCF /* RotationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BC1AC3AB1D70358AAA494F /* RotationMode.swift */; };
+		73EC7AF44B6B55133EC5FAED /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B04383DC433E583F684D101D /* InfoPlist.xcstrings */; };
 		753E707AB5CA58B4C22B18C2 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7635B35F9DE4F2A6600E5BCC /* String+Extensions.swift */; };
 		75C8BD83C969F447831FE36A /* BehaviorSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA714C7CA0CDC37EB70CB227 /* BehaviorSettingsPage.swift */; };
 		7808512C8B6DD9352F9107D5 /* UpdaterConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0687135708CDDE0AD26830 /* UpdaterConfigurationTests.swift */; };
@@ -216,6 +217,7 @@
 		A9148332127C6E2E34E9988C /* DynamicWallpaperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicWallpaperTests.swift; sourceTree = "<group>"; };
 		A9EF5A99D5F31BCD9F9D1C1A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AECF4A2B7D2D2503107532E0 /* CloudKitSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitSyncService.swift; sourceTree = "<group>"; };
+		B04383DC433E583F684D101D /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		B1651C641E93F65D094CE096 /* StylePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StylePickerView.swift; sourceTree = "<group>"; };
 		B374FBB8288F57E283CFF919 /* RotationBookTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotationBookTests.swift; sourceTree = "<group>"; };
 		B3E1115261839C71F99D5A65 /* BookCoverService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookCoverService.swift; sourceTree = "<group>"; };
@@ -418,6 +420,7 @@
 			isa = PBXGroup;
 			children = (
 				A9EF5A99D5F31BCD9F9D1C1A /* Assets.xcassets */,
+				B04383DC433E583F684D101D /* InfoPlist.xcstrings */,
 				1606A966F021862ECED6D3D7 /* Localizable.xcstrings */,
 			);
 			path = Resources;
@@ -633,6 +636,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2C699C7D0CEF8CA9D6A2AC5 /* Assets.xcassets in Resources */,
+				73EC7AF44B6B55133EC5FAED /* InfoPlist.xcstrings in Resources */,
 				8BFCFC94F2FFC07DD6B37849 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

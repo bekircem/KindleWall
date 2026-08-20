@@ -129,7 +129,7 @@ final class SunCalculator: SunCalculatorProtocol {
 
         // |cos| > 1 means the sun never reaches that altitude: polar day or polar night.
         guard cosHourAngle >= -1, cosHourAngle <= 1 else {
-            logger.info("Kutup gün/gecesi: enlem \(coordinate.latitude) için güneş ufku geçmiyor")
+            logger.info("polar day/night: the sun does not cross the horizon at latitude \(coordinate.latitude)")
             return nil
         }
 

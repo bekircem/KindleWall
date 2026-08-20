@@ -19,7 +19,7 @@ struct SettingsCard<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.s) {
             if let title {
-                Text(title.uppercasedTurkish)
+                Text(title.uppercasedForCurrentLocale)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .padding(.leading, Theme.Spacing.xs)
@@ -64,7 +64,7 @@ struct SectionHeader: View {
     }
 
     var body: some View {
-        Text(title.uppercasedTurkish)
+        Text(title.uppercasedForCurrentLocale)
             .font(.caption.weight(.semibold))
             .foregroundStyle(.secondary)
             .padding(.leading, Theme.Spacing.xs)

@@ -203,7 +203,7 @@ private struct BookListRow: View {
                 }
 
                 HStack(spacing: 4) {
-                    Text("\(book.clippingCount) alıntı")
+                    Text("\(book.clippingCount) quotes")
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
 
@@ -290,7 +290,7 @@ private struct BookGridCard: View {
                     }
 
                     HStack(spacing: 4) {
-                        Text("\(book.clippingCount) alıntı")
+                        Text("\(book.clippingCount) quotes")
                             .font(.caption2)
                             .foregroundColor(.white.opacity(0.55))
 

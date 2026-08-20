@@ -48,7 +48,7 @@ struct TypographyControls: View {
                 )
 
                 SliderRow(
-                    title: "Dikey Konum",
+                    title: "Vertical Position",
                     icon: "arrow.up.arrow.down",
                     value: $typography.verticalPosition,
                     range: -0.8...0.8,

@@ -1,99 +1,1064 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "": {},
-    "\"%@\"": {},
-    "%@ — remove from the list": {},
-    "%@, %lld alıntı": {},
-    "%@, %lld alıntı. Listeden çıkarmak için tıkla": {},
-    "%lld": {},
-    "%lld alıntı": {},
-    "%lld alıntı hazır": {},
-    "%lld alıntı yüklendi": {},
-    "%lld kitap · %lld alıntı": {},
-    "%lld pt": {},
-    "%lld%%": {},
-    "1 hour": {},
-    "3 hours": {},
-    "30 min": {},
-    "6 hours": {},
-    "Aa": {},
-    "About": {},
-    "Accessibility is granted — selected text is filled in automatically": {},
-    "Add Quote": {},
-    "Add Quote by Hand": {},
-    "Add a quote by hand (⇧⌘N)": {},
-    "Add a quote to this book by hand": {},
-    "Add quote by hand": {},
-    "Add to Favorites": {},
-    "Add to favorites": {},
-    "Advanced": {},
-    "Afternoon": {},
-    "All": {},
-    "All your quotes — favorite them, edit them, make one your wallpaper.": {},
-    "Applied": {},
-    "Apply": {},
-    "Apply as wallpaper": {},
-    "Apply changes automatically": {},
-    "Apply this design as the desktop wallpaper": {},
-    "Apply to All Spaces": {},
-    "Applying…": {},
-    "Author": {},
-    "Author (optional)": {},
-    "Author's name…": {},
-    "Author: %@": {},
-    "Auto Apply": {},
-    "Automatic rotation paused": {},
-    "Back": {},
-    "Background": {},
-    "Begin": {},
-    "Behavior": {},
-    "Blue-black, monospace, fine rules": {},
-    "Book Title": {},
-    "Book by Book": {},
-    "Books": {},
-    "Cancel": {},
-    "Capture Shortcut": {},
-    "Change Interval": {},
-    "Change Now": {},
-    "Change or pause the quote even with the window closed.": {},
-    "Change the quote without opening the window": {},
-    "Change view mode": {},
-    "Changes reach the desktop after a short pause.": {},
-    "Changes stay in the preview; press Apply to use them.": {},
-    "Check for Updates": {},
-    "Check for Updates…": {},
-    "Check for updates automatically": {},
-    "Choose Another File…": {},
-    "Choose Books…": {},
-    "Choose File…": {},
-    "Choose Your My Clippings.txt File": {},
-    "Choose the visual style your quotes are rendered in. Each style comes with its own typeface and ornament; you can change it later under Typography.": {},
-    "Choose your My Clippings.txt file to start\nturning your Kindle highlights into\nwallpapers.": {},
-    "Clear": {},
-    "Clear Search": {},
-    "Clear search": {},
-    "Close": {},
-    "Connect your Kindle and choose My Clippings.txt — or start with the samples for now.": {},
-    "Continue": {},
-    "Controls": {},
-    "Cool indigo-violet gradient, sans-serif": {},
-    "Copy": {},
-    "Could not apply the wallpaper: %@": {},
-    "Could not create the HEIC destination": {},
-    "Could not create the file bookmark": {},
-    "Could not create the folder: %@": {},
-    "Could not create the wallpaper: %@": {},
-    "Could not encode the phase data": {},
-    "Could not parse the file: %@": {},
-    "Could not read the display information": {},
-    "Could not read the file: %@": {},
-    "Could not read the iCloud status: %@": {},
-    "Could not render a frame": {},
-    "Could not resolve the file bookmark": {},
-    "Could not update the login setting: %@": {},
-    "Could not write the HEIC": {},
-    "Could not write the dynamic metadata": {},
+    "": {
+      "shouldTranslate": false
+    },
+    "\"%@\"": {
+      "shouldTranslate": false
+    },
+    "%@ — remove from the list": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ — listeden çıkar"
+          }
+        }
+      }
+    },
+    "%@, %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %@"
+          }
+        }
+      }
+    },
+    "%@, %@. %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %@. %@"
+          }
+        }
+      }
+    },
+    "%lld": {
+      "shouldTranslate": false
+    },
+    "%lld books": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld book"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld books"
+                }
+              }
+            }
+          }
+        },
+        "tr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld kitap"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld kitap"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld new books": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld new book"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld new books"
+                }
+              }
+            }
+          }
+        },
+        "tr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld yeni kitap"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld yeni kitap"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld pt": {
+      "shouldTranslate": false
+    },
+    "%lld quotes": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld quote"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld quotes"
+                }
+              }
+            }
+          }
+        },
+        "tr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld alıntı"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld alıntı"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld quotes imported": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld quote imported"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld quotes imported"
+                }
+              }
+            }
+          }
+        },
+        "tr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld alıntı yüklendi"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld alıntı yüklendi"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld quotes ready": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld quote ready"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld quotes ready"
+                }
+              }
+            }
+          }
+        },
+        "tr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld alıntı hazır"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld alıntı hazır"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld%%": {
+      "shouldTranslate": false
+    },
+    "1 hour": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 saat"
+          }
+        }
+      }
+    },
+    "3 hours": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3 saat"
+          }
+        }
+      }
+    },
+    "30 min": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 dk"
+          }
+        }
+      }
+    },
+    "6 hours": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 saat"
+          }
+        }
+      }
+    },
+    "Aa": {
+      "shouldTranslate": false
+    },
+    "About": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hakkında"
+          }
+        }
+      }
+    },
+    "Accessibility is granted — selected text is filled in automatically": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erişilebilirlik izni var — seçili metin otomatik doldurulur"
+          }
+        }
+      }
+    },
+    "Add Quote": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alıntı Ekle"
+          }
+        }
+      }
+    },
+    "Add Quote by Hand": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manuel Alıntı Ekle"
+          }
+        }
+      }
+    },
+    "Add a quote by hand (⇧⌘N)": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manuel alıntı ekle (⇧⌘N)"
+          }
+        }
+      }
+    },
+    "Add a quote to this book by hand": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu kitaba manuel alıntı ekle"
+          }
+        }
+      }
+    },
+    "Add quote by hand": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manuel alıntı ekle"
+          }
+        }
+      }
+    },
+    "Add to Favorites": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favoriye Ekle"
+          }
+        }
+      }
+    },
+    "Add to favorites": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favorilere ekle"
+          }
+        }
+      }
+    },
+    "Advanced": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gelişmiş Ayarlar"
+          }
+        }
+      }
+    },
+    "Afternoon": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İkindi"
+          }
+        }
+      }
+    },
+    "All": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tümü"
+          }
+        }
+      }
+    },
+    "All your quotes — favorite them, edit them, make one your wallpaper.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm alıntıların; favorile, düzenle, doğrudan duvar kağıdı yap."
+          }
+        }
+      }
+    },
+    "Applied": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulandı"
+          }
+        }
+      }
+    },
+    "Apply": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygula"
+          }
+        }
+      }
+    },
+    "Apply as wallpaper": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duvar kağıdı olarak uygula"
+          }
+        }
+      }
+    },
+    "Apply changes automatically": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Değişiklikleri otomatik uygula"
+          }
+        }
+      }
+    },
+    "Apply this design as the desktop wallpaper": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu tasarımı masaüstü duvar kağıdı olarak uygula"
+          }
+        }
+      }
+    },
+    "Apply to All Spaces": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm Alanlara Uygula"
+          }
+        }
+      }
+    },
+    "Applying…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulanıyor…"
+          }
+        }
+      }
+    },
+    "Author": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yazar"
+          }
+        }
+      }
+    },
+    "Author (optional)": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yazar (opsiyonel)"
+          }
+        }
+      }
+    },
+    "Author's name…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yazar adı..."
+          }
+        }
+      }
+    },
+    "Author: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yazar: %@"
+          }
+        }
+      }
+    },
+    "Auto Apply": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomatik Uygula"
+          }
+        }
+      }
+    },
+    "Automatic rotation paused": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomatik değişim duraklatıldı"
+          }
+        }
+      }
+    },
+    "Back": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geri"
+          }
+        }
+      }
+    },
+    "Background": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arka Plan"
+          }
+        }
+      }
+    },
+    "Begin": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başlat"
+          }
+        }
+      }
+    },
+    "Behavior": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Davranış"
+          }
+        }
+      }
+    },
+    "Blue-black, monospace, fine rules": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mavi-siyah, monospace, ince çizgiler"
+          }
+        }
+      }
+    },
+    "Book Title": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitap Adı"
+          }
+        }
+      }
+    },
+    "Book by Book": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitap Kitap"
+          }
+        }
+      }
+    },
+    "Books": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitap"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İptal"
+          }
+        }
+      }
+    },
+    "Capture Shortcut": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yakalama Kısayolu"
+          }
+        }
+      }
+    },
+    "Change Interval": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Değişim Sıklığı"
+          }
+        }
+      }
+    },
+    "Change Now": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şimdi Değiştir"
+          }
+        }
+      }
+    },
+    "Change or pause the quote even with the window closed.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pencere kapalıyken bile alıntıyı değiştirebilir, duraklatabilirsin."
+          }
+        }
+      }
+    },
+    "Change the quote without opening the window": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pencereyi açmadan alıntı değiştir"
+          }
+        }
+      }
+    },
+    "Change view mode": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Görünüm modunu değiştir"
+          }
+        }
+      }
+    },
+    "Changes reach the desktop after a short pause.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Değişiklikler kısa bir duraklamadan sonra masaüstüne geçer."
+          }
+        }
+      }
+    },
+    "Changes stay in the preview; press Apply to use them.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Değişiklikler önizlemede kalır; Uygula'ya basman gerekir."
+          }
+        }
+      }
+    },
+    "Check for Updates": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güncellemeleri Denetle"
+          }
+        }
+      }
+    },
+    "Check for Updates…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güncellemeleri Denetle…"
+          }
+        }
+      }
+    },
+    "Check for updates automatically": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güncellemeleri otomatik denetle"
+          }
+        }
+      }
+    },
+    "Choose Another File…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başka Dosya Seç…"
+          }
+        }
+      }
+    },
+    "Choose Books…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitap Seç…"
+          }
+        }
+      }
+    },
+    "Choose File…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya Seç…"
+          }
+        }
+      }
+    },
+    "Choose Your My Clippings.txt File": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My Clippings.txt Dosyasını Seçin"
+          }
+        }
+      }
+    },
+    "Choose the visual style your quotes are rendered in. Each style comes with its own typeface and ornament; you can change it later under Typography.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alıntılarının render edileceği görsel stili seç. Her stil kendi yazı tipi ve süslemesiyle gelir; Tipografi bölümünden sonradan değiştirebilirsin."
+          }
+        }
+      }
+    },
+    "Choose your My Clippings.txt file to start\nturning your Kindle highlights into\nwallpapers.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My Clippings.txt dosyanızı seçerek\nKindle alıntılarınızı duvar kağıdına\ndönüştürmeye başlayın."
+          }
+        }
+      }
+    },
+    "Clear": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temizle"
+          }
+        }
+      }
+    },
+    "Clear Search": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aramayı Temizle"
+          }
+        }
+      }
+    },
+    "Clear search": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aramayı temizle"
+          }
+        }
+      }
+    },
+    "Click to remove it from the list": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listeden çıkarmak için tıkla"
+          }
+        }
+      }
+    },
+    "Close": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapat"
+          }
+        }
+      }
+    },
+    "Connect your Kindle and choose My Clippings.txt — or start with the samples for now.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kindle'ını bağlayıp My Clippings.txt dosyasını seç — ya da şimdilik örneklerle başla."
+          }
+        }
+      }
+    },
+    "Continue": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devam Et"
+          }
+        }
+      }
+    },
+    "Controls": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontroller"
+          }
+        }
+      }
+    },
+    "Cool indigo-violet gradient, sans-serif": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soğuk indigo-mor gradient, sans-serif"
+          }
+        }
+      }
+    },
+    "Copy": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kopyala"
+          }
+        }
+      }
+    },
+    "Could not apply the wallpaper: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duvar kağıdı uygulanamadı: %@"
+          }
+        }
+      }
+    },
+    "Could not create the HEIC destination": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HEIC hedefi oluşturulamadı"
+          }
+        }
+      }
+    },
+    "Could not create the file bookmark": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya yer imi oluşturulamadı"
+          }
+        }
+      }
+    },
+    "Could not create the folder: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klasör oluşturulamadı: %@"
+          }
+        }
+      }
+    },
+    "Could not create the wallpaper: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duvar kağıdı oluşturulamadı: %@"
+          }
+        }
+      }
+    },
+    "Could not encode the phase data": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faz verisi kodlanamadı"
+          }
+        }
+      }
+    },
+    "Could not parse the file: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya ayrıştırılamadı: %@"
+          }
+        }
+      }
+    },
+    "Could not read the display information": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ekran bilgisi alınamadı"
+          }
+        }
+      }
+    },
+    "Could not read the file: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya okunamadı: %@"
+          }
+        }
+      }
+    },
+    "Could not read the iCloud status: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud durumu okunamadı: %@"
+          }
+        }
+      }
+    },
+    "Could not render a frame": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kare üretilemedi"
+          }
+        }
+      }
+    },
+    "Could not resolve the file bookmark": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya yer imi çözümlenemedi"
+          }
+        }
+      }
+    },
+    "Could not update the login setting: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başlangıç ayarı güncellenemedi: %@"
+          }
+        }
+      }
+    },
+    "Could not write the HEIC": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HEIC yazılamadı"
+          }
+        }
+      }
+    },
+    "Could not write the dynamic metadata": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dinamik metadata yazılamadı"
+          }
+        }
+      }
+    },
     "Current Quote": {
       "localizations": {
         "tr": {
@@ -104,191 +1069,1881 @@
         }
       }
     },
-    "Custom": {},
-    "Custom Time": {},
-    "Daily": {},
-    "Dawn": {},
-    "Delete": {},
-    "Delete this quote?": {},
-    "Depth": {},
-    "Design": {},
-    "Dikey Konum": {},
-    "Dismiss alert": {},
-    "Each style comes with its own typeface and ornament. The preview is drawn with your own quote.": {},
-    "Edit": {},
-    "Edit Details": {},
-    "Edit Quote": {},
-    "Edit book details": {},
-    "End": {},
-    "Enter the author's name": {},
-    "Enter the book title": {},
-    "Enter the book title…": {},
-    "Favorite": {},
-    "Favorite Quotes": {},
-    "Favorites": {},
-    "Fetches a title and author suggestion from Google Books.": {},
-    "File not found: %@": {},
-    "Finish": {},
-    "Fix Automatically": {},
-    "Flat deep dark, serif, a classic quote mark": {},
-    "Forest Light": {},
-    "From this threshold": {},
-    "General": {},
-    "Grainy cream, Palatino, the feel of a printed page": {},
-    "Grant Permission": {},
-    "Grid": {},
-    "Hide controls": {},
-    "How Often Should It Change?": {},
-    "How Should It Look?": {},
-    "I'll do it later": {},
-    "Import Complete": {},
-    "Import Failed": {},
-    "Importing…": {},
-    "KindleWall — Capture Quote": {},
-    "Letter Spacing": {},
-    "Library": {},
-    "Line Height": {},
-    "Line spacing": {},
-    "Load the My Clippings.txt file from your Kindle, or add a quote by hand.": {},
-    "Long Quotes": {},
-    "Margin": {},
-    "Menu bar": {},
-    "Minimum text size": {},
-    "Moves to another book at random once one book's quotes are exhausted.": {},
-    "New Quote": {},
-    "Next": {},
-    "Next quote at %@": {},
-    "Next: %@": {},
-    "Night": {},
-    "No Kindle File Chosen": {},
-    "No Kindle — Try the Samples": {},
-    "No Quotes Found": {},
-    "No books match your search.": {},
-    "No books selected — quotes will come from all books for now.": {},
-    "No favorite quotes. Heart some in the Library.": {},
-    "No file chosen yet": {},
-    "No matching book found. Please correct it by hand.": {},
-    "No pinned books. Choose some in Settings.": {},
-    "No quotes found in the selected books.": {},
-    "No quotes left to show": {},
-    "No quotes loaded": {},
-    "No quotes loaded yet": {},
-    "No quotes loaded yet. Choose a My Clippings.txt file first.": {},
-    "No quotes loaded.": {},
-    "No quotes match the filter. Raise the long-quote threshold.": {},
-    "No quotes yet": {},
-    "No results": {},
-    "No wallpaper has been replaced yet": {},
-    "Noon": {},
-    "Now": {},
-    "Open Window": {},
-    "Open at Login": {},
-    "Open iCloud in System Settings": {},
-    "Open window": {},
-    "Optional: with Accessibility granted, selected text arrives in the panel automatically": {},
-    "Other Mission Control spaces update the first time you visit them.": {},
-    "PNG conversion failed": {},
-    "Page (optional)": {},
-    "Page number…": {},
-    "Paper": {},
-    "Pause": {},
-    "Pause the timer": {},
-    "Picks a new quote using the current rotation and applies it as the wallpaper": {},
-    "Picks a quote at random": {},
-    "Picks at random from every book.": {},
-    "Picks at random from the quotes you hearted.": {},
-    "Pinned": {},
-    "Please choose your My Clippings.txt file.": {},
-    "Preview": {},
-    "Quit": {},
-    "Quit the app": {},
-    "Quote": {},
-    "Read from the file:": {},
-    "Ready": {},
-    "Refresh Cover": {},
-    "Remove from Favorites": {},
-    "Remove from favorites": {},
-    "Reset to Default": {},
-    "Restore": {},
-    "Restore Previous Wallpaper": {},
-    "Resume the timer": {},
-    "Rotation": {},
-    "Save": {},
-    "Schedule": {},
-    "Search books or authors…": {},
-    "Search books…": {},
-    "Section being edited": {},
-    "Select All": {},
-    "Send Notifications": {},
-    "Separate frames for dawn, sunrise, noon, afternoon, sunset and night": {},
-    "Set as Wallpaper": {},
-    "Setup failed: %@": {},
-    "Shadow Strength": {},
-    "Shift Colors Through the Day": {},
-    "Shortcuts": {},
-    "Show books with favorites": {},
-    "Show controls": {},
-    "Show in Menu Bar": {},
-    "Show the Intro Again": {},
-    "Shows quotes only from the books you pinned.": {},
-    "Sign in with your iCloud account": {},
-    "Skip long quotes": {},
-    "Sort": {},
-    "Source File": {},
-    "Start": {},
-    "Status": {},
-    "Style": {},
-    "Style, background and typography on one page. Changes reach the desktop on their own.": {},
-    "Suggestion:": {},
-    "Sunrise": {},
-    "Sunset": {},
-    "Sync All Desktops Immediately": {},
-    "Sync could not recover": {},
-    "Sync stopped": {},
-    "Syncing…": {},
-    "Text Opacity": {},
-    "Text Shadow": {},
-    "Text Size": {},
-    "The file bookmark is stale — please choose the file again": {},
-    "The frame count does not match the phase count": {},
-    "The iCloud status is unknown": {},
-    "The lines you highlighted on your Kindle become your desktop wallpaper, changing on the schedule you set.": {},
-    "There are no readable quotes in that file.\nMake sure you picked My Clippings.txt\nfrom your Kindle.": {},
-    "Threshold": {},
-    "Tighten long quotes automatically": {},
-    "Tipografi \"%@\" varsayılanına ayarlandı": {},
-    "Title: %@": {},
-    "To read is to live": {},
-    "Today's frames": {},
-    "Try the design with a different quote": {},
-    "Turns your Kindle highlights into desktop wallpapers.": {},
-    "Typeface": {},
-    "Typography": {},
-    "Typography Settings": {},
-    "Typography settings": {},
-    "Undo": {},
-    "Use Suggestion": {},
-    "Version %@": {},
-    "View": {},
-    "Wallpaper style": {},
-    "Warm gradient, sans-serif, minimal dots": {},
-    "Welcome to KindleWall": {},
-    "When off, each space updates the first time you visit it.": {},
-    "Where Should Your Quotes Come From?": {},
-    "You're Ready": {},
-    "Your favorite quotes do not match this filter.": {},
-    "Your favorites, shown quotes and edits sync across your Macs. The data goes only to your own private iCloud database; this project runs no server.": {},
-    "a thousand different": {},
-    "iCloud": {},
-    "iCloud Sync": {},
-    "iCloud is restricted": {},
-    "iCloud is unavailable right now": {},
-    "lives.": {},
-    "·": {},
-    "— %@": {},
-    "— Author Name": {},
-    "“": {},
-    "”": {}
+    "Custom": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Özel"
+          }
+        }
+      }
+    },
+    "Custom Time": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Özel Zaman"
+          }
+        }
+      }
+    },
+    "Daily": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Günlük"
+          }
+        }
+      }
+    },
+    "Dawn": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şafak"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sil"
+          }
+        }
+      }
+    },
+    "Delete this quote?": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu alıntıyı silmek istediğine emin misin?"
+          }
+        }
+      }
+    },
+    "Depth": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Derinlik"
+          }
+        }
+      }
+    },
+    "Design": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasarım"
+          }
+        }
+      }
+    },
+    "Dismiss alert": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uyarıyı kapat"
+          }
+        }
+      }
+    },
+    "Each style comes with its own typeface and ornament. The preview is drawn with your own quote.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her stil kendi yazı tipi ve süslemesiyle gelir. Önizleme kendi alıntınla çizilir."
+          }
+        }
+      }
+    },
+    "Edit": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düzenle"
+          }
+        }
+      }
+    },
+    "Edit Details": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metadata Düzenle"
+          }
+        }
+      }
+    },
+    "Edit Quote": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alıntıyı Düzenle"
+          }
+        }
+      }
+    },
+    "Edit book details": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitap bilgilerini düzenle"
+          }
+        }
+      }
+    },
+    "End": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bitiş"
+          }
+        }
+      }
+    },
+    "Enter the author's name": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yazar adını girin"
+          }
+        }
+      }
+    },
+    "Enter the book title": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitap adını girin"
+          }
+        }
+      }
+    },
+    "Enter the book title…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitap adını girin..."
+          }
+        }
+      }
+    },
+    "Favorite": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favori"
+          }
+        }
+      }
+    },
+    "Favorite Quotes": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favori Alıntı"
+          }
+        }
+      }
+    },
+    "Favorites": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favoriler"
+          }
+        }
+      }
+    },
+    "Fetches a title and author suggestion from Google Books.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google Books'tan başlık ve yazar önerisi alır."
+          }
+        }
+      }
+    },
+    "File not found: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya bulunamadı: %@"
+          }
+        }
+      }
+    },
+    "Finish": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bitir"
+          }
+        }
+      }
+    },
+    "Fix Automatically": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomatik Düzelt"
+          }
+        }
+      }
+    },
+    "Flat deep dark, serif, a classic quote mark": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düz derin koyu, serif, klasik tırnak"
+          }
+        }
+      }
+    },
+    "Forest Light": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orman Işığı"
+          }
+        }
+      }
+    },
+    "From this threshold": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şu eşikten itibaren"
+          }
+        }
+      }
+    },
+    "General": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Genel"
+          }
+        }
+      }
+    },
+    "Grainy cream, Palatino, the feel of a printed page": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grenli krem, Palatino, basılı sayfa hissi"
+          }
+        }
+      }
+    },
+    "Grant Permission": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İzin Ver"
+          }
+        }
+      }
+    },
+    "Grid": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Izgara"
+          }
+        }
+      }
+    },
+    "Hide controls": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontrolleri gizle"
+          }
+        }
+      }
+    },
+    "How Often Should It Change?": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ne Sıklıkla Değişsin?"
+          }
+        }
+      }
+    },
+    "How Should It Look?": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nasıl Görünsün?"
+          }
+        }
+      }
+    },
+    "I'll do it later": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonra hallederim"
+          }
+        }
+      }
+    },
+    "Import Complete": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İçeri Aktarma Tamamlandı"
+          }
+        }
+      }
+    },
+    "Import Failed": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İçeri Aktarma Başarısız"
+          }
+        }
+      }
+    },
+    "Importing…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İçeri Aktarılıyor…"
+          }
+        }
+      }
+    },
+    "KindleWall — Capture Quote": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KindleWall — Alıntı Yakala"
+          }
+        }
+      }
+    },
+    "Last synced: ": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Son eşitleme: "
+          }
+        }
+      }
+    },
+    "Last synced: just now": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Son eşitleme: az önce"
+          }
+        }
+      }
+    },
+    "Letter Spacing": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Harf Aralığı"
+          }
+        }
+      }
+    },
+    "Library": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kütüphane"
+          }
+        }
+      }
+    },
+    "Line Height": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Satır Aralığı"
+          }
+        }
+      }
+    },
+    "Line spacing": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Satır arası"
+          }
+        }
+      }
+    },
+    "Load the My Clippings.txt file from your Kindle, or add a quote by hand.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kindle'ındaki My Clippings.txt dosyasını yükle, ya da elle bir alıntı ekle."
+          }
+        }
+      }
+    },
+    "Long Quotes": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uzun Alıntılar"
+          }
+        }
+      }
+    },
+    "Margin": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kenar Boşluğu"
+          }
+        }
+      }
+    },
+    "Menu bar": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menü çubuğu"
+          }
+        }
+      }
+    },
+    "Minimum text size": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minimum yazı boyutu"
+          }
+        }
+      }
+    },
+    "Moves to another book at random once one book's quotes are exhausted.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir kitaptaki tüm alıntılar gösterilince rastgele yeni bir kitaba geçer."
+          }
+        }
+      }
+    },
+    "New Quote": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni Alıntı"
+          }
+        }
+      }
+    },
+    "Next": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İleri"
+          }
+        }
+      }
+    },
+    "Next quote at %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonraki alıntı %@"
+          }
+        }
+      }
+    },
+    "Next: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonraki: %@"
+          }
+        }
+      }
+    },
+    "Night": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gece"
+          }
+        }
+      }
+    },
+    "No Kindle File Chosen": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kindle Dosyası Seçilmedi"
+          }
+        }
+      }
+    },
+    "No Kindle — Try the Samples": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kindle'ım Yok, Örneklerle Dene"
+          }
+        }
+      }
+    },
+    "No Quotes Found": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alıntı Bulunamadı"
+          }
+        }
+      }
+    },
+    "No books match your search.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arama kriterlerinize uygun kitap yok."
+          }
+        }
+      }
+    },
+    "No books selected — quotes will come from all books for now.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hiç kitap seçilmedi — şimdilik tüm kitaplardan gösterilecek."
+          }
+        }
+      }
+    },
+    "No favorite quotes. Heart some in the Library.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favori alıntı yok. Kütüphaneden kalp ekleyin."
+          }
+        }
+      }
+    },
+    "No file chosen yet": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Henüz dosya seçilmedi"
+          }
+        }
+      }
+    },
+    "No matching book found. Please correct it by hand.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eşleşen kitap bulunamadı. Lütfen manuel düzeltin."
+          }
+        }
+      }
+    },
+    "No pinned books. Choose some in Settings.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sabitlenmiş kitap yok. Lütfen Ayarlar'dan kitap seçin."
+          }
+        }
+      }
+    },
+    "No quotes found in the selected books.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seçili kitaplarda alıntı bulunamadı."
+          }
+        }
+      }
+    },
+    "No quotes left to show": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gösterilecek alıntı kalmadı"
+          }
+        }
+      }
+    },
+    "No quotes loaded": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alıntı yüklenmedi"
+          }
+        }
+      }
+    },
+    "No quotes loaded yet": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Henüz alıntı yüklenmedi"
+          }
+        }
+      }
+    },
+    "No quotes loaded yet. Choose a My Clippings.txt file first.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Henüz alıntı yüklenmedi. Önce bir My Clippings.txt dosyası seç."
+          }
+        }
+      }
+    },
+    "No quotes loaded.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yüklü alıntı yok."
+          }
+        }
+      }
+    },
+    "No quotes match the filter. Raise the long-quote threshold.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtreye uyan alıntı yok. Uzun alıntı eşiğini yükseltin."
+          }
+        }
+      }
+    },
+    "No quotes yet": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Henüz alıntı yok"
+          }
+        }
+      }
+    },
+    "No results": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonuç yok"
+          }
+        }
+      }
+    },
+    "No wallpaper has been replaced yet": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Henüz değiştirilmiş bir duvar kağıdı yok"
+          }
+        }
+      }
+    },
+    "Noon": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öğlen"
+          }
+        }
+      }
+    },
+    "Now": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şimdi"
+          }
+        }
+      }
+    },
+    "Open Window": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pencereyi Aç"
+          }
+        }
+      }
+    },
+    "Open at Login": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başlangıçta Aç"
+          }
+        }
+      }
+    },
+    "Open iCloud in System Settings": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem Ayarları'nda iCloud'u Aç"
+          }
+        }
+      }
+    },
+    "Open window": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pencereyi aç"
+          }
+        }
+      }
+    },
+    "Optional: with Accessibility granted, selected text arrives in the panel automatically": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opsiyonel: Erişilebilirlik izni verilirse seçili metin panele otomatik gelir"
+          }
+        }
+      }
+    },
+    "Other Mission Control spaces update the first time you visit them.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diğer Mission Control alanları ilk ziyaret edildiklerinde güncellenir."
+          }
+        }
+      }
+    },
+    "PNG conversion failed": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PNG dönüşümü başarısız"
+          }
+        }
+      }
+    },
+    "Page (optional)": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sayfa (opsiyonel)"
+          }
+        }
+      }
+    },
+    "Page number…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sayfa numarası..."
+          }
+        }
+      }
+    },
+    "Paper": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kağıt"
+          }
+        }
+      }
+    },
+    "Pause": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Durakla"
+          }
+        }
+      }
+    },
+    "Pause the timer": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zamanlayıcıyı durdur"
+          }
+        }
+      }
+    },
+    "Picks a new quote using the current rotation and applies it as the wallpaper": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mevcut döngü moduna göre yeni alıntı seçer ve wallpaper olarak uygular"
+          }
+        }
+      }
+    },
+    "Picks a quote at random": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rastgele alıntı seçer"
+          }
+        }
+      }
+    },
+    "Picks at random from every book.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm kitaplardaki alıntılar arasından rastgele seçer."
+          }
+        }
+      }
+    },
+    "Picks at random from the quotes you hearted.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yalnızca kalp ile favorilediğiniz alıntılar arasından rastgele seçer."
+          }
+        }
+      }
+    },
+    "Pinned": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sabitler"
+          }
+        }
+      }
+    },
+    "Please choose your My Clippings.txt file.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lütfen My Clippings.txt dosyasını seçin."
+          }
+        }
+      }
+    },
+    "Preview": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Önizle"
+          }
+        }
+      }
+    },
+    "Quit": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çıkış"
+          }
+        }
+      }
+    },
+    "Quit the app": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulamadan çık"
+          }
+        }
+      }
+    },
+    "Quote": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alıntı"
+          }
+        }
+      }
+    },
+    "Quotes are drawn only from these %lld books.": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Quotes are drawn only from this %lld book."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Quotes are drawn only from these %lld books."
+                }
+              }
+            }
+          }
+        },
+        "tr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Alıntılar yalnızca bu %lld kitaptan seçilir."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Alıntılar yalnızca bu %lld kitaptan seçilir."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Read from the file:": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosyadan okunan:"
+          }
+        }
+      }
+    },
+    "Ready": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hazır"
+          }
+        }
+      }
+    },
+    "Refresh Cover": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapağı Yenile"
+          }
+        }
+      }
+    },
+    "Remove from Favorites": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favoriden Çıkar"
+          }
+        }
+      }
+    },
+    "Remove from favorites": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favorilerden çıkar"
+          }
+        }
+      }
+    },
+    "Reset to Default": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varsayılana Dön"
+          }
+        }
+      }
+    },
+    "Restore": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geri Yükle"
+          }
+        }
+      }
+    },
+    "Restore Previous Wallpaper": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Önceki Duvar Kağıdına Dön"
+          }
+        }
+      }
+    },
+    "Resume the timer": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zamanlayıcıyı devam ettir"
+          }
+        }
+      }
+    },
+    "Rotation": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Döngü Modu"
+          }
+        }
+      }
+    },
+    "Save": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaydet"
+          }
+        }
+      }
+    },
+    "Schedule": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zamanlama"
+          }
+        }
+      }
+    },
+    "Search books or authors…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitap veya yazar ara…"
+          }
+        }
+      }
+    },
+    "Search books…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitap ara…"
+          }
+        }
+      }
+    },
+    "Section being edited": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düzenlenen bölüm"
+          }
+        }
+      }
+    },
+    "Select All": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tümünü Seç"
+          }
+        }
+      }
+    },
+    "Send Notifications": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bildirim Gönder"
+          }
+        }
+      }
+    },
+    "Separate frames for dawn, sunrise, noon, afternoon, sunset and night": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şafak, gündoğumu, öğlen, ikindi, günbatımı ve gece için ayrı kareler"
+          }
+        }
+      }
+    },
+    "Set as Wallpaper": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duvar Kağıdı Yap"
+          }
+        }
+      }
+    },
+    "Setup failed: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kurulum başarısız: %@"
+          }
+        }
+      }
+    },
+    "Shadow Strength": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gölge Şiddeti"
+          }
+        }
+      }
+    },
+    "Shift Colors Through the Day": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gün İçinde Renkler Değişsin"
+          }
+        }
+      }
+    },
+    "Shortcuts": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kısayollar"
+          }
+        }
+      }
+    },
+    "Show books with favorites": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favorili kitapları göster"
+          }
+        }
+      }
+    },
+    "Show controls": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontrolleri göster"
+          }
+        }
+      }
+    },
+    "Show in Menu Bar": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menü Çubuğunda Göster"
+          }
+        }
+      }
+    },
+    "Show the Intro Again": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanıtımı Yeniden Göster"
+          }
+        }
+      }
+    },
+    "Shows quotes only from the books you pinned.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yalnızca sabitlediğiniz kitaplardan alıntı gösterir."
+          }
+        }
+      }
+    },
+    "Sign in with your iCloud account": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud hesabınızla giriş yapın"
+          }
+        }
+      }
+    },
+    "Skip long quotes": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uzun alıntıları görmezden gel"
+          }
+        }
+      }
+    },
+    "Sort": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıralama"
+          }
+        }
+      }
+    },
+    "Source File": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaynak Dosya"
+          }
+        }
+      }
+    },
+    "Start": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başlangıç"
+          }
+        }
+      }
+    },
+    "Status": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Durum"
+          }
+        }
+      }
+    },
+    "Style": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stil"
+          }
+        }
+      }
+    },
+    "Style, background and typography on one page. Changes reach the desktop on their own.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stil, arka plan ve tipografi tek sayfada. Değişiklikler masaüstüne kendiliğinden uygulanır."
+          }
+        }
+      }
+    },
+    "Suggestion:": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öneri:"
+          }
+        }
+      }
+    },
+    "Sunrise": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gündoğumu"
+          }
+        }
+      }
+    },
+    "Sunset": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Günbatımı"
+          }
+        }
+      }
+    },
+    "Sync All Desktops Immediately": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm Masaüstlerini Anında Eşitle"
+          }
+        }
+      }
+    },
+    "Sync could not recover": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senkronizasyon kurtarılamadı"
+          }
+        }
+      }
+    },
+    "Sync stopped": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eşitleme durduruldu"
+          }
+        }
+      }
+    },
+    "Syncing…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eşitleniyor…"
+          }
+        }
+      }
+    },
+    "Text Opacity": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metin Opaklığı"
+          }
+        }
+      }
+    },
+    "Text Shadow": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metin Gölgesi"
+          }
+        }
+      }
+    },
+    "Text Size": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yazı Boyutu"
+          }
+        }
+      }
+    },
+    "The file bookmark is stale — please choose the file again": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya yer imi geçersiz, lütfen dosyayı yeniden seçin"
+          }
+        }
+      }
+    },
+    "The frame count does not match the phase count": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kare sayısı faz sayısıyla eşleşmiyor"
+          }
+        }
+      }
+    },
+    "The iCloud status is unknown": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud durumu bilinmiyor"
+          }
+        }
+      }
+    },
+    "The lines you highlighted on your Kindle become your desktop wallpaper, changing on the schedule you set.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kindle'da altını çizdiğin cümleler masaüstü duvar kağıdın olur ve belirlediğin aralıkla kendiliğinden değişir."
+          }
+        }
+      }
+    },
+    "There are no readable quotes in that file.\nMake sure you picked My Clippings.txt\nfrom your Kindle.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seçtiğin dosyada okunabilir bir alıntı yok.\nKindle'daki My Clippings.txt dosyasını\nseçtiğinden emin ol."
+          }
+        }
+      }
+    },
+    "Threshold": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eşik"
+          }
+        }
+      }
+    },
+    "Tighten long quotes automatically": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uzun alıntıları otomatik daralt"
+          }
+        }
+      }
+    },
+    "Title: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ad: %@"
+          }
+        }
+      }
+    },
+    "To read is to live": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okunmak, binlerce"
+          }
+        }
+      }
+    },
+    "Today's frames": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bugünün kareleri"
+          }
+        }
+      }
+    },
+    "Try the design with a different quote": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasarımı başka bir alıntıyla dene"
+          }
+        }
+      }
+    },
+    "Turns your Kindle highlights into desktop wallpapers.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kindle alıntılarını şık duvar kağıtlarına dönüştürür."
+          }
+        }
+      }
+    },
+    "Typeface": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yazı Tipi"
+          }
+        }
+      }
+    },
+    "Typography": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipografi"
+          }
+        }
+      }
+    },
+    "Typography Settings": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipografi Ayarları"
+          }
+        }
+      }
+    },
+    "Typography reset to the \"%@\" default": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipografi \"%@\" varsayılanına ayarlandı"
+          }
+        }
+      }
+    },
+    "Typography settings": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipografi ayarları"
+          }
+        }
+      }
+    },
+    "Undo": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geri Al"
+          }
+        }
+      }
+    },
+    "Use Suggestion": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öneriyi Kullan"
+          }
+        }
+      }
+    },
+    "Version %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sürüm %@"
+          }
+        }
+      }
+    },
+    "Vertical Position": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dikey Konum"
+          }
+        }
+      }
+    },
+    "View": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Görünüm"
+          }
+        }
+      }
+    },
+    "Wallpaper style": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duvar kağıdı stili"
+          }
+        }
+      }
+    },
+    "Warm gradient, sans-serif, minimal dots": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıcak gradient, sans-serif, minimal noktalar"
+          }
+        }
+      }
+    },
+    "Welcome to KindleWall": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KindleWall'a Hoş Geldiniz"
+          }
+        }
+      }
+    },
+    "When off, each space updates the first time you visit it.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapalıyken her alan ilk ziyaret edildiğinde güncellenir."
+          }
+        }
+      }
+    },
+    "Where Should Your Quotes Come From?": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alıntıların Nereden Gelsin?"
+          }
+        }
+      }
+    },
+    "You're Ready": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hazırsın"
+          }
+        }
+      }
+    },
+    "Your favorite quotes do not match this filter.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favori alıntılar bu filtreyle uyumsuz."
+          }
+        }
+      }
+    },
+    "Your favorites, shown quotes and edits sync across your Macs. The data goes only to your own private iCloud database; this project runs no server.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favorilerin, gösterilmiş alıntıların ve düzenlemelerin Mac'lerin arasında eşitlenir. Veriler yalnızca senin özel iCloud veritabanına yazılır; bu projenin bir sunucusu yok."
+          }
+        }
+      }
+    },
+    "a thousand different": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "farklı hayat yaşamak"
+          }
+        }
+      }
+    },
+    "iCloud": {
+      "shouldTranslate": false
+    },
+    "iCloud Sync": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud Eşitleme"
+          }
+        }
+      }
+    },
+    "iCloud is restricted": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud kullanımı kısıtlanmış"
+          }
+        }
+      }
+    },
+    "iCloud is unavailable right now": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud şu an erişilemiyor"
+          }
+        }
+      }
+    },
+    "lives.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "demektir."
+          }
+        }
+      }
+    },
+    "·": {
+      "shouldTranslate": false
+    },
+    "— %@": {
+      "shouldTranslate": false
+    },
+    "— Author Name": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "— Yazar Adı"
+          }
+        }
+      }
+    },
+    "“": {
+      "shouldTranslate": false
+    },
+    "”": {
+      "shouldTranslate": false
+    }
   },
   "version": "1.0"
 }

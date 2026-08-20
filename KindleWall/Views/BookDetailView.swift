@@ -211,7 +211,7 @@ private struct BookDetailHeader: View {
     }
 
     private var statsLine: String {
-        var parts: [String] = ["\(book.clippingCount) alıntı"]
+        var parts: [String] = [String(localized: "\(book.clippingCount) quotes")]
         if let range = dateRangeLabel { parts.append(range) }
         return parts.joined(separator: "  ·  ")
     }

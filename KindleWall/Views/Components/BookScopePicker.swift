@@ -147,7 +147,7 @@ struct BookScopePicker: View {
         let pinned = books.filter { viewModel.isBookPinned($0.title) }
         guard !pinned.isEmpty else { return "No books selected" }
         let quotes = pinned.reduce(0) { $0 + $1.quoteCount }
-        return "\(pinned.count) kitap · \(quotes) alıntı"
+        return "\(String(localized: "\(pinned.count) books")) · \(String(localized: "\(quotes) quotes"))"
     }
 }
 
@@ -196,7 +196,7 @@ private struct BookScopeRow: View {
         .buttonStyle(.plain)
         // Shared hover treatment — this row carried its own `@State` copy of it.
         .hoverHighlight(cornerRadius: Theme.Radius.control)
-        .accessibilityLabel("\(book.title), \(book.quoteCount) alıntı")
+        .accessibilityLabel("\(book.title), \(String(localized: "\(book.quoteCount) quotes"))")
         .accessibilityAddTraits(isPinned ? [.isButton, .isSelected] : .isButton)
     }
 }

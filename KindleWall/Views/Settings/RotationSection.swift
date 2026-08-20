@@ -88,7 +88,7 @@ struct RotationSection: View {
                     Spacer()
 
                     if !pinnedBooks.isEmpty {
-                        Text("\(pinnedBooks.count) kitap · \(pinnedQuoteCount) alıntı")
+                        Text(verbatim: "\(String(localized: "\(pinnedBooks.count) books")) · \(String(localized: "\(pinnedQuoteCount) quotes"))")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
@@ -126,7 +126,7 @@ struct RotationSection: View {
         }
         .buttonStyle(.plain)
         .help("\(book.title) — remove from the list")
-        .accessibilityLabel("\(book.title), \(book.quoteCount) alıntı. Listeden çıkarmak için tıkla")
+        .accessibilityLabel("\(book.title), \(String(localized: "\(book.quoteCount) quotes")). \(String(localized: "Click to remove it from the list"))")
     }
 
     private func statRow(icon: String, title: LocalizedStringKey, value: Int) -> some View {
@@ -141,6 +141,6 @@ struct RotationSection: View {
         guard !availableBooks.isEmpty else { return nil }
         return pinnedBooks.isEmpty
             ? "The books you pick show up here; click one to remove it."
-            : "Alıntılar yalnızca bu \(pinnedBooks.count) kitaptan seçilir."
+            : String(localized: "Quotes are drawn only from these \(pinnedBooks.count) books.")
     }
 }
