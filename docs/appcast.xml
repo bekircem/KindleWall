@@ -6,6 +6,19 @@
     <description>KindleWall updates</description>
     <language>en</language>
     <item>
+      <title>1.1.3</title>
+      <description><![CDATA[<h3>Fixed</h3><ul><li>The Design page no longer overlaps itself in a small window. Below about 850 points of height the sidebar's first heading sat behind the traffic lights, the inspector's tab picker slid under the toolbar where the Apply button covered it, and the auto-apply switch fell off the bottom edge.</li><li>The design inspector's three tabs are translated. They read "Style / Typography / Background" in every language, including the Turkish build.</li></ul>]]></description>
+      <pubDate>Thu, 20 Aug 2026 19:17:19 +0300</pubDate>
+      <sparkle:version>6</sparkle:version>
+      <sparkle:shortVersionString>1.1.3</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/bekircem/KindleWall/releases/tag/v1.1.3</link>
+      <enclosure url="https://github.com/bekircem/KindleWall/releases/download/v1.1.3/KindleWall-1.1.3.dmg"
+                 sparkle:edSignature="+gYVcyZsQWtSDTVVqWPe1n51YEqvxhrZhZOqmGutzBorrOLTGo6d9/W46r/HGz5mpcgjr3Xj6j9dPy1cChOVDQ=="
+                 length="2919598"
+                 type="application/octet-stream" />
+    </item>
+    <item>
       <title>1.1.2</title>
       <description><![CDATA[<h3>Fixed</h3><ul><li>iCloud sync works. It never did in a released build: the CloudKit schema had only ever been deployed to the development environment, so every signed copy of KindleWall failed silently against production. Nothing you had was lost — nothing had been reaching the cloud to lose.</li><li>Sync recovers when the record zone goes missing instead of failing forever. The &quot;zone already created&quot; mark lived only on your Mac, so once the server no longer had the zone, the app stopped trying.</li></ul>]]></description>
       <pubDate>Thu, 20 Aug 2026 14:42:08 +0300</pubDate>
