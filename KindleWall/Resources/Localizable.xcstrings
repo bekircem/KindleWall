@@ -286,6 +286,16 @@
         }
       }
     },
+    "A Tale of Two Cities": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir Şehrin İki Hikâyesi"
+          }
+        }
+      }
+    },
     "Aa": {
       "shouldTranslate": false
     },
@@ -415,6 +425,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tüm alıntıların; favorile, düzenle, doğrudan duvar kağıdı yap."
+          }
+        }
+      }
+    },
+    "App": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulama"
           }
         }
       }
@@ -869,6 +889,16 @@
         }
       }
     },
+    "Content": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İçerik"
+          }
+        }
+      }
+    },
     "Continue": {
       "localizations": {
         "tr": {
@@ -1055,6 +1085,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dinamik metadata yazılamadı"
+          }
+        }
+      }
+    },
+    "Crime and Punishment": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suç ve Ceza"
           }
         }
       }
@@ -1249,6 +1289,26 @@
         }
       }
     },
+    "Essays": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denemeler"
+          }
+        }
+      }
+    },
+    "Faust": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faust"
+          }
+        }
+      }
+    },
     "Favorite": {
       "localizations": {
         "tr": {
@@ -1419,6 +1479,16 @@
         }
       }
     },
+    "I went to the woods because I wished to live deliberately, to front only the essential facts of life.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ormana gittim, çünkü hayatı bilinçli yaşamak, yalnızca temel gerçeklerle yüzleşmek istiyordum."
+          }
+        }
+      }
+    },
     "I'll do it later": {
       "localizations": {
         "tr": {
@@ -1455,6 +1525,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "İçeri Aktarılıyor…"
+          }
+        }
+      }
+    },
+    "It is better to sail in an unknown sea than to rot in a known harbor.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bilmediğim bir denizde yol almak, bildiğim bir limanda çürümekten iyidir."
+          }
+        }
+      }
+    },
+    "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zamanların en iyisiydi, zamanların en kötüsüydü; bilgelik çağıydı, aptallık çağıydı."
           }
         }
       }
@@ -1539,6 +1629,16 @@
         }
       }
     },
+    "Location %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konum %@"
+          }
+        }
+      }
+    },
     "Long Quotes": {
       "localizations": {
         "tr": {
@@ -1549,12 +1649,32 @@
         }
       }
     },
+    "Man errs as long as he strives.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İnsan çabaladığı sürece yanılır."
+          }
+        }
+      }
+    },
     "Margin": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "Kenar Boşluğu"
+          }
+        }
+      }
+    },
+    "Meditations": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düşünceler"
           }
         }
       }
@@ -1579,12 +1699,32 @@
         }
       }
     },
+    "Moby-Dick": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moby Dick"
+          }
+        }
+      }
+    },
     "Moves to another book at random once one book's quotes are exhausted.": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "Bir kitaptaki tüm alıntılar gösterilince rastgele yeni bir kitaba geçer."
+          }
+        }
+      }
+    },
+    "My life has been filled with terrible misfortune, most of which never happened.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hayatım korkunç talihsizliklerle doluydu, çoğu hiç başıma gelmedi."
           }
         }
       }
@@ -1919,6 +2059,26 @@
         }
       }
     },
+    "Page %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sayfa %@"
+          }
+        }
+      }
+    },
+    "Page %@ · Location %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sayfa %@ · Konum %@"
+          }
+        }
+      }
+    },
     "Page (optional)": {
       "localizations": {
         "tr": {
@@ -2035,6 +2195,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Önizle"
+          }
+        }
+      }
+    },
+    "Pride and Prejudice": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gurur ve Önyargı"
           }
         }
       }
@@ -2299,6 +2469,16 @@
         }
       }
     },
+    "Settings": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarlar"
+          }
+        }
+      }
+    },
     "Setup failed: %@": {
       "localizations": {
         "tr": {
@@ -2539,6 +2719,16 @@
         }
       }
     },
+    "Taking a new step, uttering a new word, is what people fear most.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni bir adım atmak, yeni bir söz söylemek, insanların en çok korktuğu şeydir."
+          }
+        }
+      }
+    },
     "Text Opacity": {
       "localizations": {
         "tr": {
@@ -2589,6 +2779,16 @@
         }
       }
     },
+    "The happiness of your life depends upon the quality of your thoughts.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hayatının mutluluğu, düşüncelerinin niteliğine bağlıdır."
+          }
+        }
+      }
+    },
     "The iCloud status is unknown": {
       "localizations": {
         "tr": {
@@ -2615,6 +2815,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seçtiğin dosyada okunabilir bir alıntı yok.\nKindle'daki My Clippings.txt dosyasını\nseçtiğinden emin ol."
+          }
+        }
+      }
+    },
+    "There is a very fine line between vanity and pride.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İnsanın kendini beğenmesi ile gururlanması arasında çok ince bir çizgi vardır."
           }
         }
       }
@@ -2785,6 +2995,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Görünüm"
+          }
+        }
+      }
+    },
+    "Walden": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Walden"
+          }
+        }
+      }
+    },
+    "Wallpaper": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duvar Kağıdı"
           }
         }
       }

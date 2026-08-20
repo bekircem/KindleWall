@@ -188,9 +188,9 @@ struct CurrentQuoteView: View {
             parts.append(date.formatted(date: .abbreviated, time: .omitted))
         }
         switch (clipping.page, clipping.location) {
-        case let (p?, l?): parts.append("Sayfa \(p) · Konum \(l)")
-        case let (p?, nil): parts.append("Sayfa \(p)")
-        case let (nil, l?): parts.append("Konum \(l)")
+        case let (p?, l?): parts.append(String(localized: "Page \(p) · Location \(l)"))
+        case let (p?, nil): parts.append(String(localized: "Page \(p)"))
+        case let (nil, l?): parts.append(String(localized: "Location \(l)"))
         default: break
         }
         return parts.isEmpty ? nil : parts.joined(separator: "  ·  ")

@@ -61,7 +61,7 @@ struct MainView: View {
     private var sidebar: some View {
         List(selection: $selection) {
             ForEach(SidebarSection.allCases) { section in
-                Section(section.rawValue) {
+                Section(section.title) {
                     ForEach(SidebarItem.items(in: section)) { item in
                         Label {
                             Text(item.title)

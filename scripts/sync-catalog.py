@@ -79,6 +79,9 @@ def main() -> int:
 
     untranslated = []
     for key, value in merged.items():
+        # Placeholders and punctuation are marked not-for-translation; they are not missing.
+        if value.get("shouldTranslate") is False:
+            continue
         localizations = value.get("localizations", {})
         entry = localizations.get(TRANSLATION_LANGUAGE)
         has_unit = bool((entry or {}).get("stringUnit", {}).get("value"))

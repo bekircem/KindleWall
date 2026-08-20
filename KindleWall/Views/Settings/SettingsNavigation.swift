@@ -11,6 +11,19 @@ enum SidebarSection: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// The sidebar's group heading.
+    ///
+    /// Separate from `rawValue`, which is an identifier rather than copy: reading the heading
+    /// off the raw value left the four group titles in English inside a Turkish build.
+    var title: String {
+        switch self {
+        case .wallpaper: return String(localized: "Wallpaper")
+        case .content:   return String(localized: "Content")
+        case .behavior:  return String(localized: "Behavior")
+        case .app:       return String(localized: "App")
+        }
+    }
+
     /// The one hue every item in this section wears.
     ///
     /// The section the app exists for gets the brand accent; the rest step back in cool and
@@ -46,16 +59,18 @@ enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
+    /// `String(localized:)`, not a bare literal: this value is also used to sort the list and
+    /// is handed to `Text` as a resolved string, so it has to come out of the catalog here.
     var title: String {
         switch self {
-        case .currentQuote: return "Current Quote"
-        case .design:       return "Design"
-        case .library:      return "Library"
-        case .behavior:     return "Behavior"
-        case .settings:     return "Ayarlar"
-        case .shortcuts:    return "Shortcuts"
+        case .currentQuote: return String(localized: "Current Quote")
+        case .design:       return String(localized: "Design")
+        case .library:      return String(localized: "Library")
+        case .behavior:     return String(localized: "Behavior")
+        case .settings:     return String(localized: "Settings")
+        case .shortcuts:    return String(localized: "Shortcuts")
         case .account:      return "iCloud"
-        case .about:        return "About"
+        case .about:        return String(localized: "About")
         }
     }
 
