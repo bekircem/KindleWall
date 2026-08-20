@@ -34,6 +34,7 @@
 		38C0ECADDA7E3731D5AA9B3B /* WallpaperStyleMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16FF470B4AB5E726C2E10FE /* WallpaperStyleMigrationTests.swift */; };
 		3A4318DFE6E02DB154C6A25B /* CurrentQuoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 666760574F0185C2595696EF /* CurrentQuoteView.swift */; };
 		3D6E86308A82A0F32FCF73C8 /* GeneralSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64DEEEB3074EBE6AB903F348 /* GeneralSettingsPage.swift */; };
+		3ED9944B431DDC89C8FEAD94 /* LocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43F2EF91A4892DF2446E6FFE /* LocalizationTests.swift */; };
 		3FC1100EE38AD4947289A0B8 /* SampleLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFCBE9B68D938A3C73C9190 /* SampleLibrary.swift */; };
 		4272505441027870853C9F2D /* ClippingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6C0418233969592799EC2E /* ClippingCard.swift */; };
 		442FA96082B056A8A51F92CA /* KindleWallError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E77A0B0FE97E55C4326EE31 /* KindleWallError.swift */; };
@@ -72,6 +73,7 @@
 		85A8A4FAC630912B4C7A67AD /* SolarPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB44C6FA220FF7EDB6A02AA2 /* SolarPalette.swift */; };
 		87B871139CC2575F5B7710FE /* IconTileGlyphTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E83DA83191011F012F06FC3F /* IconTileGlyphTests.swift */; };
 		8967018B00039DB44F400CFB /* Color+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85ABC4DE882DD80453CAADE /* Color+Extensions.swift */; };
+		8BFCFC94F2FFC07DD6B37849 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1606A966F021862ECED6D3D7 /* Localizable.xcstrings */; };
 		8D4147AB392F1A89ACE154B7 /* GlobalHotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B6DE6C86743B83C676D7CF /* GlobalHotkeyManager.swift */; };
 		8ECE7FC3A8754FF894A9FF88 /* LongQuoteSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 984C8795ADD8004778BAE856 /* LongQuoteSettings.swift */; };
 		92DCFE36216B9E32C0EA0D24 /* SyncState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B3EE04C5D958F5D3DCE5CC6 /* SyncState.swift */; };
@@ -148,6 +150,7 @@
 		12C059FD58A32763D85E34EC /* GradientPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientPicker.swift; sourceTree = "<group>"; };
 		15BF48C1423B84E5E5D4C510 /* SolarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolarTests.swift; sourceTree = "<group>"; };
 		15ED09A5691424B720CBDF26 /* HotkeyRecorderButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyRecorderButton.swift; sourceTree = "<group>"; };
+		1606A966F021862ECED6D3D7 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		188A570A6ED9862015A79E2A /* IconTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconTile.swift; sourceTree = "<group>"; };
 		19B94CDD81F218CFD3985956 /* Perf.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Perf.swift; sourceTree = "<group>"; };
 		1DF7D386F7F6F76D6B4F7B5D /* ScheduleSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleSection.swift; sourceTree = "<group>"; };
@@ -164,6 +167,7 @@
 		30C80015B7338D2C54BE388B /* WallpaperPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperPreviewView.swift; sourceTree = "<group>"; };
 		34F87F1C74F73529B64A2125 /* ConcurrentRenderStressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcurrentRenderStressTests.swift; sourceTree = "<group>"; };
 		39044C3B85F912C8DA715912 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		43F2EF91A4892DF2446E6FFE /* LocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationTests.swift; sourceTree = "<group>"; };
 		4558BCC5328980AB09CF0F0A /* WallpaperGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperGenerator.swift; sourceTree = "<group>"; };
 		45AAAB1873D99B68FFE40196 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		4998D9FDFE0CCA5977A85336 /* BookDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookDetailView.swift; sourceTree = "<group>"; };
@@ -414,6 +418,7 @@
 			isa = PBXGroup;
 			children = (
 				A9EF5A99D5F31BCD9F9D1C1A /* Assets.xcassets */,
+				1606A966F021862ECED6D3D7 /* Localizable.xcstrings */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -522,6 +527,7 @@
 				A9148332127C6E2E34E9988C /* DynamicWallpaperTests.swift */,
 				E83DA83191011F012F06FC3F /* IconTileGlyphTests.swift */,
 				6AEB753CED4F86B5A608E6F9 /* InteractionStressTests.swift */,
+				43F2EF91A4892DF2446E6FFE /* LocalizationTests.swift */,
 				B374FBB8288F57E283CFF919 /* RotationBookTests.swift */,
 				C1A37118CAF7B499E0D6782A /* SchedulerServiceTests.swift */,
 				15BF48C1423B84E5E5D4C510 /* SolarTests.swift */,
@@ -603,6 +609,7 @@
 			knownRegions = (
 				Base,
 				en,
+				tr,
 			);
 			mainGroup = 2C2B7B77EDAA73932A89F526;
 			minimizedProjectReferenceProxies = 1;
@@ -626,6 +633,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2C699C7D0CEF8CA9D6A2AC5 /* Assets.xcassets in Resources */,
+				8BFCFC94F2FFC07DD6B37849 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -649,6 +657,7 @@
 				C36CD93870242EAE9CDDACB7 /* FakeWallpaperManager.swift in Sources */,
 				87B871139CC2575F5B7710FE /* IconTileGlyphTests.swift in Sources */,
 				C85E4AA9D43F10237EFECDB6 /* InteractionStressTests.swift in Sources */,
+				3ED9944B431DDC89C8FEAD94 /* LocalizationTests.swift in Sources */,
 				FDC3624E32832DEAC5C10327 /* RotationBookTests.swift in Sources */,
 				A38FF529AC17962EDE97C601 /* SchedulerServiceTests.swift in Sources */,
 				DA4D9ACED55083BA56A4F627 /* SolarTests.swift in Sources */,
