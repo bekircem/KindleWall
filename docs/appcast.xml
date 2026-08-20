@@ -6,6 +6,18 @@
     <description>KindleWall updates</description>
     <language>tr</language>
     <item>
+      <title>1.1.0</title>
+      <pubDate>Thu, 20 Aug 2026 13:07:15 +0300</pubDate>
+      <sparkle:version>3</sparkle:version>
+      <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/bekircem/KindleWall/releases/tag/v1.1.0</link>
+      <enclosure url="https://github.com/bekircem/KindleWall/releases/download/v1.1.0/KindleWall-1.1.0.dmg"
+                 sparkle:edSignature="wEfNelHJse77QNG/rFKAN4V6jiXAe2+DT7JnWVJ9J11AN89k9u5qrhzcx0fiXpvA+wFOcyWqXPqPYgA6ug0OAw=="
+                 length="2912001"
+                 type="application/octet-stream" />
+    </item>
+    <item>
       <title>1.0.0</title>
       <pubDate>Thu, 20 Aug 2026 02:44:24 +0300</pubDate>
       <sparkle:version>2</sparkle:version>
