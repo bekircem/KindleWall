@@ -14,7 +14,9 @@ struct ImportProgressBanner: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
 
             case .completed:
-                if let summary = importState.summary {
+                // Only when the user asked. The launch import runs on every window open and
+                // has nothing worth interrupting for when the file has not changed.
+                if importState.announcesResult, let summary = importState.summary {
                     completedBanner(summary: summary)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
@@ -30,14 +32,14 @@ struct ImportProgressBanner: View {
         .animation(Theme.Motion.smooth, value: importState.phase)
         .allowsHitTesting(importState.phase != .idle)
         .task(id: importState.phase) {
-            if case .completed = importState.phase {
-                try? await Task.sleep(for: .seconds(6))
-                guard !Task.isCancelled else { return }
-                withAnimation(Theme.Motion.smooth) {
-                    importState.phase = .idle
-                    importState.summary = nil
-                }
-            }
+            // "Nothing new" dismisses itself; a list of books does not — reading it takes
+            // longer than six seconds, and it is the answer the user pressed a button for.
+            guard case .completed = importState.phase,
+                  importState.summary?.foundNothingNew ?? true
+            else { return }
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled else { return }
+            dismiss()
         }
     }
 
@@ -77,37 +79,85 @@ struct ImportProgressBanner: View {
     // MARK: - Completed
 
     private func completedBanner(summary: ImportSummary) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(.green)
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: summary.foundNothingNew ? "checkmark.circle" : "sparkles")
+                .foregroundStyle(summary.foundNothingNew ? .secondary : Color.accentColor)
                 .font(.title3)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Import Complete")
+            VStack(alignment: .leading, spacing: 4) {
+                Text(summary.headline)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                Text(summaryText(summary))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if summary.foundNothingNew {
+                    Text("Your library is already up to date.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(summary.booksLine)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    bookList(summary)
+                        .padding(.top, 2)
+                }
             }
 
-            Spacer()
+            Spacer(minLength: 8)
 
-            Button {
-                withAnimation(Theme.Motion.smooth) {
-                    importState.phase = .idle
-                    importState.summary = nil
-                }
-            } label: {
+            Button(action: dismiss) {
                 Image(systemName: "xmark")
                     .font(.caption)
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
+            .accessibilityLabel("Dismiss")
         }
         .padding(12)
+        .frame(maxWidth: 420, alignment: .leading)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
         .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+    }
+
+    /// Which books grew, most first. Capped so a reader who has been away for months gets a
+    /// banner rather than a wall.
+    @ViewBuilder private func bookList(_ summary: ImportSummary) -> some View {
+        let (shown, hidden) = summary.namedBooks
+
+        VStack(alignment: .leading, spacing: 2) {
+            ForEach(shown) { book in
+                HStack(spacing: 4) {
+                    Text(verbatim: "\(book.newClippings)×")
+                        .font(.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                    Text(verbatim: book.bookTitle)
+                        .font(.caption)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    if book.isNewBook {
+                        Text("new")
+                            .font(.caption2)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(Color.accentColor.opacity(0.22), in: Capsule())
+                    }
+                }
+            }
+            if hidden > 0 {
+                Text("and \(hidden) more books")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+
+    private func dismiss() {
+        withAnimation(Theme.Motion.smooth) {
+            importState.phase = .idle
+            importState.summary = nil
+            importState.announcesResult = false
+        }
     }
 
     // MARK: - Failed
@@ -146,19 +196,4 @@ struct ImportProgressBanner: View {
         .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
     }
 
-    // MARK: - Summary Text
-
-    private func summaryText(_ s: ImportSummary) -> String {
-        var parts: [String] = []
-        parts.append(String(localized: "\(s.totalClippings) quotes"))
-        if s.newClippings > 0 {
-            parts.append("\(s.newClippings) yeni")
-        }
-        parts.append(String(localized: "\(s.totalBooks) books"))
-        if s.newBooks > 0 {
-            parts.append(String(localized: "\(s.newBooks) new books"))
-        }
-        let durationStr = String(format: "%.1f sn", s.duration)
-        return parts.joined(separator: " · ") + " (\(durationStr))"
-    }
 }

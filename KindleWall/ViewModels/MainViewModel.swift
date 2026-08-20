@@ -229,7 +229,13 @@ final class MainViewModel {
 
     /// Imports clippings from a file URL (or the stored bookmark). Runs async with
     /// progress reporting and incremental merge.
-    func importClippings(from url: URL? = nil) {
+    /// Reads `My Clippings.txt` and merges it into the library.
+    ///
+    /// `announce` decides whether the result reaches the screen. The launch import passes
+    /// false: it runs on every window open and has nothing to say when the file is unchanged.
+    /// An import the user asked for — picking a file, or pressing "Check for New Highlights"
+    /// — passes true and reports what it found.
+    func importClippings(from url: URL? = nil, announce: Bool = false) {
         guard !importState.isRunning else { return }
 
         let fileURL: URL
@@ -256,6 +262,7 @@ final class MainViewModel {
         }
 
         let started = Date()
+        importState.announcesResult = announce
         importState.phase = .running
         importState.progress = 0
         importState.summary = nil
@@ -300,7 +307,17 @@ final class MainViewModel {
     @MainActor
     private func mergeClippings(_ incoming: [Clipping], started: Date) {
         let knownIDs = storage.persistedClippingIDs
-        let existingBookTitles = Set(clippings.map(\.bookTitle))
+        // Persisted, not `clippings.map(\.bookTitle)`. At launch the in-memory library holds
+        // only manual clippings, so measuring against it reported every book that gained a
+        // highlight as a brand-new book — the one number a re-import exists to get right.
+        //
+        // Installs that predate this key have IDs but no titles. Derive the titles from the
+        // clippings those IDs already vouch for rather than starting empty, or the first
+        // check after upgrading would announce every book as new.
+        let storedTitles = storage.knownBookTitles
+        let knownTitles = storedTitles.isEmpty && !knownIDs.isEmpty
+            ? Set(incoming.filter { knownIDs.contains($0.id) }.map(\.bookTitle))
+            : storedTitles
 
         let newClippings = incoming.filter { !knownIDs.contains($0.id) }
 
@@ -308,15 +325,27 @@ final class MainViewModel {
         let combined = incoming + manual
         clippings = combined
         storage.persistedClippingIDs = Set(combined.map(\.id))
+        storage.knownBookTitles = knownTitles.union(combined.map(\.bookTitle))
 
-        let newBookTitles = Set(newClippings.map(\.bookTitle)).subtracting(existingBookTitles)
+        let newBookTitles = Set(newClippings.map(\.bookTitle)).subtracting(knownTitles)
+
+        // Most highlights first, then alphabetical so the order is stable between runs and
+        // a book does not jump around when two have the same count.
+        let byBook = Dictionary(grouping: newClippings, by: \.bookTitle)
+            .map { title, items in
+                BookDelta(bookTitle: title,
+                          newClippings: items.count,
+                          isNewBook: newBookTitles.contains(title))
+            }
+            .sorted { ($0.newClippings, $1.bookTitle) > ($1.newClippings, $0.bookTitle) }
 
         importState.summary = ImportSummary(
             totalClippings: incoming.count,
             newClippings: newClippings.count,
             totalBooks: Set(incoming.map(\.bookTitle)).count,
             newBooks: newBookTitles.count,
-            duration: Date().timeIntervalSince(started)
+            duration: Date().timeIntervalSince(started),
+            booksWithNewClippings: byBook
         )
         importState.phase = .completed
         importState.progress = 1.0
@@ -343,8 +372,24 @@ final class MainViewModel {
     }
 
     /// Loads clippings from a specific file URL (e.g., from onboarding).
+    ///
+    /// Announces: the user just handed the app a file and is owed an answer about it.
     func loadClippings(from url: URL) {
-        importClippings(from: url)
+        importClippings(from: url, announce: true)
+    }
+
+    /// Re-reads the file already on record and reports what is new.
+    ///
+    /// The Kindle appends to `My Clippings.txt` as you read, so the copy the app imported
+    /// weeks ago is not the copy on the device today. This re-reads through the stored
+    /// security-scoped bookmark, so there is no file picker to walk through again.
+    func checkForNewClippings() {
+        importClippings(announce: true)
+    }
+
+    /// Whether there is a file to re-read at all.
+    var canCheckForNewClippings: Bool {
+        storage.resolveClippingsFileURL() != nil || storage.localClippingsFileURL() != nil
     }
 
     /// Seeds the library with a few public-domain highlights, for someone setting the app up

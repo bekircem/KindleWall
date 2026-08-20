@@ -96,6 +96,10 @@ enum Constants {
         static let syncAllSpaces = "syncAllSpaces"
         static let bookMetadataOverrides = "bookMetadataOverrides"
         static let persistedClippingIDs = "persistedClippingIDs"
+        /// Book titles seen across imports. Separate from `persistedClippingIDs` because a
+        /// UUID cannot be turned back into a title, and telling a new book from a new
+        /// highlight in an old one is exactly what a re-import has to answer.
+        static let knownBookTitles = "knownBookTitles"
         static let rotationMode         = "rotationMode"
         static let currentBookTitle     = "currentBookTitle"
         static let pinnedBookTitles     = "pinnedBookTitles"

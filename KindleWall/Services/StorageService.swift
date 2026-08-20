@@ -59,6 +59,10 @@ protocol StorageServiceProtocol {
     /// IDs of all clippings seen across imports (for incremental merge detection).
     var persistedClippingIDs: Set<UUID> { get set }
 
+    /// Book titles seen across imports. Drives "is this a new book, or a new highlight in
+    /// one I already had?" — a question the ID set alone cannot answer.
+    var knownBookTitles: Set<String> { get set }
+
     /// Manually entered clippings (not parsed from My Clippings.txt).
     var manualClippings: [Clipping] { get set }
 
@@ -348,6 +352,16 @@ final class StorageService: StorageServiceProtocol {
         }
         set {
             defaults.set(Array(newValue.map { $0.uuidString }), forKey: Constants.StorageKeys.persistedClippingIDs)
+            postUserStateChanged()
+        }
+    }
+
+    // MARK: - Known Book Titles
+
+    var knownBookTitles: Set<String> {
+        get { Set(defaults.stringArray(forKey: Constants.StorageKeys.knownBookTitles) ?? []) }
+        set {
+            defaults.set(Array(newValue), forKey: Constants.StorageKeys.knownBookTitles)
             postUserStateChanged()
         }
     }

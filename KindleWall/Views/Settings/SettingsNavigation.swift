@@ -104,6 +104,8 @@ enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
 /// Centralizes wiring in `MainView` instead of threading many closures through the sidebar switch.
 struct SettingsActions {
     var onFileSelected: (URL) -> Void = { _ in }
+    /// Re-read the file already on record, through the stored bookmark — no file picker.
+    var onCheckForNewClippings: () -> Void = {}
     var onStyleChanged: (WallpaperStyle) -> Void = { _ in }
     var onTypographyChanged: () -> Void = {}
     var onScheduleChanged: (ScheduleInterval, Date?) -> Void = { _, _ in }

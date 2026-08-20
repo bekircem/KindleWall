@@ -10,7 +10,7 @@ struct LongQuoteSection: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             // MARK: Skip
             SettingsCard(
-                title: "Skip Long Quotes",
+                title: String(localized: "Skip Long Quotes"),
                 footnote: settingsVM.skipLongQuotesEnabled
                     ? String(localized: "Quotes longer than this threshold are skipped when choosing a wallpaper.")
                     : nil
@@ -53,7 +53,7 @@ struct LongQuoteSection: View {
 
             // MARK: Tighten
             SettingsCard(
-                title: "Tighten Long Quotes",
+                title: String(localized: "Tighten Long Quotes"),
                 footnote: settingsVM.autoTightenLongQuotes
                     ? String(localized: "Quotes past the threshold are tightened down to this type size and this line-height multiplier. Very low values cost legibility.")
                     : nil

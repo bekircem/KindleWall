@@ -11,6 +11,9 @@ struct BehaviorSettingsPage: View {
     @Bindable var settingsVM: SettingsViewModel
     let actions: SettingsActions
 
+    /// Optional so a preview or a test host without the injection does not trap.
+    @Environment(ImportState.self) private var importState: ImportState?
+
     /// Quotes in the user's pinned books — context shown by the rotation "Pinned Books" scope.
     private var pinnedQuoteCount: Int {
         viewModel.clippings.filter { settingsVM.pinnedBookTitles.contains($0.bookTitle) }.count
@@ -38,7 +41,13 @@ struct BehaviorSettingsPage: View {
             }
 
             SettingsGroup("Source File") {
-                SourceFileSection(settingsVM: settingsVM, clippingsCount: viewModel.clippings.count, actions: actions)
+                SourceFileSection(
+                    settingsVM: settingsVM,
+                    clippingsCount: viewModel.clippings.count,
+                    actions: actions,
+                    canCheckForNewClippings: viewModel.canCheckForNewClippings,
+                    isImporting: importState?.isRunning ?? false
+                )
             }
         }
     }

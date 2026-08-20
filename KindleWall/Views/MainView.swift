@@ -154,6 +154,7 @@ struct MainView: View {
     private var actions: SettingsActions {
         SettingsActions(
             onFileSelected: { viewModel.loadClippings(from: $0) },
+            onCheckForNewClippings: { viewModel.checkForNewClippings() },
             onStyleChanged: { viewModel.updateStyle($0) },
             onTypographyChanged: { viewModel.reloadTypography() },
             onScheduleChanged: { interval, customDate in

@@ -120,6 +120,46 @@
         }
       }
     },
+    "%lld new highlights": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld new highlight"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld new highlights"
+                }
+              }
+            }
+          }
+        },
+        "tr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld yeni alıntı"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld yeni alıntı"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld pt": {
       "shouldTranslate": false
     },
@@ -769,6 +809,22 @@
         }
       }
     },
+    "Check for New Highlights": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for New Highlights"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni Alıntıları Denetle"
+          }
+        }
+      }
+    },
     "Check for Updates": {
       "localizations": {
         "tr": {
@@ -1249,6 +1305,22 @@
         }
       }
     },
+    "Dismiss": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapat"
+          }
+        }
+      }
+    },
     "Dismiss alert": {
       "localizations": {
         "tr": {
@@ -1575,16 +1647,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Anında Eşitleme"
-          }
-        }
-      }
-    },
-    "Import Complete": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "İçeri Aktarma Tamamlandı"
           }
         }
       }
@@ -1935,6 +1997,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Eşleşen kitap bulunamadı. Lütfen manuel düzeltin."
+          }
+        }
+      }
+    },
+    "No new highlights": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No new highlights"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni alıntı yok"
           }
         }
       }
@@ -2749,6 +2827,22 @@
         }
       }
     },
+    "Skip Long Quotes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip Long Quotes"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uzun Alıntıları Atla"
+          }
+        }
+      }
+    },
     "Skip long quotes": {
       "localizations": {
         "tr": {
@@ -2929,12 +3023,18 @@
         }
       }
     },
-    "The My Clippings.txt file from your Kindle. Choosing an updated copy of the same file adds only the new quotes; favorites and shown state are kept.": {
+    "The My Clippings.txt file from your Kindle. Your Kindle appends to it as you read, so check for new highlights whenever you have been reading — only the new ones are added, and favorites and shown state are kept.": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The My Clippings.txt file from your Kindle. Your Kindle appends to it as you read, so check for new highlights whenever you have been reading — only the new ones are added, and favorites and shown state are kept."
+          }
+        },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kindle'ından aldığın My Clippings.txt dosyası. Aynı dosyanın güncel hâlini tekrar seçersen yalnızca yeni alıntılar eklenir; favori ve gösterim durumları korunur."
+            "value": "Kindle'ındaki My Clippings.txt dosyası. Kindle okudukça bu dosyanın sonuna ekleme yapar; okuma yaptığın zamanlarda yeni alıntıları denetle. Yalnızca yeni olanlar eklenir, favorilerin ve gösterilmiş durumu korunur."
           }
         }
       }
@@ -3035,6 +3135,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Eşik"
+          }
+        }
+      }
+    },
+    "Tighten Long Quotes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tighten Long Quotes"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uzun Alıntıları Daralt"
           }
         }
       }
@@ -3329,12 +3445,68 @@
         }
       }
     },
+    "Your library is already up to date.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your library is already up to date."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kütüphanen zaten güncel."
+          }
+        }
+      }
+    },
     "a thousand different": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "farklı hayat yaşamak"
+          }
+        }
+      }
+    },
+    "and %lld more books": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "and %lld more book"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "and %lld more books"
+                }
+              }
+            }
+          }
+        },
+        "tr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "ve %lld kitap daha"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "ve %lld kitap daha"
+                }
+              }
+            }
           }
         }
       }
@@ -3372,12 +3544,68 @@
         }
       }
     },
+    "in %lld books": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "in %lld book"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "in %lld books"
+                }
+              }
+            }
+          }
+        },
+        "tr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld kitapta"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld kitapta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "lives.": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "demektir."
+          }
+        }
+      }
+    },
+    "new": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "new"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "yeni"
           }
         }
       }
