@@ -39,8 +39,9 @@ final class CloudKitSyncService {
     /// Guards against infinite recursion if a token-reset re-pull also reports
     /// `changeTokenExpired`. Flipped during the recovery `performPull()` call.
     private var isRecoveringFromExpiredToken = false
-    /// Categories that need to push on next flush.
-    private var pendingDirty: Set<DirtyCategory> = []
+    /// Categories that need to push on next flush. See `SyncPushQueue` for why the
+    /// checkout/return dance matters: a failed push must not forget its work.
+    private var pushQueue = SyncPushQueue()
 
     /// Serializes sync cycles. A trigger that arrives mid-cycle sets `rerunRequested`
     /// so exactly one follow-up runs after the current cycle finishes — no overlapping
@@ -48,29 +49,8 @@ final class CloudKitSyncService {
     private var isSyncing = false
     private var rerunRequested = false
 
-    private enum DirtyCategory: Hashable {
-        case userState
-        case manualClippings
-        case bookOverrides
-    }
-
     /// A unit of work in a sync cycle. Order within `runSync([...])` is significant.
     private enum SyncOp { case push, pull }
-
-    /// Snapshot of "what we last synced with cloud" — drives deletion diffs and
-    /// LWW-Element-Set semantics for the singleton UserState record's set fields.
-    /// Invariant after each successful push or pull: snapshot == localCurrent.
-    private struct SyncSnapshot: Codable, Equatable {
-        var manualClippingIDs: Set<String> = []
-        var bookOverrideTitles: Set<String> = []
-        var favoriteClippingIDs: Set<String> = []
-        var shownClippingIDs: Set<String> = []
-        var persistedClippingIDs: Set<String> = []
-        var pinnedBookTitles: Set<String> = []
-        /// Hash of the singleton UserState payload at last successful sync. Lets a push
-        /// skip a no-op re-save (which would otherwise bounce a silent push back to us).
-        var userStateSignature: String = ""
-    }
 
     // MARK: - Init
 
@@ -118,7 +98,7 @@ final class CloudKitSyncService {
         NotificationCenter.default.removeObserver(self)
         pendingPushTimer?.invalidate()
         pendingPushTimer = nil
-        pendingDirty.removeAll()
+        pushQueue.clear()
         syncState.status = .disabled(reason: String(localized: "Sync stopped"))
     }
 
@@ -169,7 +149,7 @@ final class CloudKitSyncService {
         // One cycle: pull remote state first, then push only genuinely-diverged local
         // data. The push methods skip no-op writes, so a device already in sync makes no
         // server change (and therefore receives no self-addressed silent push back).
-        pendingDirty = [.userState, .manualClippings, .bookOverrides]
+        pushQueue.markAllDirty()
         await runSync([.pull, .push])
     }
 
@@ -202,19 +182,19 @@ final class CloudKitSyncService {
 
     @objc private func handleUserStateChanged() {
         guard !isApplyingRemoteChanges else { return }
-        pendingDirty.insert(.userState)
+        pushQueue.markDirty(.userState)
         schedulePush()
     }
 
     @objc private func handleManualClippingsChanged() {
         guard !isApplyingRemoteChanges else { return }
-        pendingDirty.insert(.manualClippings)
+        pushQueue.markDirty(.manualClippings)
         schedulePush()
     }
 
     @objc private func handleBookOverridesChanged() {
         guard !isApplyingRemoteChanges else { return }
-        pendingDirty.insert(.bookOverrides)
+        pushQueue.markDirty(.bookOverrides)
         schedulePush()
     }
 
@@ -260,9 +240,8 @@ final class CloudKitSyncService {
     /// Pushes any dirty categories. Does not own `syncState.status` (only records a
     /// failure); `runSync` owns the syncing/idle transitions.
     private func performPendingPushes() async {
-        guard isRunning, !pendingDirty.isEmpty else { return }
-        let toPush = pendingDirty
-        pendingDirty.removeAll()
+        guard isRunning, !pushQueue.isEmpty else { return }
+        let toPush = pushQueue.checkout()
         do {
             if toPush.contains(.userState) { try await pushUserState() }
             if toPush.contains(.manualClippings) { try await pushManualClippings() }
@@ -271,6 +250,10 @@ final class CloudKitSyncService {
             // the snapshot so the next push can compute correct deletion diffs.
             saveSnapshotFromLocal()
         } catch {
+            // Put the work back. Without this the categories were checked out and dropped,
+            // so a deletion diffed against the snapshot was never retried and the snapshot
+            // stayed frozen at its pre-deletion contents — the record lived on in the cloud.
+            pushQueue.returnUnfinished(toPush)
             syncState.status = .error(error.localizedDescription)
         }
     }
@@ -496,12 +479,14 @@ final class CloudKitSyncService {
         }
 
         var newToken: CKServerChangeToken?
+        var zoneFailure: Error?
         op.recordZoneChangeTokensUpdatedBlock = { _, token, _ in
             newToken = token
         }
         op.recordZoneFetchResultBlock = { _, result in
-            if case .success(let res) = result {
-                newToken = res.serverChangeToken
+            switch result {
+            case .success(let res): newToken = res.serverChangeToken
+            case .failure(let error): zoneFailure = error
             }
         }
 
@@ -516,27 +501,48 @@ final class CloudKitSyncService {
                 privateDatabase.add(op)
             }
         } catch let error as CKError where error.code == .changeTokenExpired {
-            // Server invalidated our change token (rare: iCloud sign-out/in,
-            // schema reset, or token aged out). Drop it and re-pull from scratch.
-            saveChangeToken(nil)
-            guard !isRecoveringFromExpiredToken else {
-                // The recovery pull also failed — bail to avoid infinite recursion.
-                syncState.status = .error(String(localized: "Sync could not recover"))
-                return
-            }
-            isRecoveringFromExpiredToken = true
-            await performPull()
-            isRecoveringFromExpiredToken = false
+            await recoverFromExpiredChangeToken()
             return
         } catch {
             syncState.status = .error(error.localizedDescription)
             return
         }
 
+        // A per-zone failure does not fail the operation as a whole: the outer result is
+        // still `.success`, the record blocks simply never fire. Ignoring it — which this
+        // did — makes an unreachable zone indistinguishable from an empty one, and the
+        // pull then advances the snapshot as though local matched cloud. Observed live:
+        // a forced full pull that "succeeded" and returned no change token at all.
+        if let zoneFailure {
+            if let ckError = zoneFailure as? CKError, ckError.code == .changeTokenExpired {
+                await recoverFromExpiredChangeToken()
+            } else {
+                syncState.status = .error(zoneFailure.localizedDescription)
+            }
+            return
+        }
+
         applyRemoteChanges(records: changedRecords, deletions: deletedRecordIDs)
         if let newToken { saveChangeToken(newToken) }
-        // After applying remote changes, our local state matches cloud.
-        saveSnapshotFromLocal()
+        // After applying remote changes, our local state matches cloud — for everything the
+        // pull covers. Categories still queued for a push have diverged deliberately and
+        // keep their previous snapshot, or the pending deletion diff dies here.
+        saveSnapshotFromLocal(preserving: pushQueue.pending)
+    }
+
+    /// Server invalidated our change token (rare: iCloud sign-out/in, schema reset, or the
+    /// token aged out). Drop it and re-pull from scratch. Reached two ways — thrown from the
+    /// operation, or reported against the zone — so it lives in one place.
+    private func recoverFromExpiredChangeToken() async {
+        saveChangeToken(nil)
+        guard !isRecoveringFromExpiredToken else {
+            // The recovery pull also failed — bail to avoid infinite recursion.
+            syncState.status = .error(String(localized: "Sync could not recover"))
+            return
+        }
+        isRecoveringFromExpiredToken = true
+        await performPull()
+        isRecoveringFromExpiredToken = false
     }
 
     private func applyRemoteChanges(records: [CKRecord], deletions: [(CKRecord.ID, CKRecord.RecordType)]) {
@@ -684,7 +690,12 @@ final class CloudKitSyncService {
     /// Writes a snapshot that mirrors the current local state. Called after a
     /// successful push (cloud now matches local) or after a pull's batch has
     /// been applied (local was just synced to match cloud).
-    private func saveSnapshotFromLocal() {
+    ///
+    /// `preserving` names categories that still owe a push; their fields are carried over
+    /// from the stored snapshot instead of being taken from local. A pull must pass the
+    /// pending set — see `SyncSnapshot.preservingPending(_:from:)` for what overwriting it
+    /// destroys.
+    private func saveSnapshotFromLocal(preserving pending: Set<SyncPushQueue.Category> = []) {
         let snap = SyncSnapshot(
             manualClippingIDs: Set(storage.manualClippings.map { $0.id.uuidString }),
             bookOverrideTitles: Set(storage.bookMetadataOverrides.keys),
@@ -693,7 +704,7 @@ final class CloudKitSyncService {
             persistedClippingIDs: Set(storage.persistedClippingIDs.map { $0.uuidString }),
             pinnedBookTitles: Set(storage.pinnedBookTitles),
             userStateSignature: computeUserStateSignature()
-        )
+        ).preservingPending(pending, from: loadSnapshot())
         guard let data = try? JSONEncoder().encode(snap) else { return }
         UserDefaults.standard.set(data, forKey: Constants.StorageKeys.cloudKitSyncSnapshot)
     }
