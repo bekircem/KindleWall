@@ -6,6 +6,19 @@
     <description>KindleWall updates</description>
     <language>en</language>
     <item>
+      <title>1.1.4</title>
+      <description><![CDATA[<h3>New</h3><ul><li>**Check for New Highlights.** Your Kindle appends to `My Clippings.txt` as you read, so the copy KindleWall imported last month is not the copy on your device today. Settings → Behavior → Source File now re-reads the file already on record — no walking through the open panel again — and reports what it found: how many new highlights, across how many books, which books gained the most, and which of them are new to your library. Only the new ones are added; favorites and shown state are kept.</li></ul><h3>Fixed</h3><ul><li>New books were counted wrong. A new highlight in a book you already had was announced as a brand-new book, because the count was measured against the library in memory, which at launch holds only quotes you added by hand.</li><li>The import summary mixed Turkish into the English build and reported how many seconds it took instead of what it found.</li><li>Opening the window no longer shows an import banner. That import runs every time and had nothing to say when nothing had changed.</li><li>Two settings headings were never translated.</li></ul>]]></description>
+      <pubDate>Fri, 21 Aug 2026 01:25:56 +0300</pubDate>
+      <sparkle:version>7</sparkle:version>
+      <sparkle:shortVersionString>1.1.4</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/bekircem/KindleWall/releases/tag/v1.1.4</link>
+      <enclosure url="https://github.com/bekircem/KindleWall/releases/download/v1.1.4/KindleWall-1.1.4.dmg"
+                 sparkle:edSignature="K0eAd+9Vr+L54HXxXbrTJ3MH3mrmHGhyAKCzak5JR0T8pxD/kxpVBaGner+6y8WxQNnIREj1F76lEEOy4jLsAQ=="
+                 length="2959510"
+                 type="application/octet-stream" />
+    </item>
+    <item>
       <title>1.1.3</title>
       <description><![CDATA[<h3>Fixed</h3><ul><li>The Design page no longer overlaps itself in a small window. Below about 850 points of height the sidebar's first heading sat behind the traffic lights, the inspector's tab picker slid under the toolbar where the Apply button covered it, and the auto-apply switch fell off the bottom edge.</li><li>The design inspector's three tabs are translated. They read "Style / Typography / Background" in every language, including the Turkish build.</li></ul>]]></description>
       <pubDate>Thu, 20 Aug 2026 19:17:19 +0300</pubDate>
