@@ -40,7 +40,7 @@ struct TypographyControls: View {
             // MARK: Temel Ayarlar
             VStack(alignment: .leading, spacing: 16) {
                 SliderRow(
-                    title: "Yazı Boyutu",
+                    title: "Text Size",
                     icon: "textformat.size",
                     value: $typography.fontScale,
                     range: 0.6...1.6,
@@ -56,7 +56,7 @@ struct TypographyControls: View {
                 )
 
                 SliderRow(
-                    title: "Kenar Boşluğu",
+                    title: "Margin",
                     icon: "arrow.left.and.right",
                     value: $typography.paddingScale,
                     range: 0.5...1.8,
@@ -64,7 +64,7 @@ struct TypographyControls: View {
                 )
 
                 SliderRow(
-                    title: "Satır Aralığı",
+                    title: "Line Height",
                     icon: "line.3.horizontal",
                     value: $typography.lineSpacingScale,
                     range: 0.6...1.6,
@@ -105,7 +105,7 @@ struct TypographyControls: View {
 
                         if typography.shadowEnabled {
                             SliderRow(
-                                title: "Gölge Şiddeti",
+                                title: "Shadow Strength",
                                 icon: "circle.lefthalf.filled",
                                 value: $typography.shadowRadius,
                                 range: 1...20,
@@ -119,7 +119,7 @@ struct TypographyControls: View {
 
                     // Harf aralığı
                     SliderRow(
-                        title: "Harf Aralığı",
+                        title: "Letter Spacing",
                         icon: "character.cursor.ibeam",
                         value: $typography.letterSpacing,
                         range: -2...8,
@@ -131,7 +131,7 @@ struct TypographyControls: View {
 
                     // Metin opaklığı
                     SliderRow(
-                        title: "Metin Opaklığı",
+                        title: "Text Opacity",
                         icon: "circle.dotted",
                         value: $typography.textOpacity,
                         range: 0.3...1.0,
@@ -192,7 +192,7 @@ private struct FontFamilyChip: View {
 
 /// A labeled slider row for typography settings.
 struct SliderRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     @Binding var value: Double
     let range: ClosedRange<Double>

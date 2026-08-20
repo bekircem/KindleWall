@@ -26,7 +26,7 @@ protocol WallpaperManagerProtocol: Sendable {
     /// - Parameters:
     ///   - fileURL: The URL of the wallpaper image file.
     ///   - propagateToAllSpaces: Whether to also push the image to every Mission Control Space
-    ///     right now (only meaningful when the user enabled "Anında Eşitleme"). Pass `false`
+    ///     right now (only meaningful when the user enabled "Immediate Sync"). Pass `false`
     ///     for rapid automatic applies and call `syncCurrentWallpaperToAllSpaces()` once the
     ///     edits settle — see that method for why.
     /// - Throws: KindleWallError if the wallpaper cannot be applied.

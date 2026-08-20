@@ -148,7 +148,7 @@ final class GlobalHotkeyManager {
             styleMask: [.titled, .closable, .nonactivatingPanel],
             backing: .buffered, defer: false
         )
-        panel.title = "KindleWall — Alıntı Yakala"
+        panel.title = String(localized: "KindleWall — Capture Quote")
         panel.level = .floating
         panel.isReleasedWhenClosed = false
         panel.hidesOnDeactivate = false

@@ -19,12 +19,12 @@ enum ScheduleInterval: String, Codable, CaseIterable, Identifiable {
     /// window's minimum width; these do not.
     var displayName: String {
         switch self {
-        case .every30Minutes: return "30 dk"
-        case .hourly:         return "1 hour"
-        case .every3Hours:    return "3 saat"
-        case .every6Hours:    return "6 saat"
-        case .daily:          return "Günlük"
-        case .custom:         return "Özel"
+        case .every30Minutes: return String(localized: "30 min")
+        case .hourly:         return String(localized: "1 hour")
+        case .every3Hours:    return String(localized: "3 hours")
+        case .every6Hours:    return String(localized: "6 hours")
+        case .daily:          return String(localized: "Daily")
+        case .custom:         return String(localized: "Custom")
         }
     }
 

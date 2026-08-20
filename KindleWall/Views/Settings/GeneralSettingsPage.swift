@@ -39,8 +39,8 @@ struct GeneralSettingsPage: View {
             }
 
             SettingsCard(
-                title: "Anında Eşitleme",
-                footnote: "Açıkken tüm masaüstleri aynı anda değişir. Bunu yapmanın tek yolu macOS'un kendi duvar kağıdı kaydını yazıp duvar kağıdı servisini yeniden başlatmak — Ayarlar panelinin yaptığı da budur. Biçim Apple tarafından belgelenmemiştir, bu yüzden varsayılan kapalı. İlk kullanımda kaydın yedeği alınır."
+                title: "Immediate Sync",
+                footnote: "When on, every desktop changes at once. The only way to do that is to write macOS's own wallpaper store and restart the wallpaper service — which is what the Settings panel does too. The format is undocumented by Apple, so this is off by default. The store is backed up before the first write."
             ) {
                 SettingsRow(
                     icon: "square.on.square.dashed", iconColor: .orange,
@@ -59,7 +59,7 @@ struct GeneralSettingsPage: View {
                 if settingsVM.syncAllSpaces { actions.onApplyDesignNow() }
             }
 
-            SettingsCard(title: "Duvar Kağıdı") {
+            SettingsCard(title: "Wallpaper") {
                 SettingsRow(
                     icon: "arrow.uturn.backward", iconColor: Color(.systemGray),
                     title: "Restore Previous Wallpaper",
@@ -75,7 +75,7 @@ struct GeneralSettingsPage: View {
 
             SettingsCard(
                 title: "Kurulum",
-                footnote: "Karşılama akışını yeniden açar. Alıntıların, favorilerin ve ayarların olduğu gibi kalır."
+                footnote: "Reopens the welcome flow. Your quotes, favorites and settings stay as they are."
             ) {
                 SettingsRow(
                     icon: "sparkles", iconColor: .indigo,

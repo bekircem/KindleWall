@@ -251,7 +251,7 @@ final class MainViewModel {
             // display, nothing to render, and an error where the quote should be.
             fileURL = cached
         } else {
-            errorMessage = "Lütfen My Clippings.txt dosyasını seçin."
+            errorMessage = String(localized: "Please choose your My Clippings.txt file.")
             return
         }
 
@@ -369,12 +369,12 @@ final class MainViewModel {
     /// Selects the next clipping according to the active rotation mode and generates a preview.
     func selectRandomClipping() {
         guard !clippings.isEmpty else {
-            errorMessage = "Yüklü alıntı yok."
+            errorMessage = String(localized: "No quotes loaded.")
             return
         }
         let pool = filteredClippings()
         guard !pool.isEmpty else {
-            errorMessage = "Filtreye uyan alıntı yok. Uzun alıntı eşiğini yükseltin."
+            errorMessage = String(localized: "No quotes match the filter. Raise the long-quote threshold.")
             return
         }
         errorMessage = nil
@@ -465,14 +465,14 @@ final class MainViewModel {
     private func selectFromFavorites(pool: [Clipping]) {
         let favoriteIDs = storage.favoriteClippingIDs
         guard !favoriteIDs.isEmpty else {
-            errorMessage = "Favori alıntı yok. Kütüphaneden kalp ekleyin."
+            errorMessage = String(localized: "No favorite quotes. Heart some in the Library.")
             selectAllRandom(pool: pool)
             return
         }
 
         let favoriteClippings = pool.filter { favoriteIDs.contains($0.id) }
         guard !favoriteClippings.isEmpty else {
-            errorMessage = "Favori alıntılar bu filtreyle uyumsuz."
+            errorMessage = String(localized: "Your favorite quotes do not match this filter.")
             selectAllRandom(pool: pool)
             return
         }
@@ -499,14 +499,14 @@ final class MainViewModel {
     private func selectFromPinnedBooks(pool: [Clipping]) {
         let pinnedTitles = pinnedBookTitles
         guard !pinnedTitles.isEmpty else {
-            errorMessage = "Sabitlenmiş kitap yok. Lütfen Ayarlar'dan kitap seçin."
+            errorMessage = String(localized: "No pinned books. Choose some in Settings.")
             selectAllRandom(pool: pool)
             return
         }
 
         let pinnedClippings = pool.filter { pinnedTitles.contains($0.bookTitle) }
         guard !pinnedClippings.isEmpty else {
-            errorMessage = "Seçili kitaplarda alıntı bulunamadı."
+            errorMessage = String(localized: "No quotes found in the selected books.")
             selectAllRandom(pool: pool)
             return
         }
@@ -807,11 +807,11 @@ final class MainViewModel {
                         typography: typographySnapshot,
                         longQuote: longQuote
                     ) }) else {
-                        throw KindleWallError.wallpaperGenerationFailed(reason: "Render başarısız")
+                        throw KindleWallError.wallpaperGenerationFailed(reason: "Render failed")
                     }
                     url = try wallpaperManager.writeWallpaperPNG(image: fullImage)
                 }
-                applyClock.finish(fellBackToStatic ? "statik (dinamik başarısız)"
+                applyClock.finish(fellBackToStatic ? "static (dynamic failed)"
                                                    : (dynamicEnabled ? "dinamik" : "statik"))
             } catch {
                 await MainActor.run { [weak self] in

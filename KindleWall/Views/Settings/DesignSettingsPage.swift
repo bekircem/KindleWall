@@ -35,7 +35,7 @@ struct DesignSettingsPage: View {
         SettingsCard(
             footnote: viewModel.autoApplyDesignChanges
                 ? "Değişiklikler kısa bir duraklamadan sonra masaüstüne kendiliğinden uygulanır. Alıntı değişmez — yalnızca görünüm."
-                : "Değişiklikler yalnızca önizlemede kalır; masaüstüne yansıması için Uygula'ya bas."
+                : "Changes stay in the preview; press Apply to send them to the desktop."
         ) {
             // Short title on purpose. A `SettingsRow`'s title reports its full intrinsic width,
             // and on this page — the only one sharing space with the preview inspector — a long

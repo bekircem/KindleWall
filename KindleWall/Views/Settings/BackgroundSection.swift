@@ -10,8 +10,8 @@ struct BackgroundSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
             SettingsCard(
-                title: "Dinamik Duvar Kağıdı",
-                footnote: "Açıkken duvar kağıdı tek bir görüntü yerine altı kareli bir HEIC olarak yazılır ve macOS gün içinde renkleri kendisi değiştirir — uygulama kapalıyken bile. Alıntının ne sıklıkla değişeceği ayrı bir ayar; bu yalnızca renkleri etkiler."
+                title: "Dynamic Wallpaper",
+                footnote: "When on, the wallpaper is written as a six-frame HEIC instead of a single image, and macOS shifts the colors through the day by itself — even while the app is closed. How often the quote changes is a separate setting; this affects colors only."
             ) {
                 VStack(spacing: 0) {
                     SettingsRow(
@@ -39,8 +39,8 @@ struct BackgroundSection: View {
             }
 
             SettingsCard(
-                title: "Özel Gradient",
-                footnote: "Seçili stilin arka planını özel renklerle değiştir. Metin rengi otomatik olarak okunabilirliğe göre ayarlanır."
+                title: "Custom Gradient",
+                footnote: "Replace the selected style's background with colors of your own. The text color adjusts itself for legibility."
             ) {
                 VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                     // Bound straight to the owner: the setter persists and refreshes the

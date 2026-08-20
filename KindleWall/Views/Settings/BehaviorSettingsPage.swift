@@ -11,7 +11,7 @@ struct BehaviorSettingsPage: View {
     @Bindable var settingsVM: SettingsViewModel
     let actions: SettingsActions
 
-    /// Quotes in the user's pinned books — context shown by the rotation "Sabit Kitaplar" scope.
+    /// Quotes in the user's pinned books — context shown by the rotation "Pinned Books" scope.
     private var pinnedQuoteCount: Int {
         viewModel.clippings.filter { settingsVM.pinnedBookTitles.contains($0.bookTitle) }.count
     }

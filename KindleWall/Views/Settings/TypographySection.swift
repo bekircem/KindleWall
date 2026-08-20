@@ -16,7 +16,7 @@ struct TypographySection: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
             // Decoration — reads and writes the same `typography` the sliders below do, so
             // "Reset to Default" can no longer leave the chips highlighting a stale choice.
-            SettingsCard(title: "Süsleme", footnote: "Alıntının çevresine eklenen dekoratif öğe.") {
+            SettingsCard(title: "Ornament", footnote: "A decorative element placed around the quote.") {
                 HStack(spacing: Theme.Spacing.s) {
                     ForEach(TypographySettings.DecorationStyle.allCases) { style in
                         DecorationStyleChip(
@@ -33,7 +33,7 @@ struct TypographySection: View {
             // Live type controls
             VStack(alignment: .leading, spacing: Theme.Spacing.s) {
                 HStack {
-                    SectionHeader("Yazı Tipi")
+                    SectionHeader("Typeface")
                     Spacer()
                     Button("Reset to Default") {
                         viewModel.updateTypography(.default)
@@ -77,9 +77,9 @@ private struct DecorationStyleChip: View {
 
     private var label: String {
         switch style {
-        case .classicQuote: return "Tırnak"
+        case .classicQuote: return "Quote Mark"
         case .minimalDots:  return "Minimal"
-        case .line:         return "Çizgi"
+        case .line:         return "Line"
         case .none:         return "Yok"
         }
     }

@@ -2,12 +2,12 @@ import SwiftUI
 
 /// Sidebar information architecture for the main window — Loop-style grouped, focused pages.
 enum SidebarSection: String, CaseIterable, Identifiable {
-    // "Duvar Kağıdı" rather than "General": the old name collided with the *item* also called
+    // "Wallpaper" rather than "General": the old name collided with the *item* also called
     // "General" further down, so the sidebar used the same word for two different things.
-    case wallpaper = "Duvar Kağıdı"
-    case content   = "İçerik"
+    case wallpaper = "Wallpaper"
+    case content   = "Content"
     case behavior  = "Behavior"
-    case app       = "Uygulama"
+    case app       = "App"
 
     var id: String { rawValue }
 
@@ -48,9 +48,9 @@ enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .currentQuote: return "Şu Anki Alıntı"
+        case .currentQuote: return "Current Quote"
         case .design:       return "Design"
-        case .library:      return "Kütüphane"
+        case .library:      return "Library"
         case .behavior:     return "Behavior"
         case .settings:     return "Ayarlar"
         case .shortcuts:    return "Shortcuts"

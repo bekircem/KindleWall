@@ -8,7 +8,7 @@ struct ShortcutsSettingsPage: View {
         SettingsPage(title: "Shortcuts") {
             SettingsCard(
                 title: "Metin Yakalama",
-                footnote: "Herhangi bir uygulamada metin seçip kısayola basınca QuickCapture paneli açılır."
+                footnote: "Select text in any app and press the shortcut to open the QuickCapture panel."
             ) {
                 VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                     HStack(alignment: .center, spacing: Theme.Spacing.m) {

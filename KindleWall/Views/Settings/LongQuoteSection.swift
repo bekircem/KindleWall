@@ -10,9 +10,9 @@ struct LongQuoteSection: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             // MARK: Skip
             SettingsCard(
-                title: "Uzun Alıntıları Atla",
+                title: "Skip Long Quotes",
                 footnote: settingsVM.skipLongQuotesEnabled
-                    ? "Bu eşikten uzun alıntılar duvar kağıdı seçiminde atlanır."
+                    ? "Quotes longer than this threshold are skipped when choosing a wallpaper."
                     : nil
             ) {
                 SettingsRow(icon: "arrow.forward.to.line", iconColor: .orange,
@@ -53,7 +53,7 @@ struct LongQuoteSection: View {
 
             // MARK: Tighten
             SettingsCard(
-                title: "Uzun Alıntıları Daralt",
+                title: "Tighten Long Quotes",
                 footnote: settingsVM.autoTightenLongQuotes
                     ? "Eşikten uzun alıntılar, font boyutu bu değere ve satır arası bu çarpana kadar daraltılır. Çok düşük değerler okunabilirliği azaltabilir."
                     : nil

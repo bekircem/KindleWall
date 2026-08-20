@@ -98,7 +98,8 @@ final class ClippingsCacheTests: XCTestCase {
 
         viewModel.loadClippings()
 
-        XCTAssertEqual(viewModel.errorMessage, "Lütfen My Clippings.txt dosyasını seçin.")
+        XCTAssertEqual(viewModel.errorMessage,
+                       String(localized: "Please choose your My Clippings.txt file."))
     }
 
     func test_cachingIgnoresACopyOntoItself() throws {

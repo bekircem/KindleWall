@@ -4,7 +4,7 @@ extension String {
     /// Uppercases with Turkish casing rules, so "i" becomes "İ" and not "I".
     ///
     /// The locale is pinned rather than taken from the system: the UI is Turkish whatever the
-    /// user's region is set to, and plain `uppercased()` turned "Duvar Kağıdı Stili" into
+    /// user's region is set to, and plain `uppercased()` turned "Wallpaper Style" into
     /// "DUVAR KAĞIDI STILI" on every card header in the app.
     var uppercasedTurkish: String {
         uppercased(with: Locale(identifier: "tr_TR"))

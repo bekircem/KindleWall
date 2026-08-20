@@ -26,7 +26,7 @@ extension HEICWallpaperEncoderProtocol {
     func write(frames: [CGImage], phaseTimes: [SolarPhaseTime], to url: URL) throws {
         guard frames.count == phaseTimes.count else {
             throw KindleWallError.wallpaperGenerationFailed(
-                reason: "Kare sayısı faz sayısıyla eşleşmiyor"
+                reason: String(localized: "The frame count does not match the phase count")
             )
         }
         try write(phaseTimes: phaseTimes, to: url) { frames[$0] }
@@ -56,7 +56,7 @@ final class HEICWallpaperEncoder: HEICWallpaperEncoderProtocol {
                nextFrame: (Int) -> CGImage?) throws {
         guard !phaseTimes.isEmpty else {
             throw KindleWallError.wallpaperGenerationFailed(
-                reason: "Kare sayısı faz sayısıyla eşleşmiyor"
+                reason: String(localized: "The frame count does not match the phase count")
             )
         }
 
@@ -65,7 +65,7 @@ final class HEICWallpaperEncoder: HEICWallpaperEncoderProtocol {
         guard let destination = CGImageDestinationCreateWithURL(
             url as CFURL, UTType.heic.identifier as CFString, phaseTimes.count, nil
         ) else {
-            throw KindleWallError.wallpaperGenerationFailed(reason: "HEIC hedefi oluşturulamadı")
+            throw KindleWallError.wallpaperGenerationFailed(reason: String(localized: "Could not create the HEIC destination"))
         }
 
         let options = [kCGImageDestinationLossyCompressionQuality: 0.85] as CFDictionary
@@ -75,7 +75,7 @@ final class HEICWallpaperEncoder: HEICWallpaperEncoderProtocol {
                 // One frame is produced, appended and released before the next is asked for, so
                 // peak memory is one frame rather than all of them.
                 guard let frame = nextFrame(index) else {
-                    throw KindleWallError.wallpaperGenerationFailed(reason: "Kare üretilemedi")
+                    throw KindleWallError.wallpaperGenerationFailed(reason: String(localized: "Could not render a frame"))
                 }
                 if index == 0 {
                     // The metadata must ride on the primary image; the rest are added plain.
@@ -86,7 +86,7 @@ final class HEICWallpaperEncoder: HEICWallpaperEncoderProtocol {
             }
 
             guard CGImageDestinationFinalize(destination) else {
-                throw KindleWallError.wallpaperGenerationFailed(reason: "HEIC yazılamadı")
+                throw KindleWallError.wallpaperGenerationFailed(reason: String(localized: "Could not write the HEIC"))
             }
         }
     }
@@ -100,7 +100,7 @@ final class HEICWallpaperEncoder: HEICWallpaperEncoderProtocol {
         guard let plist = try? PropertyListSerialization.data(
             fromPropertyList: ["ti": entries], format: .binary, options: 0
         ) else {
-            throw KindleWallError.wallpaperGenerationFailed(reason: "Faz verisi kodlanamadı")
+            throw KindleWallError.wallpaperGenerationFailed(reason: String(localized: "Could not encode the phase data"))
         }
 
         let metadata = CGImageMetadataCreateMutable()
@@ -117,7 +117,7 @@ final class HEICWallpaperEncoder: HEICWallpaperEncoderProtocol {
         ), CGImageMetadataSetTagWithPath(
             metadata, nil, "\(Self.appleprefix):\(Self.timeKey)" as CFString, tag
         ) else {
-            throw KindleWallError.wallpaperGenerationFailed(reason: "Dinamik metadata yazılamadı")
+            throw KindleWallError.wallpaperGenerationFailed(reason: String(localized: "Could not write the dynamic metadata"))
         }
 
         return metadata

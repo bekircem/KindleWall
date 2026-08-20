@@ -42,7 +42,7 @@ struct RotationModeCard: View {
                 verbatimTitle: mode.displayName,
                 verbatimSubtitle: isAvailable
                     ? mode.modeDescription
-                    : "Kullanmak için önce Kütüphane'den alıntılara kalp ekle."
+                    : "Heart some quotes in the Library first to use this."
             ) {
                 if isSelected {
                     Image(systemName: "checkmark")

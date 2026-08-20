@@ -82,7 +82,7 @@ struct RowDivider: View {
 }
 
 #Preview {
-    SettingsCard(title: "Schedule", footnote: "Duvar kağıdının ne sıklıkla değişeceğini seçin.") {
+    SettingsCard(title: "Schedule", footnote: "Choose how often the wallpaper changes.") {
         SettingsRow(icon: "clock.fill", iconColor: .blue, title: "Change Interval") {
             Text("1 hour").foregroundStyle(.secondary)
         }

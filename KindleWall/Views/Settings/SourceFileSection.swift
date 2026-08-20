@@ -10,7 +10,7 @@ struct SourceFileSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             SettingsCard(
-                footnote: "Kindle'ından aldığın My Clippings.txt dosyası. Aynı dosyanın güncel hâlini tekrar seçersen yalnızca yeni alıntılar eklenir; favori ve gösterim durumları korunur."
+                footnote: "The My Clippings.txt file from your Kindle. Choosing an updated copy of the same file adds only the new quotes; favorites and shown state are kept."
             ) {
                 VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                     HStack(spacing: Theme.Spacing.m) {

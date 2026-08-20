@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The book chooser for "Sabitler", presented in a popover.
+/// The book chooser for "Pinned", presented in a popover.
 ///
 /// It used to be a 200pt scroll view nested inside the settings page's own scroll view — two
 /// scrollers stacked in the same gesture, in a window too short to read a library through.
@@ -23,7 +23,7 @@ struct BookScopePicker: View {
         var id: String { rawValue }
         var label: String {
             switch self {
-            case .quoteCount: return "Alıntı sayısı"
+            case .quoteCount: return "Quote count"
             case .title:      return "Ad"
             }
         }
@@ -145,7 +145,7 @@ struct BookScopePicker: View {
 
     private var summary: String {
         let pinned = books.filter { viewModel.isBookPinned($0.title) }
-        guard !pinned.isEmpty else { return "Hiç kitap seçilmedi" }
+        guard !pinned.isEmpty else { return "No books selected" }
         let quotes = pinned.reduce(0) { $0 + $1.quoteCount }
         return "\(pinned.count) kitap · \(quotes) alıntı"
     }

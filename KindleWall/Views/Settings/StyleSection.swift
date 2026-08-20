@@ -6,7 +6,7 @@ struct StyleSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.s) {
-            SectionHeader("Duvar Kağıdı Stili")
+            SectionHeader("Wallpaper Style")
 
             // One binding, one owner. The style write, the typography it carries and the
             // preview all happen inside `updateStyle`, so nothing here can drift.
@@ -44,7 +44,7 @@ private struct StyleTypographyUndoBanner: View {
             Image(systemName: "textformat")
                 .foregroundStyle(.secondary)
 
-            Text("Tipografi \"\(styleName)\" varsayılanına ayarlandı")
+            Text("Typography reset to the \"\(styleName)\" default")
                 .font(.callout)
                 .foregroundStyle(.secondary)
 

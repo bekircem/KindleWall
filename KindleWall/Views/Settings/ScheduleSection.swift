@@ -9,7 +9,7 @@ struct ScheduleSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             SettingsCard(
-                footnote: "Duvar kağıdının otomatik olarak ne sıklıkla değişeceğini seç."
+                footnote: "Choose how often the wallpaper changes on its own."
             ) {
                 VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                     Picker("Change Interval", selection: Binding(
