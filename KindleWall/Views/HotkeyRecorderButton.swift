@@ -24,7 +24,7 @@ struct HotkeyRecorderButton: View {
                 isRecording ? stopRecording() : startRecording()
             } label: {
                 Text(isRecording
-                     ? "Kısayol basın... (Esc = iptal)"
+                     ? "Press a shortcut… (Esc to cancel)"
                      : Self.formatHotkey(keyCode: keyCode, modifiers: modifiers))
                     .font(.system(.body, design: .monospaced))
                     .foregroundStyle(isRecording ? Color.orange : Color.primary)
@@ -33,7 +33,7 @@ struct HotkeyRecorderButton: View {
             .buttonStyle(.bordered)
             .tint(isRecording ? .orange : .accentColor)
 
-            Button("Varsayılana Dön") {
+            Button("Reset to Default") {
                 stopRecording()
                 applyHotkey(keyCode: Self.defaultKeyCode, modifiers: Self.defaultModifiers)
             }

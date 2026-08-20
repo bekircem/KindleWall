@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Tasarım" as an editor rather than a settings page: the wallpaper is the canvas, and the
+/// "Design" as an editor rather than a settings page: the wallpaper is the canvas, and the
 /// controls that shape it live in a tabbed inspector beside it.
 ///
 /// It used to be a scrolling form — auto-apply card, then a style grid, then background, then
@@ -27,7 +27,7 @@ struct DesignEditorView: View {
 
     var body: some View {
         canvas
-            .navigationTitle("Tasarım")
+            .navigationTitle("Design")
             .inspector(isPresented: $isInspectorPresented) {
                 DesignInspector(
                     viewModel: viewModel,
@@ -101,15 +101,15 @@ struct DesignEditorView: View {
         ToolbarItemGroup(placement: .secondaryAction) {
             // Was buried as a bare glyph in the old preview panel's header, where it read as
             // decoration rather than as the way to test a design against another quote.
-            Button("Yeni Alıntı", systemImage: Constants.Icons.newQuote) {
+            Button("New Quote", systemImage: Constants.Icons.newQuote) {
                 viewModel.selectRandomClipping()
             }
-            .help("Tasarımı başka bir alıntıyla dene")
+            .help("Try the design with a different quote")
 
-            Button("Kontroller", systemImage: "sidebar.right") {
+            Button("Controls", systemImage: "sidebar.right") {
                 isInspectorPresented.toggle()
             }
-            .help(isInspectorPresented ? "Kontrolleri gizle" : "Kontrolleri göster")
+            .help(isInspectorPresented ? "Hide controls" : "Show controls")
         }
     }
 }

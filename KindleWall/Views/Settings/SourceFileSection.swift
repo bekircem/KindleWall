@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Kaynak Dosya" section — choose / reload the Kindle My Clippings.txt source file.
+/// "Source File" section — choose / reload the Kindle My Clippings.txt source file.
 /// A section of the consolidated `BehaviorSettingsPage`.
 struct SourceFileSection: View {
     @Bindable var settingsVM: SettingsViewModel
@@ -10,7 +10,7 @@ struct SourceFileSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             SettingsCard(
-                footnote: "Kindle'ından aldığın My Clippings.txt dosyası. Aynı dosyanın güncel hâlini tekrar seçersen yalnızca yeni alıntılar eklenir; favori ve gösterim durumları korunur."
+                footnote: String(localized: "The My Clippings.txt file from your Kindle. Choosing an updated copy of the same file adds only the new quotes; favorites and shown state are kept.")
             ) {
                 VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                     HStack(spacing: Theme.Spacing.m) {
@@ -23,12 +23,12 @@ struct SourceFileSection: View {
                                     .lineLimit(1)
                                     .truncationMode(.middle)
                                 if clippingsCount > 0 {
-                                    Text("\(clippingsCount) alıntı yüklendi")
+                                    Text("\(clippingsCount) quotes imported")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
                             } else {
-                                Text("Henüz dosya seçilmedi")
+                                Text("No file chosen yet")
                                     .font(.callout)
                                     .foregroundStyle(.secondary)
                             }
@@ -44,7 +44,7 @@ struct SourceFileSection: View {
                                 actions.onFileSelected(url)
                             }
                         } label: {
-                            Label("Dosya Seç…", systemImage: "folder")
+                            Label("Choose File…", systemImage: "folder")
                         }
                         .buttonStyle(.bordered)
                     }

@@ -5,6 +5,9 @@ Kindle alıntılarını macOS masaüstü duvar kağıdına dönüştürür.
 KindleWall'a Kindle'ındaki `My Clippings.txt` dosyasını göster; kendi kütüphanenden bir pasajı
 masaüstüne basar ve senin belirlediğin aralıkla değiştirir.
 
+**İngilizce ve Türkçe** olarak kullanılabilir — uygulama sistem dilini izler; istersen macOS'un
+Sistem Ayarları → Genel → Dil ve Bölge → Uygulamalar bölümünden ona ayrı bir dil atayabilirsin.
+
 ![KindleWall](docs/screenshots/main.png)
 
 ## Kurulum
@@ -37,10 +40,6 @@ Ya da imzalı ve notarize edilmiş DMG'yi
 - **Mac'lerin arasında eşitlenir** — kendi özel iCloud veritabanın üzerinden, isteğe bağlı ve
   iCloud'a giriş yapmadıysan kapalı.
 - **Kendini günceller** — Sparkle ile, EdDSA imzalı sürümler.
-
-## Yol haritası
-
-- İngilizce arayüz (1.1)
 
 ## Kaynaktan derleme
 

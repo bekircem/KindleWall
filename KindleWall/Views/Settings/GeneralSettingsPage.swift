@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Genel" page — launch, menu bar, notifications, spaces, and restore-previous-wallpaper.
+/// "General" page — launch, menu bar, notifications, spaces, and restore-previous-wallpaper.
 struct GeneralSettingsPage: View {
     @Bindable var settingsVM: SettingsViewModel
     let canRestorePreviousWallpaper: Bool
@@ -10,24 +10,24 @@ struct GeneralSettingsPage: View {
     @AppStorage(Constants.StorageKeys.hasCompletedOnboarding) private var hasCompletedOnboarding = false
 
     var body: some View {
-        SettingsPage(title: "Genel") {
+        SettingsPage(title: "General") {
             SettingsCard(footnote: settingsVM.loginItemError) {
-                SettingsRow(icon: "power", iconColor: .green, title: "Başlangıçta Aç") {
+                SettingsRow(icon: "power", iconColor: .green, title: "Open at Login") {
                     Toggle("", isOn: $settingsVM.launchAtLogin).labelsHidden()
                 }
                 RowDivider()
-                SettingsRow(icon: "menubar.rectangle", iconColor: .indigo, title: "Menü Çubuğunda Göster") {
+                SettingsRow(icon: "menubar.rectangle", iconColor: .indigo, title: "Show in Menu Bar") {
                     Toggle("", isOn: $settingsVM.showInMenuBar).labelsHidden()
                 }
                 RowDivider()
-                SettingsRow(icon: "bell.fill", iconColor: .red, title: "Bildirim Gönder") {
+                SettingsRow(icon: "bell.fill", iconColor: .red, title: "Send Notifications") {
                     Toggle("", isOn: $settingsVM.showNotifications).labelsHidden()
                 }
                 RowDivider()
                 SettingsRow(
                     icon: "rectangle.on.rectangle", iconColor: .blue,
-                    title: "Tüm Alanlara Uygula",
-                    subtitle: "Diğer Mission Control alanları ilk ziyaret edildiklerinde güncellenir."
+                    title: "Apply to All Spaces",
+                    subtitle: "Other Mission Control spaces update the first time you visit them."
                 ) {
                     Toggle("", isOn: $settingsVM.applyToAllSpaces).labelsHidden()
                 }
@@ -39,13 +39,13 @@ struct GeneralSettingsPage: View {
             }
 
             SettingsCard(
-                title: "Anında Eşitleme",
-                footnote: "Açıkken tüm masaüstleri aynı anda değişir. Bunu yapmanın tek yolu macOS'un kendi duvar kağıdı kaydını yazıp duvar kağıdı servisini yeniden başlatmak — Ayarlar panelinin yaptığı da budur. Biçim Apple tarafından belgelenmemiştir, bu yüzden varsayılan kapalı. İlk kullanımda kaydın yedeği alınır."
+                title: String(localized: "Immediate Sync"),
+                footnote: String(localized: "When on, every desktop changes at once. The only way to do that is to write macOS's own wallpaper store and restart the wallpaper service — which is what the Settings panel does too. The format is undocumented by Apple, so this is off by default. The store is backed up before the first write.")
             ) {
                 SettingsRow(
                     icon: "square.on.square.dashed", iconColor: .orange,
-                    title: "Tüm Masaüstlerini Anında Eşitle",
-                    subtitle: "Kapalıyken her alan ilk ziyaret edildiğinde güncellenir."
+                    title: "Sync All Desktops Immediately",
+                    subtitle: "When off, each space updates the first time you visit it."
                 ) {
                     Toggle("", isOn: $settingsVM.syncAllSpaces).labelsHidden()
                 }
@@ -59,13 +59,13 @@ struct GeneralSettingsPage: View {
                 if settingsVM.syncAllSpaces { actions.onApplyDesignNow() }
             }
 
-            SettingsCard(title: "Duvar Kağıdı") {
+            SettingsCard(title: String(localized: "Wallpaper")) {
                 SettingsRow(
                     icon: "arrow.uturn.backward", iconColor: Color(.systemGray),
-                    title: "Önceki Duvar Kağıdına Dön",
-                    subtitle: canRestorePreviousWallpaper ? nil : "Henüz değiştirilmiş bir duvar kağıdı yok"
+                    title: "Restore Previous Wallpaper",
+                    subtitle: canRestorePreviousWallpaper ? nil : "No wallpaper has been replaced yet"
                 ) {
-                    Button("Geri Yükle") {
+                    Button("Restore") {
                         actions.onRestorePreviousWallpaper()
                     }
                     .buttonStyle(.bordered)
@@ -75,13 +75,13 @@ struct GeneralSettingsPage: View {
 
             SettingsCard(
                 title: "Kurulum",
-                footnote: "Karşılama akışını yeniden açar. Alıntıların, favorilerin ve ayarların olduğu gibi kalır."
+                footnote: String(localized: "Reopens the welcome flow. Your quotes, favorites and settings stay as they are.")
             ) {
                 SettingsRow(
                     icon: "sparkles", iconColor: .indigo,
-                    title: "Tanıtımı Yeniden Göster"
+                    title: "Show the Intro Again"
                 ) {
-                    Button("Başlat") {
+                    Button("Begin") {
                         hasCompletedOnboarding = false
                     }
                     .buttonStyle(.bordered)

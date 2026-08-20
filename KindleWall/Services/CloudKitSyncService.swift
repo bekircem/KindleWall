@@ -119,7 +119,7 @@ final class CloudKitSyncService {
         pendingPushTimer?.invalidate()
         pendingPushTimer = nil
         pendingDirty.removeAll()
-        syncState.status = .disabled(reason: "Eşitleme durduruldu")
+        syncState.status = .disabled(reason: String(localized: "Sync stopped"))
     }
 
     /// User-initiated sync. Pushes any pending changes then pulls remote updates,
@@ -135,7 +135,7 @@ final class CloudKitSyncService {
         do {
             status = try await container.accountStatus()
         } catch {
-            syncState.status = .error("iCloud durumu okunamadı: \(error.localizedDescription)")
+            syncState.status = .error(String(localized: "Could not read the iCloud status: \(error.localizedDescription)"))
             return
         }
 
@@ -143,16 +143,16 @@ final class CloudKitSyncService {
         case .available:
             break
         case .noAccount:
-            syncState.status = .disabled(reason: "iCloud hesabınızla giriş yapın")
+            syncState.status = .disabled(reason: String(localized: "Sign in with your iCloud account"))
             return
         case .restricted:
-            syncState.status = .disabled(reason: "iCloud kullanımı kısıtlanmış")
+            syncState.status = .disabled(reason: String(localized: "iCloud is restricted"))
             return
         case .couldNotDetermine, .temporarilyUnavailable:
-            syncState.status = .disabled(reason: "iCloud şu an erişilemiyor")
+            syncState.status = .disabled(reason: String(localized: "iCloud is unavailable right now"))
             return
         @unknown default:
-            syncState.status = .disabled(reason: "iCloud durumu bilinmiyor")
+            syncState.status = .disabled(reason: String(localized: "The iCloud status is unknown"))
             return
         }
 
@@ -162,7 +162,7 @@ final class CloudKitSyncService {
             try await bootstrapZoneIfNeeded()
             try await bootstrapSubscriptionIfNeeded()
         } catch {
-            syncState.status = .error("Kurulum başarısız: \(error.localizedDescription)")
+            syncState.status = .error(String(localized: "Setup failed: \(error.localizedDescription)"))
             return
         }
 
@@ -521,7 +521,7 @@ final class CloudKitSyncService {
             saveChangeToken(nil)
             guard !isRecoveringFromExpiredToken else {
                 // The recovery pull also failed — bail to avoid infinite recursion.
-                syncState.status = .error("Senkronizasyon kurtarılamadı")
+                syncState.status = .error(String(localized: "Sync could not recover"))
                 return
             }
             isRecoveringFromExpiredToken = true

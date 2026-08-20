@@ -17,12 +17,12 @@ enum SolarPhase: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .dawn:      return "Şafak"
-        case .sunrise:   return "Gündoğumu"
-        case .noon:      return "Öğlen"
-        case .afternoon: return "İkindi"
-        case .sunset:    return "Günbatımı"
-        case .night:     return "Gece"
+        case .dawn:      return String(localized: "Dawn")
+        case .sunrise:   return String(localized: "Sunrise")
+        case .noon:      return String(localized: "Noon")
+        case .afternoon: return String(localized: "Afternoon")
+        case .sunset:    return String(localized: "Sunset")
+        case .night:     return String(localized: "Night")
         }
     }
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Decoration chips plus the live type controls (shared with the hero inspector) — the
-/// "Tipografi" group of the "Tasarım" page.
+/// "Typography" group of the "Design" page.
 struct TypographySection: View {
     let viewModel: MainViewModel
 
@@ -15,8 +15,8 @@ struct TypographySection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
             // Decoration — reads and writes the same `typography` the sliders below do, so
-            // "Varsayılana Dön" can no longer leave the chips highlighting a stale choice.
-            SettingsCard(title: "Süsleme", footnote: "Alıntının çevresine eklenen dekoratif öğe.") {
+            // "Reset to Default" can no longer leave the chips highlighting a stale choice.
+            SettingsCard(title: String(localized: "Ornament"), footnote: String(localized: "A decorative element placed around the quote.")) {
                 HStack(spacing: Theme.Spacing.s) {
                     ForEach(TypographySettings.DecorationStyle.allCases) { style in
                         DecorationStyleChip(
@@ -33,9 +33,9 @@ struct TypographySection: View {
             // Live type controls
             VStack(alignment: .leading, spacing: Theme.Spacing.s) {
                 HStack {
-                    SectionHeader("Yazı Tipi")
+                    SectionHeader(String(localized: "Typeface"))
                     Spacer()
-                    Button("Varsayılana Dön") {
+                    Button("Reset to Default") {
                         viewModel.updateTypography(.default)
                     }
                     .font(.caption)
@@ -77,9 +77,9 @@ private struct DecorationStyleChip: View {
 
     private var label: String {
         switch style {
-        case .classicQuote: return "Tırnak"
+        case .classicQuote: return "Quote Mark"
         case .minimalDots:  return "Minimal"
-        case .line:         return "Çizgi"
+        case .line:         return "Line"
         case .none:         return "Yok"
         }
     }

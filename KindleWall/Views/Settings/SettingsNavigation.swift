@@ -2,14 +2,27 @@ import SwiftUI
 
 /// Sidebar information architecture for the main window — Loop-style grouped, focused pages.
 enum SidebarSection: String, CaseIterable, Identifiable {
-    // "Duvar Kağıdı" rather than "Genel": the old name collided with the *item* also called
-    // "Genel" further down, so the sidebar used the same word for two different things.
-    case wallpaper = "Duvar Kağıdı"
-    case content   = "İçerik"
-    case behavior  = "Davranış"
-    case app       = "Uygulama"
+    // "Wallpaper" rather than "General": the old name collided with the *item* also called
+    // "General" further down, so the sidebar used the same word for two different things.
+    case wallpaper = "Wallpaper"
+    case content   = "Content"
+    case behavior  = "Behavior"
+    case app       = "App"
 
     var id: String { rawValue }
+
+    /// The sidebar's group heading.
+    ///
+    /// Separate from `rawValue`, which is an identifier rather than copy: reading the heading
+    /// off the raw value left the four group titles in English inside a Turkish build.
+    var title: String {
+        switch self {
+        case .wallpaper: return String(localized: "Wallpaper")
+        case .content:   return String(localized: "Content")
+        case .behavior:  return String(localized: "Behavior")
+        case .app:       return String(localized: "App")
+        }
+    }
 
     /// The one hue every item in this section wears.
     ///
@@ -46,16 +59,18 @@ enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
+    /// `String(localized:)`, not a bare literal: this value is also used to sort the list and
+    /// is handed to `Text` as a resolved string, so it has to come out of the catalog here.
     var title: String {
         switch self {
-        case .currentQuote: return "Şu Anki Alıntı"
-        case .design:       return "Tasarım"
-        case .library:      return "Kütüphane"
-        case .behavior:     return "Davranış"
-        case .settings:     return "Ayarlar"
-        case .shortcuts:    return "Kısayollar"
+        case .currentQuote: return String(localized: "Current Quote")
+        case .design:       return String(localized: "Design")
+        case .library:      return String(localized: "Library")
+        case .behavior:     return String(localized: "Behavior")
+        case .settings:     return String(localized: "Settings")
+        case .shortcuts:    return String(localized: "Shortcuts")
         case .account:      return "iCloud"
-        case .about:        return "Hakkında"
+        case .about:        return String(localized: "About")
         }
     }
 
@@ -95,7 +110,7 @@ struct SettingsActions {
     var onRotationModeChanged: (RotationMode) -> Void = { _ in }
     var onPinnedBooksChanged: (Set<String>) -> Void = { _ in }
     var onRestorePreviousWallpaper: () -> Void = {}
-    /// Picks a *new quote* and applies it — "Şimdi Değiştir".
+    /// Picks a *new quote* and applies it — "Change Now".
     var onApplyNow: () -> Void = {}
     /// Applies the current design without touching the quote.
     var onApplyDesignNow: () -> Void = {}

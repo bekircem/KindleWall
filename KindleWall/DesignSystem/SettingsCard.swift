@@ -6,14 +6,20 @@ import SwiftUI
 /// text stays legible (glass-on-text reduces contrast). Optional `title` renders an uppercased
 /// section header above the card; `footnote` renders explanatory text below it.
 struct SettingsCard<Content: View>: View {
+    /// `String`, not `LocalizedStringKey`, unlike `SettingsPage` and `SettingsRow`: this card
+    /// *uppercases* its title, and a key cannot be manipulated. Callers therefore localize the
+    /// literal themselves with `String(localized:)` — the casing has to happen on resolved
+    /// text, in the right locale, or Turkish loses its dotted capital İ.
     var title: String? = nil
+    /// Also `String`: roughly a third of the call sites pass runtime text — a login-item
+    /// error, a computed summary — which a key lookup would silently pass through untranslated.
     var footnote: String? = nil
     @ViewBuilder var content: Content
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.s) {
             if let title {
-                Text(title.uppercasedTurkish)
+                Text(title.uppercasedForCurrentLocale)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .padding(.leading, Theme.Spacing.xs)
@@ -58,7 +64,7 @@ struct SectionHeader: View {
     }
 
     var body: some View {
-        Text(title.uppercasedTurkish)
+        Text(title.uppercasedForCurrentLocale)
             .font(.caption.weight(.semibold))
             .foregroundStyle(.secondary)
             .padding(.leading, Theme.Spacing.xs)
@@ -76,13 +82,13 @@ struct RowDivider: View {
 }
 
 #Preview {
-    SettingsCard(title: "Zamanlama", footnote: "Duvar kağıdının ne sıklıkla değişeceğini seçin.") {
-        SettingsRow(icon: "clock.fill", iconColor: .blue, title: "Değişim Sıklığı") {
-            Text("1 saat").foregroundStyle(.secondary)
+    SettingsCard(title: "Schedule", footnote: "Choose how often the wallpaper changes.") {
+        SettingsRow(icon: "clock.fill", iconColor: .blue, title: "Change Interval") {
+            Text("1 hour").foregroundStyle(.secondary)
         }
         RowDivider()
-        SettingsRow(icon: "shuffle", iconColor: .green, title: "Döngü Modu",
-                    subtitle: "Rastgele alıntı seçer") {
+        SettingsRow(icon: "shuffle", iconColor: .green, title: "Rotation",
+                    subtitle: "Picks a quote at random") {
             Image(systemName: "chevron.right").foregroundStyle(.tertiary).font(.caption)
         }
     }

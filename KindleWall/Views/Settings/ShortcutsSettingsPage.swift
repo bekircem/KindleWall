@@ -1,19 +1,19 @@
 import SwiftUI
 
-/// "Kısayollar" page — global text-capture hotkey + optional Accessibility permission.
+/// "Shortcuts" page — global text-capture hotkey + optional Accessibility permission.
 struct ShortcutsSettingsPage: View {
     @State private var accessibilityGranted = AXIsProcessTrusted()
 
     var body: some View {
-        SettingsPage(title: "Kısayollar") {
+        SettingsPage(title: "Shortcuts") {
             SettingsCard(
                 title: "Metin Yakalama",
-                footnote: "Herhangi bir uygulamada metin seçip kısayola basınca QuickCapture paneli açılır."
+                footnote: String(localized: "Select text in any app and press the shortcut to open the QuickCapture panel.")
             ) {
                 VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                     HStack(alignment: .center, spacing: Theme.Spacing.m) {
                         IconTile(symbol: "keyboard.fill", color: .indigo)
-                        Text("Yakalama Kısayolu")
+                        Text("Capture Shortcut")
                             .font(.body)
                         Spacer()
                         HotkeyRecorderButton()
@@ -24,15 +24,15 @@ struct ShortcutsSettingsPage: View {
                     HStack(spacing: 6) {
                         if accessibilityGranted {
                             Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
-                            Text("Erişilebilirlik izni var — seçili metin otomatik doldurulur")
+                            Text("Accessibility is granted — selected text is filled in automatically")
                                 .font(.caption).foregroundStyle(.secondary)
                             Spacer()
                         } else {
                             Image(systemName: "info.circle").foregroundStyle(.secondary)
-                            Text("Opsiyonel: Erişilebilirlik izni verilirse seçili metin panele otomatik gelir")
+                            Text("Optional: with Accessibility granted, selected text arrives in the panel automatically")
                                 .font(.caption).foregroundStyle(.secondary)
                             Spacer()
-                            Button("İzin Ver") {
+                            Button("Grant Permission") {
                                 GlobalHotkeyManager.shared.openAccessibilitySettings()
                             }
                             .font(.caption).buttonStyle(.bordered).controlSize(.small)

@@ -1,13 +1,15 @@
 import Foundation
 
 extension String {
-    /// Uppercases with Turkish casing rules, so "i" becomes "İ" and not "I".
+    /// Uppercased in the locale the app is actually running in.
     ///
-    /// The locale is pinned rather than taken from the system: the UI is Turkish whatever the
-    /// user's region is set to, and plain `uppercased()` turned "Duvar Kağıdı Stili" into
-    /// "DUVAR KAĞIDI STILI" on every card header in the app.
-    var uppercasedTurkish: String {
-        uppercased(with: Locale(identifier: "tr_TR"))
+    /// This used to pin `tr_TR`, because Turkish capitalises "i" as "İ" and plain
+    /// `uppercased()` turned "Stili" into "STILI" on every card header. That was right while
+    /// the UI was Turkish whatever the user's region said, and wrong the moment the app also
+    /// shipped in English. `Locale.current` follows the app's effective language, including a
+    /// per-app override set in System Settings.
+    var uppercasedForCurrentLocale: String {
+        uppercased(with: Locale.current)
     }
 
     /// Trims whitespace and newlines from both ends of the string.

@@ -5,8 +5,8 @@ Turns your Kindle highlights into desktop wallpapers on macOS.
 Point KindleWall at your Kindle's `My Clippings.txt` and it renders a passage from your own
 library onto your desktop, rotating on a schedule you choose.
 
-> **Interface language:** the UI is **Turkish only** right now. English is next — see the
-> [roadmap](#roadmap). The README is in English so you know what you are downloading.
+Available in **English and Turkish** — the app follows your system language, and macOS lets
+you give it a language of its own under System Settings → General → Language & Region → Applications.
 
 ![KindleWall](docs/screenshots/main.png)
 
@@ -40,10 +40,6 @@ Or take the signed, notarized DMG from
 - **Syncs across your Macs** through your own private iCloud database — optional, and off
   unless you are signed into iCloud.
 - **Updates itself** via Sparkle, with EdDSA-signed releases.
-
-## Roadmap
-
-- English interface (1.1)
 
 ## Build from source
 

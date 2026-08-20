@@ -56,7 +56,7 @@ struct OnboardingView: View {
     private var navigationBar: some View {
         HStack {
             if step > .welcome {
-                Button("Geri", action: goBack)
+                Button("Back", action: goBack)
                     .keyboardShortcut("[", modifiers: .command)
             }
 
@@ -74,11 +74,11 @@ struct OnboardingView: View {
             Spacer()
 
             if step == .done {
-                Button("Bitir", action: finish)
+                Button("Finish", action: finish)
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
             } else {
-                Button("İleri", action: goNext)
+                Button("Next", action: goNext)
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
                     // Only the source step can block, and only until there is something to
@@ -119,10 +119,10 @@ struct OnboardingView: View {
 
             IconTile(symbol: "quote.bubble.fill", color: .indigo, size: 76)
 
-            Text("KindleWall'a Hoş Geldiniz")
+            Text("Welcome to KindleWall")
                 .font(.largeTitle.weight(.bold))
 
-            Text("Kindle'da altını çizdiğin cümleler masaüstü duvar kağıdın olur ve belirlediğin aralıkla kendiliğinden değişir.")
+            Text("The lines you highlighted on your Kindle become your desktop wallpaper, changing on the schedule you set.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -139,8 +139,8 @@ struct OnboardingView: View {
         VStack(spacing: Theme.Spacing.l) {
             Spacer()
 
-            stepTitle("Alıntıların Nereden Gelsin?",
-                      subtitle: "Kindle'ını bağlayıp My Clippings.txt dosyasını seç — ya da şimdilik örneklerle başla.")
+            stepTitle("Where Should Your Quotes Come From?",
+                      subtitle: "Connect your Kindle and choose My Clippings.txt — or start with the samples for now.")
 
             dropZone
 
@@ -158,7 +158,7 @@ struct OnboardingView: View {
                 ProgressView(value: viewModel.importState.progress)
                     .frame(width: 240)
             } else if hasQuotes {
-                Label("\(viewModel.clippings.count) alıntı hazır", systemImage: "checkmark.circle.fill")
+                Label("\(viewModel.clippings.count) quotes ready", systemImage: "checkmark.circle.fill")
                     .font(.callout)
                     .foregroundStyle(.green)
             }
@@ -167,18 +167,18 @@ struct OnboardingView: View {
                 Button {
                     chooseFile()
                 } label: {
-                    Label("Dosya Seç…", systemImage: "folder")
+                    Label("Choose File…", systemImage: "folder")
                 }
                 .buttonStyle(.bordered)
 
-                Button("Kindle'ım Yok, Örneklerle Dene") {
+                Button("No Kindle — Try the Samples") {
                     sourceError = nil
                     viewModel.loadSampleClippings()
                 }
                 .buttonStyle(.bordered)
             }
 
-            Button("Sonra hallederim") {
+            Button("I'll do it later") {
                 viewModel.loadSampleClippings()
                 goNext()
             }
@@ -201,7 +201,7 @@ struct OnboardingView: View {
                         .font(.system(size: 36))
                         .foregroundStyle(isDropTargeted ? Color.accentColor : Color.secondary)
                     Text(settingsVM.clippingsFilePath.map { ($0 as NSString).lastPathComponent }
-                         ?? "Dosyayı buraya sürükleyin")
+                         ?? "Drop the file here")
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -222,7 +222,7 @@ struct OnboardingView: View {
 
     private func chooseFile() {
         let panel = NSOpenPanel()
-        panel.title = "My Clippings.txt Dosyasını Seçin"
+        panel.title = "Choose Your My Clippings.txt File"
         panel.allowedContentTypes = [.plainText]
         panel.allowsMultipleSelection = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
@@ -240,8 +240,8 @@ struct OnboardingView: View {
     private var designStep: some View {
         ScrollView {
             VStack(spacing: Theme.Spacing.l) {
-                stepTitle("Nasıl Görünsün?",
-                          subtitle: "Her stil kendi yazı tipi ve süslemesiyle gelir. Önizleme kendi alıntınla çizilir.")
+                stepTitle("How Should It Look?",
+                          subtitle: "Each style comes with its own typeface and ornament. The preview is drawn with your own quote.")
 
                 // The real preview from the real pipeline — same renderer, same settings.
                 WallpaperPreviewView(image: viewModel.currentWallpaperImage, cornerRadius: Theme.Radius.card)
@@ -259,7 +259,7 @@ struct OnboardingView: View {
                 Button {
                     viewModel.selectRandomClipping()
                 } label: {
-                    Label("Yeni Alıntı", systemImage: Constants.Icons.newQuote)
+                    Label("New Quote", systemImage: Constants.Icons.newQuote)
                 }
                 .disabled(!hasQuotes)
 
@@ -284,12 +284,12 @@ struct OnboardingView: View {
     private var rhythmStep: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
-                stepTitle("Ne Sıklıkla Değişsin?", subtitle: nil)
+                stepTitle("How Often Should It Change?", subtitle: nil)
                     .frame(maxWidth: .infinity)
 
-                SettingsCard(footnote: "Alıntı bu aralıkla değişir. Görünüm ayarların anında uygulanır.") {
+                SettingsCard(footnote: String(localized: "The quote changes on this interval. Appearance settings apply immediately.")) {
                     VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                        Picker("Değişim Sıklığı", selection: Binding(
+                        Picker("Change Interval", selection: Binding(
                             get: { settingsVM.scheduleInterval },
                             set: {
                                 settingsVM.updateSchedule($0)
@@ -306,18 +306,18 @@ struct OnboardingView: View {
                     .padding(Theme.Spacing.l)
                 }
 
-                SettingsCard(title: "Tercihler") {
+                SettingsCard(title: String(localized: "Preferences")) {
                     SettingsRow(icon: "menubar.rectangle", iconColor: .indigo,
-                                title: "Menü Çubuğunda Göster",
-                                subtitle: "Pencereyi açmadan alıntı değiştir") {
+                                title: "Show in Menu Bar",
+                                subtitle: "Change the quote without opening the window") {
                         Toggle("", isOn: $settingsVM.showInMenuBar).labelsHidden()
                     }
                     RowDivider()
-                    SettingsRow(icon: "power", iconColor: .green, title: "Başlangıçta Aç") {
+                    SettingsRow(icon: "power", iconColor: .green, title: "Open at Login") {
                         Toggle("", isOn: $settingsVM.launchAtLogin).labelsHidden()
                     }
                     RowDivider()
-                    SettingsRow(icon: "bell.fill", iconColor: .red, title: "Bildirim Gönder") {
+                    SettingsRow(icon: "bell.fill", iconColor: .red, title: "Send Notifications") {
                         Toggle("", isOn: $settingsVM.showNotifications).labelsHidden()
                     }
                 }
@@ -340,18 +340,18 @@ struct OnboardingView: View {
 
             IconTile(symbol: "checkmark.circle.fill", color: .green, size: 68)
 
-            Text("Hazırsın")
+            Text("You're Ready")
                 .font(.largeTitle.weight(.bold))
 
             // The one thing the app most needs to teach: design edits land on the desktop by
             // themselves. Without saying it, people hunt for a save button that isn't there.
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                tourRow(icon: "paintpalette.fill", color: .purple, title: "Tasarım",
-                        detail: "Stil, arka plan ve tipografi tek sayfada. Değişiklikler masaüstüne kendiliğinden uygulanır.")
-                tourRow(icon: "text.quote", color: .indigo, title: "Menü çubuğu",
-                        detail: "Pencere kapalıyken bile alıntıyı değiştirebilir, duraklatabilirsin.")
-                tourRow(icon: "books.vertical.fill", color: .orange, title: "Kütüphane",
-                        detail: "Tüm alıntıların; favorile, düzenle, doğrudan duvar kağıdı yap.")
+                tourRow(icon: "paintpalette.fill", color: .purple, title: "Design",
+                        detail: "Style, background and typography on one page. Changes reach the desktop on their own.")
+                tourRow(icon: "text.quote", color: .indigo, title: "Menu bar",
+                        detail: "Change or pause the quote even with the window closed.")
+                tourRow(icon: "books.vertical.fill", color: .orange, title: "Library",
+                        detail: "All your quotes — favorite them, edit them, make one your wallpaper.")
             }
             .padding(.horizontal, 60)
 
@@ -360,7 +360,7 @@ struct OnboardingView: View {
         .padding()
     }
 
-    private func tourRow(icon: String, color: Color, title: String, detail: String) -> some View {
+    private func tourRow(icon: String, color: Color, title: LocalizedStringKey, detail: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: Theme.Spacing.m) {
             IconTile(symbol: icon, color: color)
             VStack(alignment: .leading, spacing: 2) {
@@ -376,7 +376,7 @@ struct OnboardingView: View {
 
     // MARK: - Shared
 
-    private func stepTitle(_ title: String, subtitle: String?) -> some View {
+    private func stepTitle(_ title: LocalizedStringKey, subtitle: LocalizedStringKey?) -> some View {
         VStack(spacing: Theme.Spacing.s) {
             Text(title)
                 .font(.title.weight(.bold))

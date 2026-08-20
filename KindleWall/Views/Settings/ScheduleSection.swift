@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Zamanlama" section — how often the wallpaper changes, plus a manual "change now" action.
+/// "Schedule" section — how often the wallpaper changes, plus a manual "change now" action.
 /// A section of the consolidated `BehaviorSettingsPage` (no `SettingsPage` chrome of its own).
 struct ScheduleSection: View {
     @Bindable var settingsVM: SettingsViewModel
@@ -9,10 +9,10 @@ struct ScheduleSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             SettingsCard(
-                footnote: "Duvar kağıdının otomatik olarak ne sıklıkla değişeceğini seç."
+                footnote: String(localized: "Choose how often the wallpaper changes on its own.")
             ) {
                 VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                    Picker("Değişim Sıklığı", selection: Binding(
+                    Picker("Change Interval", selection: Binding(
                         get: { settingsVM.scheduleInterval },
                         set: {
                             settingsVM.updateSchedule($0)
@@ -29,7 +29,7 @@ struct ScheduleSection: View {
 
                     if settingsVM.scheduleInterval == .custom {
                         DatePicker(
-                            "Özel Zaman",
+                            "Custom Time",
                             selection: $settingsVM.customScheduleDate,
                             displayedComponents: .hourAndMinute
                         )
@@ -44,12 +44,12 @@ struct ScheduleSection: View {
             Button {
                 actions.onApplyNow()
             } label: {
-                Label("Şimdi Değiştir", systemImage: "arrow.clockwise.circle")
+                Label("Change Now", systemImage: "arrow.clockwise.circle")
                     .frame(maxWidth: .infinity)
             }
             .controlSize(.large)
             .buttonStyle(.glass)
-            .help("Mevcut döngü moduna göre yeni alıntı seçer ve wallpaper olarak uygular")
+            .help("Picks a new quote using the current rotation and applies it as the wallpaper")
         }
     }
 }

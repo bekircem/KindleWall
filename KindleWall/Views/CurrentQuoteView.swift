@@ -19,9 +19,9 @@ struct CurrentQuoteView: View {
                     // A file was chosen and produced nothing — usually the wrong text file.
                     NoFileEmptyStateView(
                         symbol: "doc.text.magnifyingglass",
-                        title: "Alıntı Bulunamadı",
-                        message: "Seçtiğin dosyada okunabilir bir alıntı yok.\nKindle'daki My Clippings.txt dosyasını\nseçtiğinden emin ol.",
-                        actionTitle: "Başka Dosya Seç…",
+                        title: "No Quotes Found",
+                        message: "There are no readable quotes in that file.\nMake sure you picked My Clippings.txt\nfrom your Kindle.",
+                        actionTitle: "Choose Another File…",
                         onSelectFile: chooseClippingsFile
                     )
                 } else {
@@ -31,7 +31,7 @@ struct CurrentQuoteView: View {
                 hero
             }
         }
-        .navigationTitle("Şu Anki Alıntı")
+        .navigationTitle("Current Quote")
         .toolbar { toolbarContent }
         .inspector(isPresented: $showTypographyPanel) {
             TypographyPanelView(
@@ -47,7 +47,7 @@ struct CurrentQuoteView: View {
 
     private func chooseClippingsFile() {
         let panel = NSOpenPanel()
-        panel.title = "My Clippings.txt Dosyasını Seçin"
+        panel.title = "Choose Your My Clippings.txt File"
         panel.allowedContentTypes = [.plainText]
         panel.allowsMultipleSelection = false
         if panel.runModal() == .OK, let url = panel.url {
@@ -83,11 +83,11 @@ struct CurrentQuoteView: View {
     /// wallpaper appeared to change at random moments.
     @ViewBuilder private var nextChangeLine: some View {
         if viewModel.isSchedulerPaused {
-            Label("Otomatik değişim duraklatıldı", systemImage: Constants.Icons.pause)
+            Label("Automatic rotation paused", systemImage: Constants.Icons.pause)
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         } else if let next = viewModel.nextWallpaperDate {
-            Text("Sonraki alıntı \(next, format: .dateTime.hour().minute())")
+            Text("Next quote at \(next, format: .dateTime.hour().minute())")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .monospacedDigit()
@@ -188,9 +188,9 @@ struct CurrentQuoteView: View {
             parts.append(date.formatted(date: .abbreviated, time: .omitted))
         }
         switch (clipping.page, clipping.location) {
-        case let (p?, l?): parts.append("Sayfa \(p) · Konum \(l)")
-        case let (p?, nil): parts.append("Sayfa \(p)")
-        case let (nil, l?): parts.append("Konum \(l)")
+        case let (p?, l?): parts.append(String(localized: "Page \(p) · Location \(l)"))
+        case let (p?, nil): parts.append(String(localized: "Page \(p)"))
+        case let (nil, l?): parts.append(String(localized: "Location \(l)"))
         default: break
         }
         return parts.isEmpty ? nil : parts.joined(separator: "  ·  ")
@@ -204,7 +204,7 @@ struct CurrentQuoteView: View {
         }
 
         ToolbarItemGroup(placement: .secondaryAction) {
-            Picker("Stil", selection: Binding(
+            Picker("Style", selection: Binding(
                 get: { viewModel.selectedStyle },
                 set: { viewModel.updateStyle($0) }
             )) {
@@ -214,16 +214,16 @@ struct CurrentQuoteView: View {
             }
             .labelsHidden()
             .frame(width: 140)
-            .help("Duvar kağıdı stili")
-            .accessibilityLabel("Duvar kağıdı stili")
+            .help("Wallpaper style")
+            .accessibilityLabel("Wallpaper style")
 
             Button {
                 showTypographyPanel.toggle()
             } label: {
                 Image(systemName: "textformat.size")
             }
-            .help("Tipografi Ayarları")
-            .accessibilityLabel("Tipografi ayarları")
+            .help("Typography Settings")
+            .accessibilityLabel("Typography settings")
             .keyboardShortcut("t", modifiers: .command)
 
             Button {
@@ -231,14 +231,14 @@ struct CurrentQuoteView: View {
             } label: {
                 Image(systemName: viewModel.isCurrentFavorite ? Constants.Icons.favoriteFilled : Constants.Icons.favorite)
             }
-            .help("Favori")
-            .accessibilityLabel(viewModel.isCurrentFavorite ? "Favorilerden çıkar" : "Favorilere ekle")
+            .help("Favorite")
+            .accessibilityLabel(viewModel.isCurrentFavorite ? "Remove from favorites" : "Add to favorites")
             .keyboardShortcut("d", modifiers: .command)
 
             Button {
                 viewModel.selectRandomClipping()
             } label: {
-                Label("Yeni Alıntı", systemImage: Constants.Icons.newQuote)
+                Label("New Quote", systemImage: Constants.Icons.newQuote)
             }
             .keyboardShortcut("n", modifiers: .command)
         }

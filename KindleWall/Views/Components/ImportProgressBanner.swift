@@ -48,7 +48,7 @@ struct ImportProgressBanner: View {
             HStack {
                 ProgressView()
                     .controlSize(.small)
-                Text("İçeri Aktarılıyor…")
+                Text("Importing…")
                     .font(.subheadline)
                     .fontWeight(.medium)
                 Spacer()
@@ -83,7 +83,7 @@ struct ImportProgressBanner: View {
                 .font(.title3)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("İçeri Aktarma Tamamlandı")
+                Text("Import Complete")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                 Text(summaryText(summary))
@@ -119,7 +119,7 @@ struct ImportProgressBanner: View {
                 .font(.title3)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("İçeri Aktarma Başarısız")
+                Text("Import Failed")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                 Text(message)
@@ -150,13 +150,13 @@ struct ImportProgressBanner: View {
 
     private func summaryText(_ s: ImportSummary) -> String {
         var parts: [String] = []
-        parts.append("\(s.totalClippings) alıntı")
+        parts.append(String(localized: "\(s.totalClippings) quotes"))
         if s.newClippings > 0 {
             parts.append("\(s.newClippings) yeni")
         }
-        parts.append("\(s.totalBooks) kitap")
+        parts.append(String(localized: "\(s.totalBooks) books"))
         if s.newBooks > 0 {
-            parts.append("\(s.newBooks) yeni kitap")
+            parts.append(String(localized: "\(s.newBooks) new books"))
         }
         let durationStr = String(format: "%.1f sn", s.duration)
         return parts.joined(separator: " · ") + " (\(durationStr))"

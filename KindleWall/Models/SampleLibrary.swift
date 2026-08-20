@@ -3,43 +3,48 @@ import Foundation
 /// A handful of public-domain highlights used to get someone through setup without a Kindle
 /// plugged in.
 ///
-/// First launch used to be a dead end: both "İleri" and "Başla" were disabled until a
+/// First launch used to be a dead end: both "Next" and "Begin" were disabled until a
 /// `My Clippings.txt` was chosen, so anyone whose device was elsewhere could not reach the app
 /// at all — not even to look at it. These give the design step something real to render and
 /// leave a working wallpaper behind.
+///
+/// Titles and passages are localized: an English reader should meet the English original, not
+/// a Turkish translation of it. Note that this changes their deterministic IDs, so someone who
+/// seeded the samples before 1.1 keeps the old copies — acceptable for a starter set that can
+/// be deleted one by one from the library.
 enum SampleLibrary {
     static let clippings: [Clipping] = [
         make(
-            book: "Suç ve Ceza", author: "Fyodor Dostoyevski",
-            text: "Yeni bir adım atmak, yeni bir söz söylemek, insanların en çok korktuğu şeydir."
+            book: String(localized: "Crime and Punishment"), author: "Fyodor Dostoyevsky",
+            text: String(localized: "Taking a new step, uttering a new word, is what people fear most.")
         ),
         make(
-            book: "Moby Dick", author: "Herman Melville",
-            text: "Bilmediğim bir denizde yol almak, bildiğim bir limanda çürümekten iyidir."
+            book: String(localized: "Moby-Dick"), author: "Herman Melville",
+            text: String(localized: "It is better to sail in an unknown sea than to rot in a known harbor.")
         ),
         make(
-            book: "Bir Şehrin İki Hikâyesi", author: "Charles Dickens",
-            text: "Zamanların en iyisiydi, zamanların en kötüsüydü; bilgelik çağıydı, aptallık çağıydı."
+            book: String(localized: "A Tale of Two Cities"), author: "Charles Dickens",
+            text: String(localized: "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness.")
         ),
         make(
-            book: "Gurur ve Önyargı", author: "Jane Austen",
-            text: "İnsanın kendini beğenmesi ile gururlanması arasında çok ince bir çizgi vardır."
+            book: String(localized: "Pride and Prejudice"), author: "Jane Austen",
+            text: String(localized: "There is a very fine line between vanity and pride.")
         ),
         make(
-            book: "Walden", author: "Henry David Thoreau",
-            text: "Ormana gittim, çünkü hayatı bilinçli yaşamak, yalnızca temel gerçeklerle yüzleşmek istiyordum."
+            book: String(localized: "Walden"), author: "Henry David Thoreau",
+            text: String(localized: "I went to the woods because I wished to live deliberately, to front only the essential facts of life.")
         ),
         make(
-            book: "Düşünceler", author: "Marcus Aurelius",
-            text: "Hayatının mutluluğu, düşüncelerinin niteliğine bağlıdır."
+            book: String(localized: "Meditations"), author: "Marcus Aurelius",
+            text: String(localized: "The happiness of your life depends upon the quality of your thoughts.")
         ),
         make(
-            book: "Faust", author: "Johann Wolfgang von Goethe",
-            text: "İnsan çabaladığı sürece yanılır."
+            book: String(localized: "Faust"), author: "Johann Wolfgang von Goethe",
+            text: String(localized: "Man errs as long as he strives.")
         ),
         make(
-            book: "Denemeler", author: "Michel de Montaigne",
-            text: "Hayatım korkunç talihsizliklerle doluydu, çoğu hiç başıma gelmedi."
+            book: String(localized: "Essays"), author: "Michel de Montaigne",
+            text: String(localized: "My life has been filled with terrible misfortune, most of which never happened.")
         )
     ]
 

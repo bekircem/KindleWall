@@ -24,26 +24,26 @@ struct LibraryView: View {
                 // Both variants used to be a dead end with no way out of them.
                 if clippings.isEmpty {
                     ContentUnavailableView {
-                        Label("Henüz alıntı yok", systemImage: "books.vertical")
+                        Label("No quotes yet", systemImage: "books.vertical")
                     } description: {
-                        Text("Kindle'ındaki My Clippings.txt dosyasını yükle, ya da elle bir alıntı ekle.")
+                        Text("Load the My Clippings.txt file from your Kindle, or add a quote by hand.")
                     } actions: {
                         Button {
                             onChooseFile()
                         } label: {
-                            Label("Dosya Seç…", systemImage: "folder")
+                            Label("Choose File…", systemImage: "folder")
                         }
                         .buttonStyle(.borderedProminent)
 
-                        Button("Alıntı Ekle") { showAddClippingForm = true }
+                        Button("Add Quote") { showAddClippingForm = true }
                     }
                 } else {
                     ContentUnavailableView {
-                        Label("Sonuç yok", systemImage: "magnifyingglass")
+                        Label("No results", systemImage: "magnifyingglass")
                     } description: {
-                        Text("Arama kriterlerinize uygun kitap yok.")
+                        Text("No books match your search.")
                     } actions: {
-                        Button("Aramayı Temizle") { viewModel.searchText = "" }
+                        Button("Clear Search") { viewModel.searchText = "" }
                     }
                 }
             } else if viewModel.viewMode == .list {
@@ -117,35 +117,35 @@ struct LibraryView: View {
                 }
             }
         }
-        .navigationTitle("Kütüphane")
+        .navigationTitle("Library")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     showAddClippingForm = true
                 } label: {
-                    Label("Alıntı Ekle", systemImage: "plus")
+                    Label("Add Quote", systemImage: "plus")
                 }
-                .help("Manuel alıntı ekle (⇧⌘N)")
+                .help("Add a quote by hand (⇧⌘N)")
                 .keyboardShortcut("n", modifiers: [.command, .shift])
             }
 
             ToolbarItemGroup(placement: .secondaryAction) {
                 // View mode toggle
-                Picker("Görünüm", selection: $viewModel.viewMode) {
+                Picker("View", selection: $viewModel.viewMode) {
                     Image(systemName: "list.bullet").tag(LibraryViewMode.list)
                     Image(systemName: "square.grid.2x2").tag(LibraryViewMode.card)
                 }
                 .pickerStyle(.segmented)
-                .help("Görünüm modunu değiştir")
+                .help("Change view mode")
 
                 Toggle(isOn: $viewModel.showFavoritesOnly) {
                     Image(systemName: viewModel.showFavoritesOnly ? Constants.Icons.favoriteFilled : Constants.Icons.favorite)
                 }
                 .toggleStyle(.button)
-                .help("Favorili kitapları göster")
+                .help("Show books with favorites")
             }
         }
-        .searchable(text: $viewModel.searchText, prompt: "Kitap ara…")
+        .searchable(text: $viewModel.searchText, prompt: "Search books…")
         .sheet(item: $bookToEdit) { book in
             BookMetadataEditView(
                 book: book,
@@ -203,7 +203,7 @@ private struct BookListRow: View {
                 }
 
                 HStack(spacing: 4) {
-                    Text("\(book.clippingCount) alıntı")
+                    Text("\(book.clippingCount) quotes")
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
 
@@ -228,9 +228,9 @@ private struct BookListRow: View {
         }
         .padding(.vertical, 2)
         .contextMenu {
-            Button("Düzenle") { onEdit() }
+            Button("Edit") { onEdit() }
             Divider()
-            Button("Kapağı Yenile") { onRefreshCover() }
+            Button("Refresh Cover") { onRefreshCover() }
         }
     }
 }
@@ -290,7 +290,7 @@ private struct BookGridCard: View {
                     }
 
                     HStack(spacing: 4) {
-                        Text("\(book.clippingCount) alıntı")
+                        Text("\(book.clippingCount) quotes")
                             .font(.caption2)
                             .foregroundColor(.white.opacity(0.55))
 
@@ -324,9 +324,9 @@ private struct BookGridCard: View {
         }
         .shadow(color: .black.opacity(0.18), radius: 5, x: 0, y: 3)
         .contextMenu {
-            Button("Düzenle") { onEdit() }
+            Button("Edit") { onEdit() }
             Divider()
-            Button("Kapağı Yenile") { onRefreshCover() }
+            Button("Refresh Cover") { onRefreshCover() }
         }
     }
 }

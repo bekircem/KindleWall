@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Tasarım" — everything that decides what the wallpaper looks like, on one scrolling page.
+/// "Design" — everything that decides what the wallpaper looks like, on one scrolling page.
 ///
 /// Replaces three sidebar destinations (Stil / Tipografi / Arka Plan). Designing a wallpaper is
 /// one task, and splitting it across three pages meant visiting all of them and then a fourth
@@ -12,18 +12,18 @@ struct DesignSettingsPage: View {
     let actions: SettingsActions
 
     var body: some View {
-        SettingsPage(title: "Tasarım") {
+        SettingsPage(title: "Design") {
             autoApplyCard
 
-            SettingsGroup("Stil") {
+            SettingsGroup("Style") {
                 StyleSection(viewModel: viewModel)
             }
 
-            SettingsGroup("Arka Plan") {
+            SettingsGroup("Background") {
                 BackgroundSection(viewModel: viewModel, settingsVM: settingsVM, actions: actions)
             }
 
-            SettingsGroup("Tipografi") {
+            SettingsGroup("Typography") {
                 TypographySection(viewModel: viewModel)
             }
         }
@@ -34,8 +34,8 @@ struct DesignSettingsPage: View {
     private var autoApplyCard: some View {
         SettingsCard(
             footnote: viewModel.autoApplyDesignChanges
-                ? "Değişiklikler kısa bir duraklamadan sonra masaüstüne kendiliğinden uygulanır. Alıntı değişmez — yalnızca görünüm."
-                : "Değişiklikler yalnızca önizlemede kalır; masaüstüne yansıması için Uygula'ya bas."
+                ? String(localized: "Changes reach the desktop on their own after a short pause. The quote does not change — only its appearance.")
+                : String(localized: "Changes stay in the preview; press Apply to send them to the desktop.")
         ) {
             // Short title on purpose. A `SettingsRow`'s title reports its full intrinsic width,
             // and on this page — the only one sharing space with the preview inspector — a long
@@ -43,12 +43,12 @@ struct DesignSettingsPage: View {
             SettingsRow(
                 icon: "wand.and.sparkles",
                 iconColor: .purple,
-                title: "Otomatik Uygula"
+                title: "Auto Apply"
             ) {
                 Toggle("", isOn: $viewModel.autoApplyDesignChanges)
                     .labelsHidden()
                     .toggleStyle(.switch)
-                    .accessibilityLabel("Değişiklikleri otomatik uygula")
+                    .accessibilityLabel("Apply changes automatically")
             }
         }
     }

@@ -59,7 +59,7 @@ struct MenuBarView: View {
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 } else {
-                    Text("Alıntı yüklenmedi")
+                    Text("No quotes loaded")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
@@ -75,8 +75,8 @@ struct MenuBarView: View {
                         .foregroundStyle(viewModel.isCurrentFavorite ? Color.red : Color.secondary)
                 }
                 .buttonStyle(.plain)
-                .help(viewModel.isCurrentFavorite ? "Favoriden Çıkar" : "Favoriye Ekle")
-                .accessibilityLabel(viewModel.isCurrentFavorite ? "Favorilerden çıkar" : "Favorilere ekle")
+                .help(viewModel.isCurrentFavorite ? "Remove from Favorites" : "Add to Favorites")
+                .accessibilityLabel(viewModel.isCurrentFavorite ? "Remove from favorites" : "Add to favorites")
             }
         }
         .padding(.bottom, 2)
@@ -91,7 +91,7 @@ struct MenuBarView: View {
                     viewModel.selectRandomClipping()
                     viewModel.applyWallpaper()
                 } label: {
-                    Label("Yeni Alıntı", systemImage: Constants.Icons.newQuote)
+                    Label("New Quote", systemImage: Constants.Icons.newQuote)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
@@ -99,7 +99,7 @@ struct MenuBarView: View {
                 Button {
                     viewModel.applyWallpaper()
                 } label: {
-                    Label("Uygula", systemImage: Constants.Icons.wallpaper)
+                    Label("Apply", systemImage: Constants.Icons.wallpaper)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
@@ -109,7 +109,7 @@ struct MenuBarView: View {
             Button {
                 GlobalHotkeyManager.shared.showCapture()
             } label: {
-                Label("Alıntı Ekle", systemImage: Constants.Icons.captureIcon)
+                Label("Add Quote", systemImage: Constants.Icons.captureIcon)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
@@ -119,7 +119,7 @@ struct MenuBarView: View {
     // MARK: - Style Picker
 
     private var stylePicker: some View {
-        Picker("Stil", selection: Binding(
+        Picker("Style", selection: Binding(
             get: { viewModel.selectedStyle },
             set: { viewModel.updateStyle($0) }
         )) {
@@ -138,7 +138,7 @@ struct MenuBarView: View {
                 viewModel.toggleSchedulerPause()
             } label: {
                 Label(
-                    viewModel.isSchedulerPaused ? "Devam Et" : "Durakla",
+                    viewModel.isSchedulerPaused ? "Continue" : "Pause",
                     systemImage: viewModel.isSchedulerPaused
                         ? Constants.Icons.play
                         : Constants.Icons.pause
@@ -149,12 +149,12 @@ struct MenuBarView: View {
             }
             .buttonStyle(.plain)
             .hoverHighlight()
-            .accessibilityLabel(viewModel.isSchedulerPaused ? "Zamanlayıcıyı devam ettir" : "Zamanlayıcıyı durdur")
+            .accessibilityLabel(viewModel.isSchedulerPaused ? "Resume the timer" : "Pause the timer")
 
             Spacer()
 
             if let nextDate = viewModel.nextWallpaperDate {
-                Text("Sonraki: \(nextDate.formatted(date: .omitted, time: .shortened))")
+                Text("Next: \(nextDate.formatted(date: .omitted, time: .shortened))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -168,7 +168,7 @@ struct MenuBarView: View {
             Button {
                 onOpenWindow()
             } label: {
-                Label("Pencereyi Aç", systemImage: "macwindow")
+                Label("Open Window", systemImage: "macwindow")
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, Theme.Spacing.s)
                     .padding(.vertical, 5)
@@ -176,12 +176,12 @@ struct MenuBarView: View {
             }
             .buttonStyle(.plain)
             .hoverHighlight()
-            .accessibilityLabel("Pencereyi aç")
+            .accessibilityLabel("Open window")
 
             Button(role: .destructive) {
                 NSApplication.shared.terminate(nil)
             } label: {
-                Label("Çıkış", systemImage: "xmark.circle")
+                Label("Quit", systemImage: "xmark.circle")
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, Theme.Spacing.s)
                     .padding(.vertical, 5)
@@ -189,7 +189,7 @@ struct MenuBarView: View {
             }
             .buttonStyle(.plain)
             .hoverHighlight()
-            .accessibilityLabel("Uygulamadan çık")
+            .accessibilityLabel("Quit the app")
         }
     }
 

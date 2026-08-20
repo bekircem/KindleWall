@@ -25,29 +25,29 @@ enum KindleWallError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .fileNotFound(let path):
-            return "Dosya bulunamadı: \(path)"
+            return String(localized: "File not found: \(path)")
         case .fileReadFailed(let error):
-            return "Dosya okunamadı: \(error.localizedDescription)"
+            return String(localized: "Could not read the file: \(error.localizedDescription)")
         case .parsingFailed(let reason):
-            return "Dosya ayrıştırılamadı: \(reason)"
+            return String(localized: "Could not parse the file: \(reason)")
         case .wallpaperGenerationFailed(let reason):
-            return "Duvar kağıdı oluşturulamadı: \(reason)"
+            return String(localized: "Could not create the wallpaper: \(reason)")
         case .wallpaperApplyFailed(let error):
-            return "Duvar kağıdı uygulanamadı: \(error.localizedDescription)"
+            return String(localized: "Could not apply the wallpaper: \(error.localizedDescription)")
         case .screenNotAvailable:
-            return "Ekran bilgisi alınamadı"
+            return String(localized: "Could not read the display information")
         case .bookmarkCreationFailed:
-            return "Dosya yer imi oluşturulamadı"
+            return String(localized: "Could not create the file bookmark")
         case .bookmarkResolutionFailed:
-            return "Dosya yer imi çözümlenemedi"
+            return String(localized: "Could not resolve the file bookmark")
         case .bookmarkStale:
-            return "Dosya yer imi geçersiz, lütfen dosyayı yeniden seçin"
+            return String(localized: "The file bookmark is stale — please choose the file again")
         case .noClippingsLoaded:
-            return "Henüz alıntı yüklenmedi"
+            return String(localized: "No quotes loaded yet")
         case .noClippingsAvailable:
-            return "Gösterilecek alıntı kalmadı"
+            return String(localized: "No quotes left to show")
         case .directoryCreationFailed(let error):
-            return "Klasör oluşturulamadı: \(error.localizedDescription)"
+            return String(localized: "Could not create the folder: \(error.localizedDescription)")
         }
     }
 }

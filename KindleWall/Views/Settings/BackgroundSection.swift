@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Dynamic (time-of-day) wallpaper and the custom gradient override — the "Arka Plan" group
-/// of the "Tasarım" page.
+/// Dynamic (time-of-day) wallpaper and the custom gradient override — the "Background" group
+/// of the "Design" page.
 struct BackgroundSection: View {
     @Bindable var viewModel: MainViewModel
     @Bindable var settingsVM: SettingsViewModel
@@ -10,15 +10,15 @@ struct BackgroundSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
             SettingsCard(
-                title: "Dinamik Duvar Kağıdı",
-                footnote: "Açıkken duvar kağıdı tek bir görüntü yerine altı kareli bir HEIC olarak yazılır ve macOS gün içinde renkleri kendisi değiştirir — uygulama kapalıyken bile. Alıntının ne sıklıkla değişeceği ayrı bir ayar; bu yalnızca renkleri etkiler."
+                title: String(localized: "Dynamic Wallpaper"),
+                footnote: String(localized: "When on, the wallpaper is written as a six-frame HEIC instead of a single image, and macOS shifts the colors through the day by itself — even while the app is closed. How often the quote changes is a separate setting; this affects colors only.")
             ) {
                 VStack(spacing: 0) {
                     SettingsRow(
                         icon: "sun.horizon.fill",
                         iconColor: .orange,
-                        title: "Gün İçinde Renkler Değişsin",
-                        subtitle: "Şafak, gündoğumu, öğlen, ikindi, günbatımı ve gece için ayrı kareler"
+                        title: "Shift Colors Through the Day",
+                        subtitle: "Separate frames for dawn, sunrise, noon, afternoon, sunset and night"
                     ) {
                         Toggle("", isOn: $settingsVM.dynamicWallpaperEnabled)
                             .labelsHidden()
@@ -39,8 +39,8 @@ struct BackgroundSection: View {
             }
 
             SettingsCard(
-                title: "Özel Gradient",
-                footnote: "Seçili stilin arka planını özel renklerle değiştir. Metin rengi otomatik olarak okunabilirliğe göre ayarlanır."
+                title: String(localized: "Custom Gradient"),
+                footnote: String(localized: "Replace the selected style's background with colors of your own. The text color adjusts itself for legibility.")
             ) {
                 VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                     // Bound straight to the owner: the setter persists and refreshes the
@@ -53,7 +53,7 @@ struct BackgroundSection: View {
 
                     HStack {
                         Spacer()
-                        Button("Varsayılana Dön") {
+                        Button("Reset to Default") {
                             viewModel.resetBackgroundGradient()
                         }
                         .font(.caption)
@@ -88,7 +88,7 @@ private struct SolarScheduleRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-            Text("Bugünün kareleri")
+            Text("Today's frames")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 

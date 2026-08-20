@@ -1,12 +1,12 @@
 import SwiftUI
 
-/// The style grid plus its typography-undo banner — the "Stil" group of the "Tasarım" page.
+/// The style grid plus its typography-undo banner — the "Style" group of the "Design" page.
 struct StyleSection: View {
     var viewModel: MainViewModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.s) {
-            SectionHeader("Duvar Kağıdı Stili")
+            SectionHeader(String(localized: "Wallpaper Style"))
 
             // One binding, one owner. The style write, the typography it carries and the
             // preview all happen inside `updateStyle`, so nothing here can drift.
@@ -22,7 +22,7 @@ struct StyleSection: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
-            Text("Alıntılarının render edileceği görsel stili seç. Her stil kendi yazı tipi ve süslemesiyle gelir; Tipografi bölümünden sonradan değiştirebilirsin.")
+            Text("Choose the visual style your quotes are rendered in. Each style comes with its own typeface and ornament; you can change it later under Typography.")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .padding(.leading, Theme.Spacing.xs)
@@ -44,13 +44,13 @@ private struct StyleTypographyUndoBanner: View {
             Image(systemName: "textformat")
                 .foregroundStyle(.secondary)
 
-            Text("Tipografi \"\(styleName)\" varsayılanına ayarlandı")
+            Text("Typography reset to the \"\(styleName)\" default")
                 .font(.callout)
                 .foregroundStyle(.secondary)
 
             Spacer(minLength: Theme.Spacing.s)
 
-            Button("Geri Al", action: undo)
+            Button("Undo", action: undo)
                 .buttonStyle(.link)
                 .font(.callout)
         }

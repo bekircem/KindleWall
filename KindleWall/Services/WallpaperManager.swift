@@ -26,7 +26,7 @@ protocol WallpaperManagerProtocol: Sendable {
     /// - Parameters:
     ///   - fileURL: The URL of the wallpaper image file.
     ///   - propagateToAllSpaces: Whether to also push the image to every Mission Control Space
-    ///     right now (only meaningful when the user enabled "Anında Eşitleme"). Pass `false`
+    ///     right now (only meaningful when the user enabled "Immediate Sync"). Pass `false`
     ///     for rapid automatic applies and call `syncCurrentWallpaperToAllSpaces()` once the
     ///     edits settle — see that method for why.
     /// - Throws: KindleWallError if the wallpaper cannot be applied.
@@ -327,7 +327,7 @@ final class WallpaperManager: WallpaperManagerProtocol, @unchecked Sendable {
 
             let entries = self.storeSync.syncAllSpaces(to: fileURL)
             if entries == 0 {
-                self.logger.notice("tüm-space eşitlemesi bir şey değiştirmedi; diğer alanlar ziyaret edildiklerinde güncellenecek")
+                self.logger.notice("all-space sync changed nothing; other spaces will update when visited")
             }
         }
     }

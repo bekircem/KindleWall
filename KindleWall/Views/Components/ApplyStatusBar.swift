@@ -4,7 +4,7 @@ import SwiftUI
 ///
 /// Floats over the bottom of the main window on every screen, not just the design page,
 /// because design-affecting controls are scattered across several of them — the long-quote
-/// settings live under "Davranış", and a style can be picked from the toolbar. Wherever the
+/// settings live under "Behavior", and a style can be picked from the toolbar. Wherever the
 /// user changed something, the answer appears in the same spot.
 struct ApplyStatusBar: View {
     /// Plain `let`: reading an `@Observable`'s properties inside `body` is tracked already, and
@@ -91,12 +91,12 @@ struct ApplyStatusBar: View {
         case .pending:
             return Presentation(
                 symbol: "clock",
-                message: "Değişiklikler birazdan uygulanacak…",
-                action: Action(title: "Şimdi Uygula") { viewModel.applyDesignNow() }
+                message: "Changes will be applied shortly…",
+                action: Action(title: "Apply Now") { viewModel.applyDesignNow() }
             )
 
         case .applying:
-            return Presentation(showsSpinner: true, message: "Masaüstüne uygulanıyor…")
+            return Presentation(showsSpinner: true, message: "Applying to the desktop…")
 
         case let .applied(at, reason, degraded):
             if let degraded {
@@ -111,7 +111,7 @@ struct ApplyStatusBar: View {
             return Presentation(
                 symbol: "checkmark.circle.fill",
                 tint: .green,
-                message: "Masaüstüne uygulandı · \(Self.timeFormatter.string(from: at))",
+                message: "Applied to the desktop · \(Self.timeFormatter.string(from: at))",
                 action: undoAction(for: reason)
             )
 
@@ -126,8 +126,8 @@ struct ApplyStatusBar: View {
         case .unapplied:
             return Presentation(
                 symbol: "eye",
-                message: "Değişiklikler yalnızca önizlemede",
-                action: Action(title: "Uygula") { viewModel.applyDesignNow() }
+                message: "Changes are preview-only",
+                action: Action(title: "Apply") { viewModel.applyDesignNow() }
             )
         }
     }
@@ -136,7 +136,7 @@ struct ApplyStatusBar: View {
     /// *quote* that moved, so offering to restore a design would be a lie.
     private func undoAction(for reason: ApplyReason) -> Action? {
         guard reason.offersDesignUndo, viewModel.designUndo != nil else { return nil }
-        return Action(title: "Geri Al") { viewModel.undoDesign() }
+        return Action(title: "Undo") { viewModel.undoDesign() }
     }
 
     private static let timeFormatter: DateFormatter = {
@@ -151,8 +151,8 @@ struct ApplyStatusBar: View {
 /// The primary action on every surface that can change the wallpaper.
 ///
 /// Shared so that the top-right of the window means the same thing everywhere. It used to
-/// exist only on "Şu Anki Alıntı", while on the design pages that same slot held a preview
-/// toggle — so the one place users had learned to look for "Uygula" showed something else.
+/// exist only on "Current Quote", while on the design pages that same slot held a preview
+/// toggle — so the one place users had learned to look for "Apply" showed something else.
 struct ApplyToolbarButton: View {
     let viewModel: MainViewModel
 
@@ -163,11 +163,11 @@ struct ApplyToolbarButton: View {
             Group {
                 switch viewModel.applyStatus {
                 case .applying:
-                    Label("Uygulanıyor…", systemImage: Constants.Icons.refresh)
+                    Label("Applying…", systemImage: Constants.Icons.refresh)
                 case .applied:
-                    Label("Uygulandı", systemImage: "checkmark.circle.fill")
+                    Label("Applied", systemImage: "checkmark.circle.fill")
                 default:
-                    Label("Uygula", systemImage: Constants.Icons.wallpaper)
+                    Label("Apply", systemImage: Constants.Icons.wallpaper)
                 }
             }
             .animation(Theme.Motion.snappy, value: viewModel.applyStatus)
@@ -177,7 +177,7 @@ struct ApplyToolbarButton: View {
         .tint(viewModel.applySuccess ? .green : .accentColor)
         .disabled(viewModel.isApplying)
         .keyboardShortcut(.return, modifiers: .command)
-        .help("Bu tasarımı masaüstü duvar kağıdı olarak uygula")
-        .accessibilityLabel("Duvar kağıdı olarak uygula")
+        .help("Apply this design as the desktop wallpaper")
+        .accessibilityLabel("Apply as wallpaper")
     }
 }

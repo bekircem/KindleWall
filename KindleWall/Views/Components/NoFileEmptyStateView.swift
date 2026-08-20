@@ -4,13 +4,13 @@ import SwiftUI
 ///
 /// Takes its wording from the caller because two very different situations reach it: no file
 /// has ever been chosen, or a file was chosen and yielded nothing. Both used to show the same
-/// "Kindle Dosyası Seçilmedi" screen, which told the second user something plainly untrue and
+/// "No Kindle File Chosen" screen, which told the second user something plainly untrue and
 /// gave them no idea what had gone wrong.
 struct NoFileEmptyStateView: View {
     var symbol: String = "book.closed.fill"
-    var title: String = "Kindle Dosyası Seçilmedi"
-    var message: String = "My Clippings.txt dosyanızı seçerek\nKindle alıntılarınızı duvar kağıdına\ndönüştürmeye başlayın."
-    var actionTitle: String = "Dosya Seç…"
+    var title: LocalizedStringKey = "No Kindle File Chosen"
+    var message: LocalizedStringKey = "Choose your My Clippings.txt file to start\nturning your Kindle highlights into\nwallpapers."
+    var actionTitle: LocalizedStringKey = "Choose File…"
     var onSelectFile: () -> Void
 
     var body: some View {

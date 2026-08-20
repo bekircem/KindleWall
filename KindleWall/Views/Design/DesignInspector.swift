@@ -36,7 +36,7 @@ struct DesignInspector: View {
     // MARK: - Tabs
 
     private var tabPicker: some View {
-        Picker("Düzenlenen bölüm", selection: $tab) {
+        Picker("Section being edited", selection: $tab) {
             ForEach(DesignTab.allCases) { tab in
                 Text(tab.title).tag(tab)
             }
@@ -64,10 +64,10 @@ struct DesignInspector: View {
     private var autoApplyFooter: some View {
         Toggle(isOn: $viewModel.autoApplyDesignChanges) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Otomatik Uygula")
+                Text("Auto Apply")
                 Text(viewModel.autoApplyDesignChanges
-                     ? "Değişiklikler kısa bir duraklamadan sonra masaüstüne geçer."
-                     : "Değişiklikler önizlemede kalır; Uygula'ya basman gerekir.")
+                     ? "Changes reach the desktop after a short pause."
+                     : "Changes stay in the preview; press Apply to use them.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

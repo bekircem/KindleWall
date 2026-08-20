@@ -22,23 +22,23 @@ enum WallpaperStyle: String, Codable, CaseIterable, Identifiable {
     /// Display name for the UI (Turkish).
     var displayName: String {
         switch self {
-        case .night:       return "Gece"
-        case .paper:       return "Kağıt"
-        case .grid:        return "Izgara"
-        case .dawn:        return "Şafak"
-        case .depth:       return "Derinlik"
-        case .forestLight: return "Orman Işığı"
+        case .night:       return String(localized: "Night")
+        case .paper:       return String(localized: "Paper")
+        case .grid:        return String(localized: "Grid")
+        case .dawn:        return String(localized: "Dawn")
+        case .depth:       return String(localized: "Depth")
+        case .forestLight: return String(localized: "Forest Light")
         }
     }
 
     /// Brief description for the style picker.
     var styleDescription: String {
         switch self {
-        case .night:       return "Düz derin koyu, serif, klasik tırnak"
-        case .paper:       return "Grenli krem, Palatino, basılı sayfa hissi"
-        case .grid:        return "Mavi-siyah, monospace, ince çizgiler"
-        case .dawn:        return "Sıcak gradient, sans-serif, minimal noktalar"
-        case .depth:       return "Soğuk indigo-mor gradient, sans-serif"
+        case .night:       return String(localized: "Flat deep dark, serif, a classic quote mark")
+        case .paper:       return String(localized: "Grainy cream, Palatino, the feel of a printed page")
+        case .grid:        return String(localized: "Blue-black, monospace, fine rules")
+        case .dawn:        return String(localized: "Warm gradient, sans-serif, minimal dots")
+        case .depth:       return String(localized: "Cool indigo-violet gradient, sans-serif")
         case .forestLight: return "Radial orman huzmesi, serif"
         }
     }

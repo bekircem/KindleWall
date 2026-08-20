@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Uzun Alıntılar" section — skip overly long quotes and/or auto-tighten their typography.
+/// "Long Quotes" section — skip overly long quotes and/or auto-tighten their typography.
 /// A section of the consolidated `BehaviorSettingsPage`.
 struct LongQuoteSection: View {
     @Bindable var settingsVM: SettingsViewModel
@@ -10,13 +10,13 @@ struct LongQuoteSection: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             // MARK: Skip
             SettingsCard(
-                title: "Uzun Alıntıları Atla",
+                title: "Skip Long Quotes",
                 footnote: settingsVM.skipLongQuotesEnabled
-                    ? "Bu eşikten uzun alıntılar duvar kağıdı seçiminde atlanır."
+                    ? String(localized: "Quotes longer than this threshold are skipped when choosing a wallpaper.")
                     : nil
             ) {
                 SettingsRow(icon: "arrow.forward.to.line", iconColor: .orange,
-                            title: "Uzun alıntıları görmezden gel") {
+                            title: "Skip long quotes") {
                     Toggle("", isOn: Binding(
                         get: { settingsVM.skipLongQuotesEnabled },
                         set: { newValue in
@@ -29,7 +29,7 @@ struct LongQuoteSection: View {
 
                 if settingsVM.skipLongQuotesEnabled {
                     RowDivider()
-                    LabeledContent("Eşik") {
+                    LabeledContent("Threshold") {
                         ThresholdInput(
                             value: Binding(
                                 get: { settingsVM.longQuoteThreshold },
@@ -53,13 +53,13 @@ struct LongQuoteSection: View {
 
             // MARK: Tighten
             SettingsCard(
-                title: "Uzun Alıntıları Daralt",
+                title: "Tighten Long Quotes",
                 footnote: settingsVM.autoTightenLongQuotes
-                    ? "Eşikten uzun alıntılar, font boyutu bu değere ve satır arası bu çarpana kadar daraltılır. Çok düşük değerler okunabilirliği azaltabilir."
+                    ? String(localized: "Quotes past the threshold are tightened down to this type size and this line-height multiplier. Very low values cost legibility.")
                     : nil
             ) {
                 SettingsRow(icon: "textformat.size.smaller", iconColor: .orange,
-                            title: "Uzun alıntıları otomatik daralt") {
+                            title: "Tighten long quotes automatically") {
                     Toggle("", isOn: Binding(
                         get: { settingsVM.autoTightenLongQuotes },
                         set: { newValue in
@@ -74,7 +74,7 @@ struct LongQuoteSection: View {
                 if settingsVM.autoTightenLongQuotes {
                     RowDivider()
                     VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                        LabeledContent("Şu eşikten itibaren") {
+                        LabeledContent("From this threshold") {
                             ThresholdInput(
                                 value: Binding(
                                     get: { settingsVM.tightenThreshold },
@@ -96,7 +96,7 @@ struct LongQuoteSection: View {
                             )
                         }
 
-                        LabeledContent("Minimum yazı boyutu") {
+                        LabeledContent("Minimum text size") {
                             HStack(spacing: 8) {
                                 Slider(
                                     value: Binding(
@@ -117,7 +117,7 @@ struct LongQuoteSection: View {
                             }
                         }
 
-                        LabeledContent("Satır arası") {
+                        LabeledContent("Line spacing") {
                             HStack(spacing: 8) {
                                 Slider(
                                     value: Binding(
@@ -140,7 +140,7 @@ struct LongQuoteSection: View {
 
                         HStack {
                             Spacer()
-                            Button("Varsayılana Dön") {
+                            Button("Reset to Default") {
                                 settingsVM.resetLongQuoteTypography()
                                 actions.onTypographyChanged()
                             }

@@ -74,7 +74,7 @@ enum Theme {
     /// keep working. Row and control text stays SF Pro: serif at body size in a dense
     /// settings list costs legibility for no gain.
     enum Typography {
-        /// Heading above a settings group ("Stil", "Zamanlama").
+        /// Heading above a settings group ("Style", "Schedule").
         static let groupTitle: Font = .system(.title3, design: .serif).weight(.semibold)
         /// Heading for a panel or inspector ("Canlı Önizleme").
         static let panelTitle: Font = .system(.headline, design: .serif)

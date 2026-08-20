@@ -15,10 +15,10 @@ enum RotationMode: String, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .allRandom:    return "Tümü"
-        case .bookByBook:   return "Kitap Kitap"
-        case .pinnedBooks:  return "Sabitler"
-        case .favorites:    return "Favoriler"
+        case .allRandom:    return String(localized: "All")
+        case .bookByBook:   return String(localized: "Book by Book")
+        case .pinnedBooks:  return String(localized: "Pinned")
+        case .favorites:    return String(localized: "Favorites")
         }
     }
 
@@ -35,13 +35,13 @@ enum RotationMode: String, Codable, CaseIterable, Identifiable {
     var modeDescription: String {
         switch self {
         case .allRandom:
-            return "Tüm kitaplardaki alıntılar arasından rastgele seçer."
+            return String(localized: "Picks at random from every book.")
         case .bookByBook:
-            return "Bir kitaptaki tüm alıntılar gösterilince rastgele yeni bir kitaba geçer."
+            return String(localized: "Moves to another book at random once one book's quotes are exhausted.")
         case .pinnedBooks:
-            return "Yalnızca sabitlediğiniz kitaplardan alıntı gösterir."
+            return String(localized: "Shows quotes only from the books you pinned.")
         case .favorites:
-            return "Yalnızca kalp ile favorilediğiniz alıntılar arasından rastgele seçer."
+            return String(localized: "Picks at random from the quotes you hearted.")
         }
     }
 }

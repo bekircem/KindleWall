@@ -32,10 +32,10 @@ struct AccountView: View {
         VStack(spacing: Theme.Spacing.m) {
             IconTile(symbol: "icloud", color: .blue, size: 56)
 
-            Text("iCloud Eşitleme")
+            Text("iCloud Sync")
                 .font(.title2.weight(.bold))
 
-            Text("Favorilerin, gösterilmiş alıntıların ve düzenlemelerin Mac'lerin arasında eşitlenir. Veriler yalnızca senin özel iCloud veritabanına yazılır; bu projenin bir sunucusu yok.")
+            Text("Your favorites, shown quotes and edits sync across your Macs. The data goes only to your own private iCloud database; this project runs no server.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -50,7 +50,7 @@ struct AccountView: View {
             HStack(spacing: Theme.Spacing.m) {
                 statusIcon
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Durum")
+                    Text("Status")
                         .font(.subheadline.weight(.medium))
                     Text(statusDescription)
                         .font(.caption)
@@ -58,7 +58,7 @@ struct AccountView: View {
                 }
                 Spacer()
                 if case .idle = syncState.status {
-                    Button("Şimdi") {
+                    Button("Now") {
                         Task { await cloudKitSync.syncNow() }
                     }
                     .buttonStyle(.borderless)
@@ -72,7 +72,7 @@ struct AccountView: View {
 
     /// Only shown while sync is unavailable — the fix is always in System Settings, never here.
     private var systemSettingsHint: some View {
-        Button("Sistem Ayarları'nda iCloud'u Aç") {
+        Button("Open iCloud in System Settings") {
             if let url = URL(string: "x-apple.systempreferences:com.apple.preferences.AppleIDPrefPane") {
                 NSWorkspace.shared.open(url)
             }
@@ -100,18 +100,18 @@ struct AccountView: View {
         case .disabled(let reason):
             return reason
         case .idle:
-            guard let date = syncState.lastSyncedAt else { return "Hazır" }
+            guard let date = syncState.lastSyncedAt else { return String(localized: "Ready") }
             // A just-completed sync reads as "az önce". RelativeDateTimeFormatter would
             // otherwise render the near-now instant as the nonsensical "0 saniye sonra".
             if Date().timeIntervalSince(date) < 10 {
-                return "Son eşitleme: az önce"
+                return String(localized: "Last synced: just now")
             }
             let formatter = RelativeDateTimeFormatter()
             formatter.unitsStyle = .full
             formatter.locale = Locale(identifier: "tr_TR")
-            return "Son eşitleme: " + formatter.localizedString(for: date, relativeTo: Date())
+            return String(localized: "Last synced: ") + formatter.localizedString(for: date, relativeTo: Date())
         case .syncing:
-            return "Eşitleniyor…"
+            return String(localized: "Syncing…")
         case .error(let msg):
             return msg
         }

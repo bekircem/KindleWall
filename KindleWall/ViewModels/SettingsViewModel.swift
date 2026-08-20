@@ -135,7 +135,7 @@ final class SettingsViewModel {
     /// - Returns: The selected file URL, or nil if cancelled.
     func selectClippingsFile() -> URL? {
         let panel = NSOpenPanel()
-        panel.title = "My Clippings.txt Dosyasını Seçin"
+        panel.title = String(localized: "Choose Your My Clippings.txt File")
         panel.allowedContentTypes = [.plainText]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
@@ -249,7 +249,7 @@ final class SettingsViewModel {
             }
             loginItemError = nil
         } catch {
-            loginItemError = "Başlangıç ayarı güncellenemedi: \(error.localizedDescription)"
+            loginItemError = String(localized: "Could not update the login setting: \(error.localizedDescription)")
             launchAtLogin = !launchAtLogin
             storage.launchAtLogin = launchAtLogin
         }

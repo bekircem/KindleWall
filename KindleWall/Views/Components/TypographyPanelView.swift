@@ -9,10 +9,10 @@ struct TypographyPanelView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
-                    Text("Tipografi")
+                    Text("Typography")
                         .font(.headline)
                     Spacer()
-                    Button("Varsayılana Dön") {
+                    Button("Reset to Default") {
                         onReset()
                     }
                     .font(.caption)
@@ -31,7 +31,7 @@ struct TypographyPanelView: View {
 }
 
 /// Reusable typography control stack (basic sliders + advanced disclosure) without panel chrome.
-/// Shared by the hero inspector (`TypographyPanelView`) and the "Tipografi" settings page.
+/// Shared by the hero inspector (`TypographyPanelView`) and the "Typography" settings page.
 struct TypographyControls: View {
     @Binding var typography: TypographySettings
 
@@ -40,7 +40,7 @@ struct TypographyControls: View {
             // MARK: Temel Ayarlar
             VStack(alignment: .leading, spacing: 16) {
                 SliderRow(
-                    title: "Yazı Boyutu",
+                    title: "Text Size",
                     icon: "textformat.size",
                     value: $typography.fontScale,
                     range: 0.6...1.6,
@@ -48,7 +48,7 @@ struct TypographyControls: View {
                 )
 
                 SliderRow(
-                    title: "Dikey Konum",
+                    title: "Vertical Position",
                     icon: "arrow.up.arrow.down",
                     value: $typography.verticalPosition,
                     range: -0.8...0.8,
@@ -56,7 +56,7 @@ struct TypographyControls: View {
                 )
 
                 SliderRow(
-                    title: "Kenar Boşluğu",
+                    title: "Margin",
                     icon: "arrow.left.and.right",
                     value: $typography.paddingScale,
                     range: 0.5...1.8,
@@ -64,7 +64,7 @@ struct TypographyControls: View {
                 )
 
                 SliderRow(
-                    title: "Satır Aralığı",
+                    title: "Line Height",
                     icon: "line.3.horizontal",
                     value: $typography.lineSpacingScale,
                     range: 0.6...1.6,
@@ -73,12 +73,12 @@ struct TypographyControls: View {
             }
 
             // MARK: Gelişmiş Ayarlar
-            DisclosureGroup("Gelişmiş Ayarlar") {
+            DisclosureGroup("Advanced") {
                 VStack(alignment: .leading, spacing: 16) {
 
                     // Font ailesi
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Font Ailesi")
+                        Text("Typeface")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         HStack(spacing: 6) {
@@ -97,7 +97,7 @@ struct TypographyControls: View {
                     // Metin gölgesi
                     VStack(alignment: .leading, spacing: 10) {
                         Toggle(isOn: $typography.shadowEnabled) {
-                            Label("Metin Gölgesi", systemImage: "shadow")
+                            Label("Text Shadow", systemImage: "shadow")
                                 .font(.caption)
                         }
                         .toggleStyle(.switch)
@@ -105,7 +105,7 @@ struct TypographyControls: View {
 
                         if typography.shadowEnabled {
                             SliderRow(
-                                title: "Gölge Şiddeti",
+                                title: "Shadow Strength",
                                 icon: "circle.lefthalf.filled",
                                 value: $typography.shadowRadius,
                                 range: 1...20,
@@ -119,7 +119,7 @@ struct TypographyControls: View {
 
                     // Harf aralığı
                     SliderRow(
-                        title: "Harf Aralığı",
+                        title: "Letter Spacing",
                         icon: "character.cursor.ibeam",
                         value: $typography.letterSpacing,
                         range: -2...8,
@@ -131,7 +131,7 @@ struct TypographyControls: View {
 
                     // Metin opaklığı
                     SliderRow(
-                        title: "Metin Opaklığı",
+                        title: "Text Opacity",
                         icon: "circle.dotted",
                         value: $typography.textOpacity,
                         range: 0.3...1.0,
@@ -192,7 +192,7 @@ private struct FontFamilyChip: View {
 
 /// A labeled slider row for typography settings.
 struct SliderRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     @Binding var value: Double
     let range: ClosedRange<Double>

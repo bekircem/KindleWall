@@ -16,11 +16,11 @@ extension NSImage {
         } else if let cg = cgImage(forProposedRect: nil, context: nil, hints: nil) {
             bitmapRep = NSBitmapImageRep(cgImage: cg)
         } else {
-            throw KindleWallError.wallpaperGenerationFailed(reason: "PNG dönüşümü başarısız")
+            throw KindleWallError.wallpaperGenerationFailed(reason: String(localized: "PNG conversion failed"))
         }
 
         guard let pngData = bitmapRep.representation(using: .png, properties: [:]) else {
-            throw KindleWallError.wallpaperGenerationFailed(reason: "PNG dönüşümü başarısız")
+            throw KindleWallError.wallpaperGenerationFailed(reason: String(localized: "PNG conversion failed"))
         }
         try pngData.write(to: url)
     }
