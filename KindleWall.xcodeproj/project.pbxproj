@@ -93,6 +93,7 @@
 		9F43FDADF9EB52207F8BB0CE /* DesignEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA6F5AF1BFB67C8EE932FF92 /* DesignEditorView.swift */; };
 		A38FF529AC17962EDE97C601 /* SchedulerServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A37118CAF7B499E0D6782A /* SchedulerServiceTests.swift */; };
 		A5C08C1977C2EB95151FC087 /* ManualClippingFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08544AB0ED3C57DE9712136 /* ManualClippingFormView.swift */; };
+		A6C876F8252565CF3B3553E6 /* SyncErrorClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCA05B86B10F61117F3ED30C /* SyncErrorClassifier.swift */; };
 		A8CED08AAC6B125176A024C5 /* ScheduleSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DF7D386F7F6F76D6B4F7B5D /* ScheduleSection.swift */; };
 		A962097EB8345F616F154E1D /* TypographyPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CC248CBF037C8D7A6A2 /* TypographyPanelView.swift */; };
 		AB2E7BF3977B8AE7364ECB88 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E3DD25C894EF516D25F2473 /* SettingsViewModel.swift */; };
@@ -126,6 +127,7 @@
 		E2FB7682A7E87AD7D9862C6F /* DesignTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23CBA85F5BC491252CE83E1C /* DesignTab.swift */; };
 		E9181E2AB7C4C596E1EAD8AD /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 5C446E3C8A8616C927A01098 /* Sparkle */; };
 		EA59F1A90173E25AB7E1010B /* ImportState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9CBDB10D1233006904C5296 /* ImportState.swift */; };
+		EBB1D61E5C0E1EA1DEE6AD2D /* SyncErrorClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA88A33317A0CA2D65ABE283 /* SyncErrorClassifierTests.swift */; };
 		EEA6AFCE1699E43EAA1F01F9 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E37D518982D3991558473A69 /* AccountView.swift */; };
 		EFD64790AC7E187DD7F7642F /* ConcurrentRenderStressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F87F1C74F73529B64A2125 /* ConcurrentRenderStressTests.swift */; };
 		F4F6D3A4EB342233DDABD5E9 /* SettingsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2286B5CCCA4402156C8B8017 /* SettingsRow.swift */; };
@@ -263,6 +265,7 @@
 		E9CBDB10D1233006904C5296 /* ImportState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportState.swift; sourceTree = "<group>"; };
 		EA6F5AF1BFB67C8EE932FF92 /* DesignEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignEditorView.swift; sourceTree = "<group>"; };
 		EA714C7CA0CDC37EB70CB227 /* BehaviorSettingsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BehaviorSettingsPage.swift; sourceTree = "<group>"; };
+		EA88A33317A0CA2D65ABE283 /* SyncErrorClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncErrorClassifierTests.swift; sourceTree = "<group>"; };
 		EF874A38B8BF8FB0D42AE74C /* RotationModeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotationModeCard.swift; sourceTree = "<group>"; };
 		F08544AB0ED3C57DE9712136 /* ManualClippingFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualClippingFormView.swift; sourceTree = "<group>"; };
 		F16FF470B4AB5E726C2E10FE /* WallpaperStyleMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallpaperStyleMigrationTests.swift; sourceTree = "<group>"; };
@@ -272,6 +275,7 @@
 		F7564696BBF27D1BCF480289 /* SolarPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolarPhase.swift; sourceTree = "<group>"; };
 		F85ABC4DE882DD80453CAADE /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
 		FAE5ACCD4353C9FC35A14B64 /* TestDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestDefaults.swift; sourceTree = "<group>"; };
+		FCA05B86B10F61117F3ED30C /* SyncErrorClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncErrorClassifier.swift; sourceTree = "<group>"; };
 		FD367FB49D3786BFD9B13B3D /* DynamicWallpaperExportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicWallpaperExportTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -468,6 +472,7 @@
 				72A2D110DB6BF0DB579C313E /* SolarColorTransform.swift */,
 				D9692B0E282F04AFDCA0FF3D /* StorageService.swift */,
 				8606F8E3F5DF3CA36E62D9C1 /* SunCalculator.swift */,
+				FCA05B86B10F61117F3ED30C /* SyncErrorClassifier.swift */,
 				5763195AADF0C3F30867E855 /* SyncPushQueue.swift */,
 				5DECB28E7B728268E00B2C32 /* SyncSnapshot.swift */,
 				CAA50E1D9E4FFFCF196C6E26 /* UpdaterManager.swift */,
@@ -546,6 +551,7 @@
 				15BF48C1423B84E5E5D4C510 /* SolarTests.swift */,
 				83508E1D0A9DDB61FB42F174 /* StorageServiceRobustnessTests.swift */,
 				84B8DCCB21715F04D7F1F47B /* StyleRenderSnapshotTests.swift */,
+				EA88A33317A0CA2D65ABE283 /* SyncErrorClassifierTests.swift */,
 				89B530141C19E14A31011F77 /* SyncPushQueueTests.swift */,
 				2F0BBEB7BE2A0CF059AB51A9 /* SyncSnapshotTests.swift */,
 				FAE5ACCD4353C9FC35A14B64 /* TestDefaults.swift */,
@@ -679,6 +685,7 @@
 				DA4D9ACED55083BA56A4F627 /* SolarTests.swift in Sources */,
 				2B203BD6E0766554EEED1A1B /* StorageServiceRobustnessTests.swift in Sources */,
 				CE315013D6AFFCFE08D077FE /* StyleRenderSnapshotTests.swift in Sources */,
+				EBB1D61E5C0E1EA1DEE6AD2D /* SyncErrorClassifierTests.swift in Sources */,
 				97165DBC3DB2D0EA43D144E1 /* SyncPushQueueTests.swift in Sources */,
 				43C70452C160F268DF58A5B5 /* SyncSnapshotTests.swift in Sources */,
 				AFDCC5033D6A6387D2DEE572 /* TestDefaults.swift in Sources */,
@@ -773,6 +780,7 @@
 				344706C2926BAB6CB998A58A /* StylePickerView.swift in Sources */,
 				47AC0F2B9370AD0C344EAB3A /* StyleSection.swift in Sources */,
 				7AC95EBE2DC811E52F85F442 /* SunCalculator.swift in Sources */,
+				A6C876F8252565CF3B3553E6 /* SyncErrorClassifier.swift in Sources */,
 				49759DE6AB60AA940CAA7156 /* SyncPushQueue.swift in Sources */,
 				E04A4DEA617725CC965DA1D1 /* SyncSchema.swift in Sources */,
 				5794F745719880F7FA9D91C7 /* SyncSnapshot.swift in Sources */,

@@ -36,6 +36,9 @@ final class CloudKitSyncService {
     private var pendingPushTimer: Timer?
     /// Guards against re-broadcasting notifications while applying remote changes.
     private var isApplyingRemoteChanges = false
+    /// Guards against recursion while rebuilding a missing zone: the recovery ends in a
+    /// push, which can report the very error that started it.
+    private var isRecoveringFromMissingZone = false
     /// Guards against infinite recursion if a token-reset re-pull also reports
     /// `changeTokenExpired`. Flipped during the recovery `performPull()` call.
     private var isRecoveringFromExpiredToken = false
@@ -254,7 +257,11 @@ final class CloudKitSyncService {
             // so a deletion diffed against the snapshot was never retried and the snapshot
             // stayed frozen at its pre-deletion contents — the record lived on in the cloud.
             pushQueue.returnUnfinished(toPush)
-            syncState.status = .error(error.localizedDescription)
+            if SyncErrorClassifier.meansZoneIsMissing(error) {
+                await recoverFromMissingZone()
+            } else {
+                syncState.status = .error(error.localizedDescription)
+            }
         }
     }
 
@@ -503,6 +510,9 @@ final class CloudKitSyncService {
         } catch let error as CKError where error.code == .changeTokenExpired {
             await recoverFromExpiredChangeToken()
             return
+        } catch where SyncErrorClassifier.meansZoneIsMissing(error) {
+            await recoverFromMissingZone()
+            return
         } catch {
             syncState.status = .error(error.localizedDescription)
             return
@@ -516,6 +526,8 @@ final class CloudKitSyncService {
         if let zoneFailure {
             if let ckError = zoneFailure as? CKError, ckError.code == .changeTokenExpired {
                 await recoverFromExpiredChangeToken()
+            } else if SyncErrorClassifier.meansZoneIsMissing(zoneFailure) {
+                await recoverFromMissingZone()
             } else {
                 syncState.status = .error(zoneFailure.localizedDescription)
             }
@@ -528,6 +540,42 @@ final class CloudKitSyncService {
         // pull covers. Categories still queued for a push have diverged deliberately and
         // keep their previous snapshot, or the pending deletion diff dies here.
         saveSnapshotFromLocal(preserving: pushQueue.pending)
+    }
+
+    /// Rebuilds the custom zone after the server reports it gone, then re-uploads local state.
+    ///
+    /// Without this the app is stuck for good: `cloudKitZoneCreated` says the zone exists, so
+    /// `bootstrapZoneIfNeeded` returns immediately and every sync fails the same way. Seen in
+    /// the wild, and the only cure was editing preferences by hand.
+    ///
+    /// An absent zone holds nothing, so the change token is meaningless and the snapshot's
+    /// "the cloud still has these IDs" is false — `bootstrapZoneIfNeeded` drops the snapshot
+    /// itself when it creates a zone, and the token is dropped here. Everything local is then
+    /// marked dirty, because from the server's side this device has never synced.
+    private func recoverFromMissingZone() async {
+        guard !isRecoveringFromMissingZone else {
+            // The recovery's own push reported it again — stop rather than loop.
+            syncState.status = .error(String(localized: "Sync could not recover"))
+            return
+        }
+        isRecoveringFromMissingZone = true
+        defer { isRecoveringFromMissingZone = false }
+
+        let defaults = UserDefaults.standard
+        defaults.set(false, forKey: Constants.StorageKeys.cloudKitZoneCreated)
+        defaults.set(false, forKey: Constants.StorageKeys.cloudKitSubscriptionCreated)
+        saveChangeToken(nil)
+
+        do {
+            try await bootstrapZoneIfNeeded()
+            try await bootstrapSubscriptionIfNeeded()
+        } catch {
+            syncState.status = .error(String(localized: "Setup failed: \(error.localizedDescription)"))
+            return
+        }
+
+        pushQueue.markAllDirty()
+        await performPendingPushes()
     }
 
     /// Server invalidated our change token (rare: iCloud sign-out/in, schema reset, or the
