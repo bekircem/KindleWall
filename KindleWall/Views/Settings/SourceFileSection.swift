@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Kaynak Dosya" section — choose / reload the Kindle My Clippings.txt source file.
+/// "Source File" section — choose / reload the Kindle My Clippings.txt source file.
 /// A section of the consolidated `BehaviorSettingsPage`.
 struct SourceFileSection: View {
     @Bindable var settingsVM: SettingsViewModel
@@ -28,7 +28,7 @@ struct SourceFileSection: View {
                                         .foregroundStyle(.secondary)
                                 }
                             } else {
-                                Text("Henüz dosya seçilmedi")
+                                Text("No file chosen yet")
                                     .font(.callout)
                                     .foregroundStyle(.secondary)
                             }
@@ -44,7 +44,7 @@ struct SourceFileSection: View {
                                 actions.onFileSelected(url)
                             }
                         } label: {
-                            Label("Dosya Seç…", systemImage: "folder")
+                            Label("Choose File…", systemImage: "folder")
                         }
                         .buttonStyle(.bordered)
                     }

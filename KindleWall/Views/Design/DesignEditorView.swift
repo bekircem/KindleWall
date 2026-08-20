@@ -106,7 +106,7 @@ struct DesignEditorView: View {
             }
             .help("Try the design with a different quote")
 
-            Button("Kontroller", systemImage: "sidebar.right") {
+            Button("Controls", systemImage: "sidebar.right") {
                 isInspectorPresented.toggle()
             }
             .help(isInspectorPresented ? "Hide controls" : "Show controls")

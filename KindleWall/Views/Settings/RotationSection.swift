@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Döngü Modu" — how the next quote is chosen, and what pool it comes from.
+/// "Rotation" — how the next quote is chosen, and what pool it comes from.
 ///
 /// Two cards: the modes with their explanations, and a scope card whose content follows the
 /// selected mode. Neither scrolls; the book chooser that used to scroll inside this page now
@@ -45,27 +45,27 @@ struct RotationSection: View {
 
         case .favorites:
             SettingsCard(title: "Kapsam") {
-                statRow(icon: "heart.fill", title: "Favori Alıntı", value: settingsVM.favoriteCount)
+                statRow(icon: "heart.fill", title: "Favorite Quotes", value: settingsVM.favoriteCount)
             }
 
         case .allRandom, .bookByBook:
             SettingsCard(title: "Kapsam") {
-                statRow(icon: "books.vertical.fill", title: "Kitap", value: availableBooks.count)
+                statRow(icon: "books.vertical.fill", title: "Books", value: availableBooks.count)
                 RowDivider()
-                statRow(icon: "quote.bubble.fill", title: "Alıntı", value: totalQuoteCount)
+                statRow(icon: "quote.bubble.fill", title: "Quote", value: totalQuoteCount)
             }
         }
     }
 
     @ViewBuilder private var pinnedScope: some View {
         if availableBooks.isEmpty {
-            Text("Henüz alıntı yüklenmedi. Önce bir My Clippings.txt dosyası seç.")
+            Text("No quotes loaded yet. Choose a My Clippings.txt file first.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
         } else {
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                 if pinnedBooks.isEmpty {
-                    Label("Hiç kitap seçilmedi — şimdilik tüm kitaplardan gösterilecek.",
+                    Label("No books selected — quotes will come from all books for now.",
                           systemImage: "exclamationmark.triangle.fill")
                         .font(.callout)
                         .foregroundStyle(.orange)
@@ -80,7 +80,7 @@ struct RotationSection: View {
                 }
 
                 HStack {
-                    Button("Kitap Seç…") { isPickingBooks = true }
+                    Button("Choose Books…") { isPickingBooks = true }
                         .popover(isPresented: $isPickingBooks, arrowEdge: .bottom) {
                             BookScopePicker(books: availableBooks, viewModel: settingsVM)
                         }
@@ -125,7 +125,7 @@ struct RotationSection: View {
             .overlay(Capsule().strokeBorder(Theme.Palette.cardStroke, lineWidth: 1))
         }
         .buttonStyle(.plain)
-        .help("\(book.title) — listeden çıkar")
+        .help("\(book.title) — remove from the list")
         .accessibilityLabel("\(book.title), \(book.quoteCount) alıntı. Listeden çıkarmak için tıkla")
     }
 

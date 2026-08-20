@@ -45,7 +45,7 @@ struct AlertBanner: View {
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
-            .help("Kapat")
+            .help("Close")
             .accessibilityLabel("Dismiss alert")
         }
         .padding(.horizontal, Theme.Spacing.l)

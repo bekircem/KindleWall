@@ -3,7 +3,7 @@ import Foundation
 /// A handful of public-domain highlights used to get someone through setup without a Kindle
 /// plugged in.
 ///
-/// First launch used to be a dead end: both "İleri" and "Başla" were disabled until a
+/// First launch used to be a dead end: both "Next" and "Başla" were disabled until a
 /// `My Clippings.txt` was chosen, so anyone whose device was elsewhere could not reach the app
 /// at all — not even to look at it. These give the design step something real to render and
 /// leave a working wallpaper behind.

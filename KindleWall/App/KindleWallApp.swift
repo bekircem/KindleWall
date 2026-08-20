@@ -69,7 +69,7 @@ struct KindleWallApp: App {
         .commands {
             // Directly under "KindleWall Hakkında", where every Mac app puts it.
             CommandGroup(after: .appInfo) {
-                Button("Güncellemeleri Denetle…") {
+                Button("Check for Updates…") {
                     UpdaterManager.shared.checkForUpdates()
                 }
                 .disabled(!UpdaterManager.shared.canCheckForUpdates)

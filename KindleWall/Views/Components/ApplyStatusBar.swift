@@ -127,7 +127,7 @@ struct ApplyStatusBar: View {
             return Presentation(
                 symbol: "eye",
                 message: "Changes are preview-only",
-                action: Action(title: "Uygula") { viewModel.applyDesignNow() }
+                action: Action(title: "Apply") { viewModel.applyDesignNow() }
             )
         }
     }
@@ -136,7 +136,7 @@ struct ApplyStatusBar: View {
     /// *quote* that moved, so offering to restore a design would be a lie.
     private func undoAction(for reason: ApplyReason) -> Action? {
         guard reason.offersDesignUndo, viewModel.designUndo != nil else { return nil }
-        return Action(title: "Geri Al") { viewModel.undoDesign() }
+        return Action(title: "Undo") { viewModel.undoDesign() }
     }
 
     private static let timeFormatter: DateFormatter = {
@@ -152,7 +152,7 @@ struct ApplyStatusBar: View {
 ///
 /// Shared so that the top-right of the window means the same thing everywhere. It used to
 /// exist only on "Current Quote", while on the design pages that same slot held a preview
-/// toggle — so the one place users had learned to look for "Uygula" showed something else.
+/// toggle — so the one place users had learned to look for "Apply" showed something else.
 struct ApplyToolbarButton: View {
     let viewModel: MainViewModel
 
@@ -167,7 +167,7 @@ struct ApplyToolbarButton: View {
                 case .applied:
                     Label("Applied", systemImage: "checkmark.circle.fill")
                 default:
-                    Label("Uygula", systemImage: Constants.Icons.wallpaper)
+                    Label("Apply", systemImage: Constants.Icons.wallpaper)
                 }
             }
             .animation(Theme.Motion.snappy, value: viewModel.applyStatus)

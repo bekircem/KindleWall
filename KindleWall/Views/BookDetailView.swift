@@ -60,7 +60,7 @@ struct BookDetailView: View {
                             vm.toggleFavorite(clipping)
                         }
                         .keyboardShortcut("d", modifiers: .command)
-                        Button("Kopyala") {
+                        Button("Copy") {
                             NSPasteboard.general.clearContents()
                             NSPasteboard.general.setString(clipping.text, forType: .string)
                         }
@@ -71,7 +71,7 @@ struct BookDetailView: View {
                             Button("Edit") {
                                 clippingToEdit = clipping
                             }
-                            Button("Sil", role: .destructive) {
+                            Button("Delete", role: .destructive) {
                                 clippingToDelete = clipping
                             }
                         }
@@ -88,7 +88,7 @@ struct BookDetailView: View {
             ),
             titleVisibility: .visible
         ) {
-            Button("Sil", role: .destructive) {
+            Button("Delete", role: .destructive) {
                 if let c = clippingToDelete {
                     onDeleteManualClipping(c)
                     clippingToDelete = nil

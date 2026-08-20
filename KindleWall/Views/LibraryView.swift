@@ -41,7 +41,7 @@ struct LibraryView: View {
                     ContentUnavailableView {
                         Label("No results", systemImage: "magnifyingglass")
                     } description: {
-                        Text("Arama kriterlerinize uygun kitap yok.")
+                        Text("No books match your search.")
                     } actions: {
                         Button("Clear Search") { viewModel.searchText = "" }
                     }
@@ -145,7 +145,7 @@ struct LibraryView: View {
                 .help("Show books with favorites")
             }
         }
-        .searchable(text: $viewModel.searchText, prompt: "Kitap ara…")
+        .searchable(text: $viewModel.searchText, prompt: "Search books…")
         .sheet(item: $bookToEdit) { book in
             BookMetadataEditView(
                 book: book,

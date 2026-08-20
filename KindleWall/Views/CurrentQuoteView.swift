@@ -204,7 +204,7 @@ struct CurrentQuoteView: View {
         }
 
         ToolbarItemGroup(placement: .secondaryAction) {
-            Picker("Stil", selection: Binding(
+            Picker("Style", selection: Binding(
                 get: { viewModel.selectedStyle },
                 set: { viewModel.updateStyle($0) }
             )) {
@@ -231,7 +231,7 @@ struct CurrentQuoteView: View {
             } label: {
                 Image(systemName: viewModel.isCurrentFavorite ? Constants.Icons.favoriteFilled : Constants.Icons.favorite)
             }
-            .help("Favori")
+            .help("Favorite")
             .accessibilityLabel(viewModel.isCurrentFavorite ? "Remove from favorites" : "Add to favorites")
             .keyboardShortcut("d", modifiers: .command)
 

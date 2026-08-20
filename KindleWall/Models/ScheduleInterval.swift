@@ -20,7 +20,7 @@ enum ScheduleInterval: String, Codable, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .every30Minutes: return "30 dk"
-        case .hourly:         return "1 saat"
+        case .hourly:         return "1 hour"
         case .every3Hours:    return "3 saat"
         case .every6Hours:    return "6 saat"
         case .daily:          return "Günlük"

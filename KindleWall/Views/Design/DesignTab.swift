@@ -13,9 +13,9 @@ enum DesignTab: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .style:      return "Stil"
-        case .typography: return "Tipografi"
-        case .background: return "Arka Plan"
+        case .style:      return "Style"
+        case .typography: return "Typography"
+        case .background: return "Background"
         }
     }
 

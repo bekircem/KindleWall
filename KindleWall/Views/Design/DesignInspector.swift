@@ -64,7 +64,7 @@ struct DesignInspector: View {
     private var autoApplyFooter: some View {
         Toggle(isOn: $viewModel.autoApplyDesignChanges) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Otomatik Uygula")
+                Text("Auto Apply")
                 Text(viewModel.autoApplyDesignChanges
                      ? "Changes reach the desktop after a short pause."
                      : "Changes stay in the preview; press Apply to use them.")

@@ -47,7 +47,7 @@ struct BookMetadataEditView: View {
                 VStack(alignment: .leading, spacing: Theme.Spacing.l) {
                     // Raw parsed value as read-only reference
                     VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                        Text("Dosyadan okunan:")
+                        Text("Read from the file:")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Text(rawReference)
@@ -66,7 +66,7 @@ struct BookMetadataEditView: View {
                     }
 
                     VStack(alignment: .leading, spacing: Theme.Spacing.s) {
-                        Text("Yazar")
+                        Text("Author")
                             .font(.subheadline)
                             .fontWeight(.medium)
                         TextField("Enter the author's name", text: $editAuthor)
@@ -105,15 +105,15 @@ struct BookMetadataEditView: View {
                                     Text("Suggestion:")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
-                                    Text("Ad: \(sugTitle)")
+                                    Text("Title: \(sugTitle)")
                                         .font(.caption)
                                     if let a = sugAuthor {
-                                        Text("Yazar: \(a)")
+                                        Text("Author: \(a)")
                                             .font(.caption)
                                     }
                                 }
 
-                                // Not "Uygula": everywhere else in the app that word means
+                                // Not "Apply": everywhere else in the app that word means
                                 // "put this on the desktop". Here it only fills two fields.
                                 Button("Use Suggestion") {
                                     editTitle = sugTitle
@@ -151,7 +151,7 @@ struct BookMetadataEditView: View {
                 Button("Cancel") { dismiss() }
                     .keyboardShortcut(.cancelAction)
 
-                Button("Kaydet") {
+                Button("Save") {
                     let author = editAuthor.trimmingCharacters(in: .whitespacesAndNewlines)
                     let override = BookMetadataOverride(
                         originalTitle: book.title,

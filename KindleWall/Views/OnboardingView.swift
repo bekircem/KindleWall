@@ -56,7 +56,7 @@ struct OnboardingView: View {
     private var navigationBar: some View {
         HStack {
             if step > .welcome {
-                Button("Geri", action: goBack)
+                Button("Back", action: goBack)
                     .keyboardShortcut("[", modifiers: .command)
             }
 
@@ -74,11 +74,11 @@ struct OnboardingView: View {
             Spacer()
 
             if step == .done {
-                Button("Bitir", action: finish)
+                Button("Finish", action: finish)
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
             } else {
-                Button("İleri", action: goNext)
+                Button("Next", action: goNext)
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
                     // Only the source step can block, and only until there is something to
@@ -119,10 +119,10 @@ struct OnboardingView: View {
 
             IconTile(symbol: "quote.bubble.fill", color: .indigo, size: 76)
 
-            Text("KindleWall'a Hoş Geldiniz")
+            Text("Welcome to KindleWall")
                 .font(.largeTitle.weight(.bold))
 
-            Text("Kindle'da altını çizdiğin cümleler masaüstü duvar kağıdın olur ve belirlediğin aralıkla kendiliğinden değişir.")
+            Text("The lines you highlighted on your Kindle become your desktop wallpaper, changing on the schedule you set.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -167,18 +167,18 @@ struct OnboardingView: View {
                 Button {
                     chooseFile()
                 } label: {
-                    Label("Dosya Seç…", systemImage: "folder")
+                    Label("Choose File…", systemImage: "folder")
                 }
                 .buttonStyle(.bordered)
 
-                Button("Kindle'ım Yok, Örneklerle Dene") {
+                Button("No Kindle — Try the Samples") {
                     sourceError = nil
                     viewModel.loadSampleClippings()
                 }
                 .buttonStyle(.bordered)
             }
 
-            Button("Sonra hallederim") {
+            Button("I'll do it later") {
                 viewModel.loadSampleClippings()
                 goNext()
             }
@@ -259,7 +259,7 @@ struct OnboardingView: View {
                 Button {
                     viewModel.selectRandomClipping()
                 } label: {
-                    Label("Yeni Alıntı", systemImage: Constants.Icons.newQuote)
+                    Label("New Quote", systemImage: Constants.Icons.newQuote)
                 }
                 .disabled(!hasQuotes)
 
@@ -289,7 +289,7 @@ struct OnboardingView: View {
 
                 SettingsCard(footnote: "Alıntı bu aralıkla değişir. Görünüm ayarların anında uygulanır.") {
                     VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                        Picker("Değişim Sıklığı", selection: Binding(
+                        Picker("Change Interval", selection: Binding(
                             get: { settingsVM.scheduleInterval },
                             set: {
                                 settingsVM.updateSchedule($0)
@@ -308,16 +308,16 @@ struct OnboardingView: View {
 
                 SettingsCard(title: "Tercihler") {
                     SettingsRow(icon: "menubar.rectangle", iconColor: .indigo,
-                                title: "Menü Çubuğunda Göster",
-                                subtitle: "Pencereyi açmadan alıntı değiştir") {
+                                title: "Show in Menu Bar",
+                                subtitle: "Change the quote without opening the window") {
                         Toggle("", isOn: $settingsVM.showInMenuBar).labelsHidden()
                     }
                     RowDivider()
-                    SettingsRow(icon: "power", iconColor: .green, title: "Başlangıçta Aç") {
+                    SettingsRow(icon: "power", iconColor: .green, title: "Open at Login") {
                         Toggle("", isOn: $settingsVM.launchAtLogin).labelsHidden()
                     }
                     RowDivider()
-                    SettingsRow(icon: "bell.fill", iconColor: .red, title: "Bildirim Gönder") {
+                    SettingsRow(icon: "bell.fill", iconColor: .red, title: "Send Notifications") {
                         Toggle("", isOn: $settingsVM.showNotifications).labelsHidden()
                     }
                 }
@@ -340,13 +340,13 @@ struct OnboardingView: View {
 
             IconTile(symbol: "checkmark.circle.fill", color: .green, size: 68)
 
-            Text("Hazırsın")
+            Text("You're Ready")
                 .font(.largeTitle.weight(.bold))
 
             // The one thing the app most needs to teach: design edits land on the desktop by
             // themselves. Without saying it, people hunt for a save button that isn't there.
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                tourRow(icon: "paintpalette.fill", color: .purple, title: "Tasarım",
+                tourRow(icon: "paintpalette.fill", color: .purple, title: "Design",
                         detail: "Stil, arka plan ve tipografi tek sayfada. Değişiklikler masaüstüne kendiliğinden uygulanır.")
                 tourRow(icon: "text.quote", color: .indigo, title: "Menü çubuğu",
                         detail: "Pencere kapalıyken bile alıntıyı değiştirebilir, duraklatabilirsin.")

@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// "Hakkında" page — app identity and version.
+/// "About" page — app identity and version.
 struct AboutPage: View {
     var body: some View {
-        SettingsPage(title: "Hakkında") {
+        SettingsPage(title: "About") {
             SettingsCard {
                 VStack(spacing: Theme.Spacing.m) {
                     IconTile(symbol: "text.quote", color: .indigo, size: 56)
@@ -11,12 +11,12 @@ struct AboutPage: View {
                     VStack(spacing: 2) {
                         Text(Constants.App.name)
                             .font(.title2.weight(.bold))
-                        Text("Sürüm \(Constants.App.version)")
+                        Text("Version \(Constants.App.version)")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                     }
 
-                    Text("Kindle alıntılarını şık duvar kağıtlarına dönüştürür.")
+                    Text("Turns your Kindle highlights into desktop wallpapers.")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                         .multilineTextAlignment(.center)
@@ -27,13 +27,13 @@ struct AboutPage: View {
 
             SettingsCard {
                 VStack(spacing: Theme.Spacing.m) {
-                    Button("Güncellemeleri Denetle") {
+                    Button("Check for Updates") {
                         UpdaterManager.shared.checkForUpdates()
                     }
                     .buttonStyle(.glass)
                     .disabled(!UpdaterManager.shared.canCheckForUpdates)
 
-                    Toggle("Güncellemeleri otomatik denetle", isOn: Binding(
+                    Toggle("Check for updates automatically", isOn: Binding(
                         get: { UpdaterManager.shared.automaticallyChecksForUpdates },
                         set: { UpdaterManager.shared.automaticallyChecksForUpdates = $0 }
                     ))

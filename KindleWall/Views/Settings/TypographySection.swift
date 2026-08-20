@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Decoration chips plus the live type controls (shared with the hero inspector) — the
-/// "Tipografi" group of the "Tasarım" page.
+/// "Typography" group of the "Design" page.
 struct TypographySection: View {
     let viewModel: MainViewModel
 
@@ -15,7 +15,7 @@ struct TypographySection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
             // Decoration — reads and writes the same `typography` the sliders below do, so
-            // "Varsayılana Dön" can no longer leave the chips highlighting a stale choice.
+            // "Reset to Default" can no longer leave the chips highlighting a stale choice.
             SettingsCard(title: "Süsleme", footnote: "Alıntının çevresine eklenen dekoratif öğe.") {
                 HStack(spacing: Theme.Spacing.s) {
                     ForEach(TypographySettings.DecorationStyle.allCases) { style in
@@ -35,7 +35,7 @@ struct TypographySection: View {
                 HStack {
                     SectionHeader("Yazı Tipi")
                     Spacer()
-                    Button("Varsayılana Dön") {
+                    Button("Reset to Default") {
                         viewModel.updateTypography(.default)
                     }
                     .font(.caption)

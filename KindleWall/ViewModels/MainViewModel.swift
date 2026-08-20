@@ -56,7 +56,7 @@ final class MainViewModel {
     private(set) var nextWallpaperDate: Date?
 
     /// Whether a pre-KindleWall wallpaper is on file to restore. Stored for the same reason —
-    /// `WallpaperManager` is not observable either, so the "Geri Yükle" button used to keep
+    /// `WallpaperManager` is not observable either, so the "Restore" button used to keep
     /// whatever enabled state it happened to be built with.
     private(set) var canRestorePreviousWallpaper: Bool = false
 
@@ -765,7 +765,7 @@ final class MainViewModel {
         let rewriteHorizon = scheduler.isActive ? scheduler.nextChangeDate : nil
 
         applyTask = Task.detached(priority: .utility) { [generator, wallpaperManager, sunCalculator, composer, heicEncoder] in
-            // Coalesce bursts. A settings toggle, the "Şimdi Değiştir" button and a scheduler
+            // Coalesce bursts. A settings toggle, the "Change Now" button and a scheduler
             // tick can land within milliseconds of each other; each one used to start a full
             // multi-hundred-megabyte render before being superseded by the next.
             try? await Task.sleep(for: .milliseconds(150))

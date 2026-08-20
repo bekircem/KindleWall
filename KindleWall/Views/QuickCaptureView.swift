@@ -104,7 +104,7 @@ struct QuickCaptureView: View {
                 Button("Cancel", action: onCancel)
                     .keyboardShortcut(.cancelAction)
                 Spacer()
-                Button("Kaydet") {
+                Button("Save") {
                     onSave(bookTitle.trimmed, nil, text.trimmed, nil)
                 }
                 .keyboardShortcut(.defaultAction)

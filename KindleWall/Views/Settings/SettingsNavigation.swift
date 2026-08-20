@@ -2,11 +2,11 @@ import SwiftUI
 
 /// Sidebar information architecture for the main window — Loop-style grouped, focused pages.
 enum SidebarSection: String, CaseIterable, Identifiable {
-    // "Duvar Kağıdı" rather than "Genel": the old name collided with the *item* also called
-    // "Genel" further down, so the sidebar used the same word for two different things.
+    // "Duvar Kağıdı" rather than "General": the old name collided with the *item* also called
+    // "General" further down, so the sidebar used the same word for two different things.
     case wallpaper = "Duvar Kağıdı"
     case content   = "İçerik"
-    case behavior  = "Davranış"
+    case behavior  = "Behavior"
     case app       = "Uygulama"
 
     var id: String { rawValue }
@@ -49,13 +49,13 @@ enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
     var title: String {
         switch self {
         case .currentQuote: return "Şu Anki Alıntı"
-        case .design:       return "Tasarım"
+        case .design:       return "Design"
         case .library:      return "Kütüphane"
-        case .behavior:     return "Davranış"
+        case .behavior:     return "Behavior"
         case .settings:     return "Ayarlar"
-        case .shortcuts:    return "Kısayollar"
+        case .shortcuts:    return "Shortcuts"
         case .account:      return "iCloud"
-        case .about:        return "Hakkında"
+        case .about:        return "About"
         }
     }
 
@@ -95,7 +95,7 @@ struct SettingsActions {
     var onRotationModeChanged: (RotationMode) -> Void = { _ in }
     var onPinnedBooksChanged: (Set<String>) -> Void = { _ in }
     var onRestorePreviousWallpaper: () -> Void = {}
-    /// Picks a *new quote* and applies it — "Şimdi Değiştir".
+    /// Picks a *new quote* and applies it — "Change Now".
     var onApplyNow: () -> Void = {}
     /// Applies the current design without touching the quote.
     var onApplyDesignNow: () -> Void = {}

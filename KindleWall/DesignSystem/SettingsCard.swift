@@ -82,13 +82,13 @@ struct RowDivider: View {
 }
 
 #Preview {
-    SettingsCard(title: "Zamanlama", footnote: "Duvar kağıdının ne sıklıkla değişeceğini seçin.") {
-        SettingsRow(icon: "clock.fill", iconColor: .blue, title: "Değişim Sıklığı") {
-            Text("1 saat").foregroundStyle(.secondary)
+    SettingsCard(title: "Schedule", footnote: "Duvar kağıdının ne sıklıkla değişeceğini seçin.") {
+        SettingsRow(icon: "clock.fill", iconColor: .blue, title: "Change Interval") {
+            Text("1 hour").foregroundStyle(.secondary)
         }
         RowDivider()
-        SettingsRow(icon: "shuffle", iconColor: .green, title: "Döngü Modu",
-                    subtitle: "Rastgele alıntı seçer") {
+        SettingsRow(icon: "shuffle", iconColor: .green, title: "Rotation",
+                    subtitle: "Picks a quote at random") {
             Image(systemName: "chevron.right").foregroundStyle(.tertiary).font(.caption)
         }
     }

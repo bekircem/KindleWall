@@ -122,7 +122,7 @@ struct ManualClippingFormView: View {
 
                     // Author
                     VStack(alignment: .leading, spacing: 6) {
-                        Label("Yazar (opsiyonel)", systemImage: "person")
+                        Label("Author (optional)", systemImage: "person")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         TextField("Author's name…", text: $author)
@@ -148,7 +148,7 @@ struct ManualClippingFormView: View {
 
                     // Page number
                     VStack(alignment: .leading, spacing: 6) {
-                        Label("Sayfa (opsiyonel)", systemImage: "number")
+                        Label("Page (optional)", systemImage: "number")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         TextField("Page number…", text: $page)
@@ -166,7 +166,7 @@ struct ManualClippingFormView: View {
                 Button("Cancel", action: onCancel)
                     .keyboardShortcut(.cancelAction)
                 Spacer()
-                Button("Kaydet") {
+                Button("Save") {
                     onSave(
                         bookTitle.trimmed,
                         author.trimmed.nilIfEmpty,

@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Dynamic (time-of-day) wallpaper and the custom gradient override — the "Arka Plan" group
-/// of the "Tasarım" page.
+/// Dynamic (time-of-day) wallpaper and the custom gradient override — the "Background" group
+/// of the "Design" page.
 struct BackgroundSection: View {
     @Bindable var viewModel: MainViewModel
     @Bindable var settingsVM: SettingsViewModel
@@ -17,8 +17,8 @@ struct BackgroundSection: View {
                     SettingsRow(
                         icon: "sun.horizon.fill",
                         iconColor: .orange,
-                        title: "Gün İçinde Renkler Değişsin",
-                        subtitle: "Şafak, gündoğumu, öğlen, ikindi, günbatımı ve gece için ayrı kareler"
+                        title: "Shift Colors Through the Day",
+                        subtitle: "Separate frames for dawn, sunrise, noon, afternoon, sunset and night"
                     ) {
                         Toggle("", isOn: $settingsVM.dynamicWallpaperEnabled)
                             .labelsHidden()
@@ -53,7 +53,7 @@ struct BackgroundSection: View {
 
                     HStack {
                         Spacer()
-                        Button("Varsayılana Dön") {
+                        Button("Reset to Default") {
                             viewModel.resetBackgroundGradient()
                         }
                         .font(.caption)
@@ -88,7 +88,7 @@ private struct SolarScheduleRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-            Text("Bugünün kareleri")
+            Text("Today's frames")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 

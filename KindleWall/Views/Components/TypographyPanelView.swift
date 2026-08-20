@@ -9,10 +9,10 @@ struct TypographyPanelView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
-                    Text("Tipografi")
+                    Text("Typography")
                         .font(.headline)
                     Spacer()
-                    Button("Varsayılana Dön") {
+                    Button("Reset to Default") {
                         onReset()
                     }
                     .font(.caption)
@@ -31,7 +31,7 @@ struct TypographyPanelView: View {
 }
 
 /// Reusable typography control stack (basic sliders + advanced disclosure) without panel chrome.
-/// Shared by the hero inspector (`TypographyPanelView`) and the "Tipografi" settings page.
+/// Shared by the hero inspector (`TypographyPanelView`) and the "Typography" settings page.
 struct TypographyControls: View {
     @Binding var typography: TypographySettings
 
@@ -73,12 +73,12 @@ struct TypographyControls: View {
             }
 
             // MARK: Gelişmiş Ayarlar
-            DisclosureGroup("Gelişmiş Ayarlar") {
+            DisclosureGroup("Advanced") {
                 VStack(alignment: .leading, spacing: 16) {
 
                     // Font ailesi
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Font Ailesi")
+                        Text("Typeface")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         HStack(spacing: 6) {
@@ -97,7 +97,7 @@ struct TypographyControls: View {
                     // Metin gölgesi
                     VStack(alignment: .leading, spacing: 10) {
                         Toggle(isOn: $typography.shadowEnabled) {
-                            Label("Metin Gölgesi", systemImage: "shadow")
+                            Label("Text Shadow", systemImage: "shadow")
                                 .font(.caption)
                         }
                         .toggleStyle(.switch)

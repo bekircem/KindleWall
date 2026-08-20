@@ -20,12 +20,12 @@ struct GradientPicker: View {
                 .frame(height: 60)
 
             // Tidy label-left / swatch-right rows instead of edge-spread wells.
-            LabeledContent("Başlangıç") {
+            LabeledContent("Start") {
                 ColorPicker("", selection: $startColor)
                     .labelsHidden()
             }
 
-            LabeledContent("Bitiş") {
+            LabeledContent("End") {
                 ColorPicker("", selection: $endColor)
                     .labelsHidden()
             }

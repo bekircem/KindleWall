@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Davranış" — a single scrollable page that gathers the four behavior settings groups
+/// "Behavior" — a single scrollable page that gathers the four behavior settings groups
 /// (schedule, rotation, long-quote handling, source file) as stacked sections.
 ///
 /// Replaces four separate sidebar destinations whose individual content was too small to
@@ -17,12 +17,12 @@ struct BehaviorSettingsPage: View {
     }
 
     var body: some View {
-        SettingsPage(title: "Davranış") {
-            SettingsGroup("Zamanlama") {
+        SettingsPage(title: "Behavior") {
+            SettingsGroup("Schedule") {
                 ScheduleSection(settingsVM: settingsVM, actions: actions)
             }
 
-            SettingsGroup("Döngü Modu") {
+            SettingsGroup("Rotation") {
                 // The pinned-quote total is derived inside the section now: it reads it off
                 // the same `RotationBook` counts the picker shows, so the two cannot disagree.
                 RotationSection(
@@ -33,11 +33,11 @@ struct BehaviorSettingsPage: View {
                 )
             }
 
-            SettingsGroup("Uzun Alıntılar") {
+            SettingsGroup("Long Quotes") {
                 LongQuoteSection(settingsVM: settingsVM, actions: actions)
             }
 
-            SettingsGroup("Kaynak Dosya") {
+            SettingsGroup("Source File") {
                 SourceFileSection(settingsVM: settingsVM, clippingsCount: viewModel.clippings.count, actions: actions)
             }
         }

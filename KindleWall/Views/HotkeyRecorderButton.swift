@@ -33,7 +33,7 @@ struct HotkeyRecorderButton: View {
             .buttonStyle(.bordered)
             .tint(isRecording ? .orange : .accentColor)
 
-            Button("Varsayılana Dön") {
+            Button("Reset to Default") {
                 stopRecording()
                 applyHotkey(keyCode: Self.defaultKeyCode, modifiers: Self.defaultModifiers)
             }
