@@ -36,8 +36,11 @@ struct RotationModeCard: View {
                 // One hue for the group, because these are four alternatives rather than four
                 // categories; the accent marks which one is live.
                 iconColor: isSelected ? Theme.Palette.accent : Theme.Palette.neutralTile,
-                title: mode.displayName,
-                subtitle: isAvailable
+                // Verbatim: `displayName` and `modeDescription` are already-resolved strings
+                // from the enum, not keys. Handing a resolved string to the key path would
+                // look it up, miss, and pass it through — right by accident in English.
+                verbatimTitle: mode.displayName,
+                verbatimSubtitle: isAvailable
                     ? mode.modeDescription
                     : "Kullanmak için önce Kütüphane'den alıntılara kalp ekle."
             ) {

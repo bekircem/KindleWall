@@ -6,7 +6,9 @@ import SwiftUI
 /// inter-card spacing. Each Loop-style sidebar page wraps its cards in this so they all share
 /// the same layout rhythm. The navigation title is set from `title`.
 struct SettingsPage<Content: View>: View {
-    let title: String
+    /// `LocalizedStringKey`, not `String`: the page only displays this text, so taking the key
+    /// type lets a literal at the call site go through the String Catalog with no wrapping.
+    let title: LocalizedStringKey
     @ViewBuilder var content: Content
 
     var body: some View {

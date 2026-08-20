@@ -129,7 +129,7 @@ struct RotationSection: View {
         .accessibilityLabel("\(book.title), \(book.quoteCount) alıntı. Listeden çıkarmak için tıkla")
     }
 
-    private func statRow(icon: String, title: String, value: Int) -> some View {
+    private func statRow(icon: String, title: LocalizedStringKey, value: Int) -> some View {
         SettingsRow(icon: icon, iconColor: Theme.Palette.neutralTile, title: title) {
             Text("\(value)")
                 .monospacedDigit()

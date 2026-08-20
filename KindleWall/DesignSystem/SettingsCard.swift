@@ -6,7 +6,13 @@ import SwiftUI
 /// text stays legible (glass-on-text reduces contrast). Optional `title` renders an uppercased
 /// section header above the card; `footnote` renders explanatory text below it.
 struct SettingsCard<Content: View>: View {
+    /// `String`, not `LocalizedStringKey`, unlike `SettingsPage` and `SettingsRow`: this card
+    /// *uppercases* its title, and a key cannot be manipulated. Callers therefore localize the
+    /// literal themselves with `String(localized:)` — the casing has to happen on resolved
+    /// text, in the right locale, or Turkish loses its dotted capital İ.
     var title: String? = nil
+    /// Also `String`: roughly a third of the call sites pass runtime text — a login-item
+    /// error, a computed summary — which a key lookup would silently pass through untranslated.
     var footnote: String? = nil
     @ViewBuilder var content: Content
 

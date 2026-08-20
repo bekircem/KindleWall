@@ -7,10 +7,11 @@ import SwiftUI
 /// (group → card → row) on pages that gather several sections into one scrolling pane —
 /// the macOS System Settings shape. Shared by "Tasarım" and "Davranış" so both read the same.
 struct SettingsGroup<Content: View>: View {
-    let title: String
+    /// See `SettingsPage.title` for why this is a key rather than a `String`.
+    let title: LocalizedStringKey
     @ViewBuilder var content: Content
 
-    init(_ title: String, @ViewBuilder content: () -> Content) {
+    init(_ title: LocalizedStringKey, @ViewBuilder content: () -> Content) {
         self.title = title
         self.content = content()
     }
