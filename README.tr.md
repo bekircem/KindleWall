@@ -38,6 +38,9 @@ KindleWall ücretsiz ve açık kaynak bir macOS uygulaması. Hesap yok, sunucu y
 Kindle'ının zaten yazdığı bir metin dosyasını okur ve altını çizdiğin satırları önüne geri
 koyar — her gün baktığın kesin olan tek ekrana.
 
+**Denemek için Kindle'a ihtiyacın yok.** Uygulama kamu malı bir pasaj setiyle geliyor; açtıktan
+bir dakika sonra bir kütüphane yükleyip stil seçebilir ve gerçek bir duvar kağıdı elde edebilirsin.
+
 **İngilizce ve Türkçe** kullanılabilir. Uygulama sistem dilini izler; istersen macOS'un
 Sistem Ayarları → Genel → Dil ve Bölge → Uygulamalar bölümünden ona ayrı bir dil atayabilirsin.
 
@@ -93,13 +96,21 @@ EdDSA imzalı appcast girdileriyle gelir.
 
 ### İlk açılış
 
-1. Kindle'ını tak, KindleWall'ı aç ve **Dosya Seç…**'e bas — ya da birimdeki
-   `documents/My Clippings.txt` dosyasını doğrudan pencereye sürükle.
-2. Elinin altında Kindle yok mu? **Kindle'ım Yok, Örneklerle Dene**, altı kamu malı kitaptan
-   yedi pasaj yükler; hiçbir şeye bağlanmadan önce her şeyin nasıl çalıştığını görebilirsin.
-3. Bir stil seç, sonra **Uygula**. Önceki duvar kağıdın hatırlanır — *Ayarlar → Önceki Duvar
-   Kağıdına Dön* onu geri koyar.
-4. **Davranış** altından bir döngü aralığı belirle; gerisini KindleWall halleder.
+KindleWall'ın basacak alıntılara ihtiyacı var; bunu vermenin iki yolu var:
+
+| | |
+|---|---|
+| **Kindle'ın var** | Tak, **Dosya Seç…**'e bas ve bağlanan birimden `documents/My Clippings.txt` dosyasını seç — ya da o dosyayı doğrudan pencereye sürükle. |
+| **Yok** | **Kindle'ım Yok, Örneklerle Dene**'ye bas. Sekiz kamu malı kitaptan sekiz pasaj — Dostoyevski, Melville, Dickens, Austen, Thoreau, Marcus Aurelius, Goethe, Montaigne — uygulama hangi dilde çalışıyorsa o dilde. |
+
+Sonra bir stil seç ve **Uygula**'ya bas. Önceki duvar kağıdın hatırlanır; *Ayarlar → Önceki
+Duvar Kağıdına Dön* onu geri koyar. **Davranış** altından bir döngü aralığı belirle, gerisini
+KindleWall halleder.
+
+> [!NOTE]
+> Örnekler yüklendikten sonra sıradan birer alıntıdır. Kendi `My Clippings.txt` dosyanı
+> sonradan içe aktarmak onların **üzerine ekler**, yerlerini almaz; istemediğinde
+> **Kütüphane**'den tek tek silebilirsin.
 
 > [!TIP]
 > Kindle sen okudukça o dosyaya eklemeye devam eder. **Ayarlar → Davranış → Kaynak Dosya →

@@ -38,6 +38,9 @@ KindleWall is a free, open-source macOS app. There is no account, no server, and
 It reads a text file your Kindle already writes, and it puts what you underlined back in front
 of you — on the one screen you are guaranteed to look at every day.
 
+**You do not need a Kindle to try it.** The app ships with a set of public-domain passages, so
+you can load a library, pick a style and end up with a real wallpaper a minute after opening it.
+
 Available in **English and Turkish**. The app follows your system language, and macOS lets you
 give it a language of its own under System Settings → General → Language & Region → Applications.
 
@@ -90,13 +93,21 @@ entries.
 
 ### First run
 
-1. Plug in your Kindle, open KindleWall, and hit **Choose File…** — or just drag
-   `documents/My Clippings.txt` from the volume onto the window.
-2. No Kindle to hand? **No Kindle — Try the Samples** loads seven passages from six
-   public-domain books, so you can see the whole thing work before you commit to anything.
-3. Pick a style, then **Apply**. Your previous wallpaper is remembered — *Settings → Restore
-   Previous Wallpaper* puts it back.
-4. Set a rotation interval under **Behavior**, and KindleWall takes it from there.
+KindleWall needs some highlights to render, and there are two ways to give it some:
+
+| | |
+|---|---|
+| **You have a Kindle** | Plug it in, hit **Choose File…**, and pick `documents/My Clippings.txt` from the mounted volume — or drag that file straight onto the window. |
+| **You don't** | Hit **No Kindle — Try the Samples**. Eight passages from eight public-domain books — Dostoyevsky, Melville, Dickens, Austen, Thoreau, Marcus Aurelius, Goethe, Montaigne — in whichever language the app is running in. |
+
+Then pick a style and hit **Apply**. Your previous wallpaper is remembered, so *Settings →
+Restore Previous Wallpaper* puts it back. Set a rotation interval under **Behavior** and
+KindleWall takes it from there.
+
+> [!NOTE]
+> The samples are ordinary clippings once loaded. Importing your real `My Clippings.txt` later
+> **adds to** them rather than replacing them, and you can delete them one at a time from the
+> **Library** once you no longer want them.
 
 > [!TIP]
 > Your Kindle keeps appending to that file as you read. **Settings → Behavior → Source File →
