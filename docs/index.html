@@ -113,22 +113,36 @@ html[data-lang="en"] .tr, html[data-lang="tr"] .en { display: none; }
 .band--vellum .eyebrow { color: #6E6040; }
 
 h1 {
-  font: 300 clamp(2.15rem, 5.4vw, 3.9rem)/1.08 var(--serif);
+  font: 300 clamp(2rem, 4.6vw, 3.6rem)/1.08 var(--serif);
   letter-spacing: -0.022em;
-  margin: 0 0 22px;
-  max-width: 19ch;
+  margin: 0;
 }
 h1 .file { font-family: var(--mono); font-size: 0.72em; font-weight: 400; letter-spacing: -0.01em; color: var(--amber); white-space: nowrap; }
 
 h2 {
-  font: 300 clamp(1.65rem, 3.4vw, 2.5rem)/1.14 var(--serif);
+  font: 300 clamp(1.55rem, 3vw, 2.35rem)/1.14 var(--serif);
   letter-spacing: -0.018em;
-  margin: 0 0 18px;
-  max-width: 22ch;
+  margin: 0;
 }
+
+/* The two-column header used by the hero and every band. */
+.sec-head, .hero__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  column-gap: 64px;
+  row-gap: 16px;
+  align-items: start;
+}
+.sec-head { margin-bottom: 46px; }
+.sec-head > .eyebrow, .hero__head > .eyebrow { grid-column: 1 / -1; margin: 0; }
+.sec-head__body { max-width: 56ch; }
+.sec-head__body > :last-child { margin-bottom: 0; }
+.sec-head__body .lead { margin-bottom: 14px; }
+.hero__aside { max-width: 48ch; }
+.hero__aside .lead { margin-bottom: 26px; }
 h3 { font: 500 17px/1.4 var(--sans); letter-spacing: -0.005em; margin: 0 0 6px; }
 
-.lead { font-size: clamp(1.06rem, 1.7vw, 1.22rem); line-height: 1.6; color: var(--muted); margin: 0 0 32px; max-width: 54ch; }
+.lead { font-size: clamp(1.04rem, 1.5vw, 1.17rem); line-height: 1.6; color: var(--muted); margin: 0 0 18px; }
 .band--vellum .lead { color: #6B5B3E; }
 p { margin: 0 0 16px; }
 .note { font-size: 14px; color: var(--faint); }
@@ -180,6 +194,8 @@ a:hover { text-decoration-color: var(--amber); }
 /* --- hero ---------------------------------------------------------------- */
 .hero { padding: 72px 0 76px; position: relative; z-index: 1; }
 .hero__cta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 0 0 14px; }
+.final h2 { max-width: 20ch; }
+.final .lead { max-width: 40ch; }
 
 /* The transformation, stated as a layout: the file on the left, the desktop on
    the right, the arrow between them. This is the whole product in one figure. */
@@ -280,7 +296,7 @@ html[data-style="grid"]  .wp__rules { opacity: 1; }
 .wp__decor .dots svg { display: block; width: 0.739cqi; height: auto; }
 .wp__quote {
   font-family: var(--wp-font);
-  font-size: var(--wp-size, 2.64cqi);
+  font-size: max(var(--wp-size, 2.64cqi), 11px);
   line-height: 1.42;
   overflow-wrap: anywhere;
   font-weight: 400;
@@ -378,14 +394,23 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
 .solar__label { font: 500 11px/1.3 var(--mono); letter-spacing: 0.06em; color: var(--faint); text-align: center; }
 
 /* --- shots --------------------------------------------------------------- */
-.shots { display: grid; gap: 24px; margin-top: 44px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-.shot { display: flex; flex-direction: column; gap: 12px; }
-.shot img { width: 100%; display: block; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); }
-.shot__cap { font-size: 14px; color: var(--faint); line-height: 1.5; margin: 0; }
-.shot__cap b { color: var(--ink); font-weight: 500; }
-.shot--wide { grid-column: 1 / -1; }
+.shot { margin: 46px 0 0; }
+.shot__frame {
+  aspect-ratio: 2606 / 1580;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: 0 30px 70px -40px rgba(0,0,0,0.9);
+}
+.shot__frame img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; display: block; }
+.shot__cap { font-size: 14.5px; color: var(--muted); line-height: 1.55; margin: 16px 0 0; max-width: 64ch; }
+.shot__cap b { color: var(--ink); font-weight: 600; }
 
 /* --- steps --------------------------------------------------------------- */
+.install { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 26px 64px; align-items: start; }
+.install__notes > :last-child { margin-bottom: 0; }
+
 .steps { display: grid; gap: 26px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-top: 40px; counter-reset: step; }
 .step { border-top: 1px solid var(--line); padding-top: 16px; }
 .step__n { font: 500 11px/1 var(--mono); color: var(--amber); letter-spacing: 0.12em; display: block; margin-bottom: 10px; }
@@ -416,6 +441,12 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
 .foot__legal { margin: 20px 0 0; font-size: 12.5px; color: var(--faint); max-width: 62ch; line-height: 1.55; }
 
 /* --- responsive ---------------------------------------------------------- */
+@media (max-width: 980px) {
+  .sec-head, .hero__head { grid-template-columns: 1fr; align-items: start; row-gap: 20px; }
+  .sec-head { margin-bottom: 36px; }
+  .install { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 900px) {
   .transform { grid-template-columns: 1fr; gap: 18px; }
   .clipfile__body { max-height: 300px; }
@@ -429,6 +460,7 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
   body { font-size: 16px; }
   .wrap { padding: 0 18px; }
   .console__label { display: none; }
+  .hero__cta { flex-direction: column; align-items: stretch; }
   .eyebrow { letter-spacing: 0.13em; }
   .phase__name { width: 66px; }
   .solar { grid-template-columns: repeat(2, 1fr); }
@@ -464,6 +496,7 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
 
 <header class="hero" id="top">
   <div class="wrap">
+    <div class="hero__head">
     <p class="eyebrow"><span class="en">Free and open source · macOS 26 or later</span><span class="tr">Ücretsiz ve açık kaynak · macOS 26 veya üzeri</span></p>
 
     <h1>
@@ -471,6 +504,7 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
       <span class="tr">Altını çizdiğin her satır <span class="file">My&nbsp;Clippings.txt</span> içinde duruyor.</span>
     </h1>
 
+    <div class="hero__aside">
     <p class="lead">
       <span class="en">KindleWall reads that file and puts one passage at a time on your desktop. Your own books, in your own words — not a quote database.</span>
       <span class="tr">KindleWall o dosyayı okur ve her seferinde bir pasajı masaüstüne koyar. Kendi kitapların, kendi seçtiğin cümleler — hazır bir alıntı veritabanı değil.</span>
@@ -486,6 +520,8 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
       <span class="en">Signed and notarized. No account, no sign-up, no telemetry.</span>
       <span class="tr">İmzalı ve notarize edilmiş. Hesap yok, kayıt yok, telemetri yok.</span>
     </p>
+    </div>
+    </div>
 
     <!-- The figure is the argument: a text file goes in, a desktop comes out. -->
     <div class="transform">
@@ -542,13 +578,19 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
 
 <section class="band" id="styles">
   <div class="wrap">
-    <p class="eyebrow"><span class="en">Six styles</span><span class="tr">Altı stil</span></p>
-    <h2><span class="en">Choosing a style is a visible change, not a label.</span><span class="tr">Stil seçmek etiket değiştirmek değil, görünür bir değişiklik.</span></h2>
-    <div class="prose">
-      <p class="lead">
-        <span class="en">Each one differs on four axes — surface, value, temperature, typographic character — and brings its own typeface and its own mark. The set was cut from eight to six because three of the originals were the same flat grey wearing different names.</span>
-        <span class="tr">Her biri dört eksende ayrışır: yüzey, açıklık, sıcaklık ve tipografik karakter. Her stil kendi yazı karakterini ve kendi işaretini getirir. Küme sekizden altıya indirildi; çünkü üçü, farklı adlar taşıyan aynı düz griydi.</span>
-      </p>
+    <div class="sec-head">
+      <p class="eyebrow"><span class="en">Six styles</span><span class="tr">Altı stil</span></p>
+      <h2><span class="en">Choosing a style is a visible change, not a label.</span><span class="tr">Stil seçmek etiket değiştirmek değil, görünür bir değişiklik.</span></h2>
+      <div class="sec-head__body">
+        <p class="lead">
+          <span class="en">Each one differs on four axes — surface, value, temperature, typographic character — and brings its own typeface and its own mark.</span>
+          <span class="tr">Her biri dört eksende ayrışır: yüzey, açıklık, sıcaklık ve tipografik karakter. Her stil kendi yazı karakterini ve kendi işaretini getirir.</span>
+        </p>
+        <p class="note">
+          <span class="en">The set was cut from eight to six because three of the originals were the same flat grey wearing different names.</span>
+          <span class="tr">Küme sekizden altıya indirildi; çünkü üçü, farklı adlar taşıyan aynı düz griydi.</span>
+        </p>
+      </div>
     </div>
     <div class="gallery" id="gallery"></div>
     <p class="note" style="margin-top:26px">
@@ -562,17 +604,19 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
 
 <section class="band" id="sun">
   <div class="wrap">
-    <p class="eyebrow"><span class="en">Dynamic wallpaper</span><span class="tr">Dinamik duvar kağıdı</span></p>
-    <h2><span class="en">It follows the sun.</span><span class="tr">Güneşi takip eder.</span></h2>
-    <div class="prose">
-      <p class="lead">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="en">Dynamic wallpaper</span><span class="tr">Dinamik duvar kağıdı</span></p>
+      <h2><span class="en">It follows the sun.</span><span class="tr">Güneşi takip eder.</span></h2>
+      <div class="sec-head__body">
+        <p class="lead">
         <span class="en">Turn it on and KindleWall writes a HEIC with six frames, one for each moment of the day, tied to the real solar position where you are. The same passage warms toward sunset and cools at night.</span>
         <span class="tr">Aç, KindleWall altı kareli bir HEIC yazsın — günün her anı için bir kare, bulunduğun yerdeki gerçek güneş konumuna bağlı. Aynı pasaj gün batımına doğru ısınır, gece soğur.</span>
       </p>
       <p>
         <span class="en">Time of day changes the light in the room, not the ink on the page — so only the surface moves. And when a surface drifts somewhere its own ink could no longer be read, the app swaps to light ink rather than letting the contrast fall below 4.5:1.</span>
         <span class="tr">Günün saati odadaki ışığı değiştirir, sayfadaki mürekkebi değil — bu yüzden yalnızca yüzey hareket eder. Bir yüzey kendi mürekkebinin okunamayacağı yere kaydığında ise uygulama kontrastı 4,5:1'in altına düşürmek yerine açık mürekkebe geçer.</span>
-      </p>
+        </p>
+      </div>
     </div>
     <div class="solar" id="solar"></div>
     <p class="note js-only" style="margin-top:22px">
@@ -586,8 +630,16 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
 
 <section class="band" id="app">
   <div class="wrap">
-    <p class="eyebrow"><span class="en">Getting started</span><span class="tr">Başlarken</span></p>
-    <h2><span class="en">Three steps, then you can forget about it.</span><span class="tr">Üç adım, sonra unutabilirsin.</span></h2>
+    <div class="sec-head">
+      <p class="eyebrow"><span class="en">Getting started</span><span class="tr">Başlarken</span></p>
+      <h2><span class="en">Three steps, then you can forget about it.</span><span class="tr">Üç adım, sonra unutabilirsin.</span></h2>
+      <div class="sec-head__body">
+        <p class="lead">
+          <span class="en">Setup is a file picker and two choices. After that KindleWall runs in the menu bar and you only come back when you want to change something.</span>
+          <span class="tr">Kurulum bir dosya seçici ve iki tercihten ibaret. Sonrası menü çubuğunda çalışır; yalnızca bir şey değiştirmek istediğinde geri dönersin.</span>
+        </p>
+      </div>
+    </div>
 
     <div class="steps">
       <div class="step">
@@ -607,12 +659,12 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
       </div>
     </div>
 
-    <div class="shots" id="shots">
-      <figure class="shot shot--wide" style="margin:0">
+    <figure class="shot">
+      <div class="shot__frame">
         <img src="screenshots/main.png" alt="KindleWall's main window: the current passage rendered in the Paper style, with the source clipping underneath" data-label-en="KindleWall's main window: the current passage rendered in the Paper style, with the source clipping underneath" data-label-tr="KindleWall ana penceresi: geçerli pasaj Kağıt stiliyle çizilmiş, altında geldiği alıntı" loading="lazy" width="2606" height="1816">
-        <figcaption class="shot__cap"><b><span class="en">The window.</span><span class="tr">Pencere.</span></b> <span class="en">What is on the desktop right now, the clipping it came from, and when it changes next.</span><span class="tr">Şu anda masaüstünde ne var, hangi alıntıdan geldi ve bir sonraki değişim ne zaman.</span></figcaption>
-      </figure>
-    </div>
+      </div>
+      <figcaption class="shot__cap"><b><span class="en">The window.</span><span class="tr">Pencere.</span></b> <span class="en">What is on the desktop right now, the clipping it came from, and when it changes next. Close it and the app keeps going from the menu bar.</span><span class="tr">Şu anda masaüstünde ne var, hangi alıntıdan geldi ve bir sonraki değişim ne zaman. Kapattığında uygulama menü çubuğundan devam eder.</span></figcaption>
+    </figure>
   </div>
 </section>
 
@@ -620,8 +672,16 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
 
 <section class="band">
   <div class="wrap">
-    <p class="eyebrow"><span class="en">The rest of it</span><span class="tr">Geri kalanı</span></p>
-    <h2><span class="en">Built to be left running.</span><span class="tr">Açık bırakılmak için yapıldı.</span></h2>
+    <div class="sec-head">
+      <p class="eyebrow"><span class="en">The rest of it</span><span class="tr">Geri kalanı</span></p>
+      <h2><span class="en">Built to be left running.</span><span class="tr">Açık bırakılmak için yapıldı.</span></h2>
+      <div class="sec-head__body">
+        <p class="lead">
+          <span class="en">Everything below is off in the corner doing its job. None of it needs an account, and none of it asks you anything.</span>
+          <span class="tr">Aşağıdakilerin hepsi bir köşede kendi işini yapar. Hiçbiri hesap istemez, hiçbiri sana bir şey sormaz.</span>
+        </p>
+      </div>
+    </div>
 
     <div class="feats">
       <div class="feat">
@@ -664,13 +724,15 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
 
 <section class="band band--vellum" id="privacy">
   <div class="wrap">
-    <p class="eyebrow"><span class="en">Privacy</span><span class="tr">Gizlilik</span></p>
-    <h2><span class="en">What leaves your Mac, stated plainly.</span><span class="tr">Mac'inden ne çıkıyor, açıkça.</span></h2>
-    <div class="prose">
-      <p class="lead">
-        <span class="en">No analytics, no telemetry, and no server operated by this project. That leaves three things worth naming — including one most apps would rather not mention.</span>
-        <span class="tr">Analitik yok, telemetri yok ve bu projenin işlettiği bir sunucu yok. Geriye adını koymaya değer üç şey kalıyor — biri, çoğu uygulamanın söylememeyi yeğleyeceği türden.</span>
-      </p>
+    <div class="sec-head">
+      <p class="eyebrow"><span class="en">Privacy</span><span class="tr">Gizlilik</span></p>
+      <h2><span class="en">What leaves your Mac, stated plainly.</span><span class="tr">Mac'inden ne çıkıyor, açıkça.</span></h2>
+      <div class="sec-head__body">
+        <p class="lead">
+          <span class="en">No analytics, no telemetry, and no server operated by this project. That leaves three things worth naming — including one most apps would rather not mention.</span>
+          <span class="tr">Analitik yok, telemetri yok ve bu projenin işlettiği bir sunucu yok. Geriye adını koymaya değer üç şey kalıyor — biri, çoğu uygulamanın söylememeyi yeğleyeceği türden.</span>
+        </p>
+      </div>
     </div>
 
     <table class="ptable">
@@ -704,22 +766,37 @@ html[data-style="paper"] .wp__edit { background: rgba(255,255,255,0.4); }
 
 <section class="band band--tight" id="install">
   <div class="wrap">
-    <p class="eyebrow"><span class="en">Install</span><span class="tr">Kurulum</span></p>
-    <h2><span class="en">Two ways in.</span><span class="tr">İki yol.</span></h2>
-    <div class="prose">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="en">Install</span><span class="tr">Kurulum</span></p>
+      <h2><span class="en">Two ways in.</span><span class="tr">İki yol.</span></h2>
+      <div class="sec-head__body">
+        <p class="lead">
+          <span class="en"><strong>Requires macOS 26 (Tahoe) or later.</strong> The app is in English and Turkish and follows your system language.</span>
+          <span class="tr"><strong>macOS 26 (Tahoe) veya üzeri gerekir.</strong> Uygulama İngilizce ve Türkçedir, sistem dilini izler.</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="install">
       <div class="code code--block">brew tap bekircem/tap
 brew trust bekircem/tap
 brew install --cask kindlewall<button class="code__copy" type="button" data-copy="brew tap bekircem/tap
 brew trust bekircem/tap
 brew install --cask kindlewall"><span class="en">Copy</span><span class="tr">Kopyala</span></button></div>
-      <p class="note" style="margin-top:14px">
-        <span class="en"><code>brew trust</code> is required by Homebrew 6 for third-party taps. Or take the signed, notarized DMG from <a href="https://github.com/bekircem/KindleWall/releases/latest">Releases</a> and drag it to Applications.</span>
-        <span class="tr">Homebrew 6, üçüncü taraf tap'ler için <code>brew trust</code> ister. Ya da imzalı ve notarize edilmiş DMG'yi <a href="https://github.com/bekircem/KindleWall/releases/latest">Sürümler</a>'den alıp Uygulamalar'a sürükle.</span>
-      </p>
-      <p class="note">
-        <span class="en"><strong>Requires macOS 26 (Tahoe) or later.</strong> The app is in English and Turkish and follows your system language; macOS can also give it a language of its own under System Settings → General → Language &amp; Region → Applications.</span>
-        <span class="tr"><strong>macOS 26 (Tahoe) veya üzeri gerekir.</strong> Uygulama İngilizce ve Türkçedir, sistem dilini izler; macOS'ta Sistem Ayarları → Genel → Dil ve Bölge → Uygulamalar altından ona ayrı bir dil de verebilirsin.</span>
-      </p>
+      <div class="install__notes">
+        <p class="note">
+          <span class="en"><code>brew trust</code> is required by Homebrew 6 for third-party taps.</span>
+          <span class="tr">Homebrew 6, üçüncü taraf tap'ler için <code>brew trust</code> ister.</span>
+        </p>
+        <p class="note">
+          <span class="en">Or take the signed, notarized DMG from <a href="https://github.com/bekircem/KindleWall/releases/latest">Releases</a> and drag it to Applications.</span>
+          <span class="tr">Ya da imzalı ve notarize edilmiş DMG'yi <a href="https://github.com/bekircem/KindleWall/releases/latest">Sürümler</a>'den alıp Uygulamalar'a sürükle.</span>
+        </p>
+        <p class="note">
+          <span class="en">macOS can give the app a language of its own under System Settings → General → Language &amp; Region → Applications.</span>
+          <span class="tr">macOS'ta Sistem Ayarları → Genel → Dil ve Bölge → Uygulamalar altından uygulamaya ayrı bir dil verebilirsin.</span>
+        </p>
+      </div>
     </div>
   </div>
 </section>
