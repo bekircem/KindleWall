@@ -48,3 +48,6 @@ kindle-wallpaper-app-prompt.md
 *.dmg
 *.xcarchive
 *.zip
+
+# Swift package checkouts, when xcodebuild is given -clonedSourcePackagesDirPath (CI does).
+.spm-cache/
