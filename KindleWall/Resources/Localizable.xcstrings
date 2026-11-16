@@ -2487,6 +2487,16 @@
         }
       }
     },
+    "Radial forest beam, serif": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Radial orman huzmesi, serif"
+          }
+        }
+      }
+    },
     "Read from the file:": {
       "localizations": {
         "tr": {

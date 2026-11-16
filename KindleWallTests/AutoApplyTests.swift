@@ -24,7 +24,7 @@ final class AutoApplyTests: XCTestCase {
     }
 
     private func makeViewModel(autoApply: Bool = true) -> MainViewModel {
-        let storage = StorageService(defaults: defaults)
+        let storage = TestStorage.make(defaults: defaults)
         storage.autoApplyDesignChanges = autoApply
         storage.dynamicWallpaperEnabled = false   // keep the HEIC encoder out of a timing test
         storage.syncAllSpaces = false
@@ -93,7 +93,7 @@ final class AutoApplyTests: XCTestCase {
     /// The encoder is forced to fail so the fallback is guaranteed — asserting on a degrade
     /// that only *might* happen would be coverage in name only.
     func test_degradedSuccess_isCarriedOnTheAppliedCaseNotErrorMessage() throws {
-        let storage = StorageService(defaults: defaults)
+        let storage = TestStorage.make(defaults: defaults)
         storage.dynamicWallpaperEnabled = true
         storage.syncAllSpaces = false
 
@@ -172,7 +172,7 @@ final class AutoApplyTests: XCTestCase {
     /// this catches an accidental re-roll even when the same clipping happens to be re-picked.
     func test_autoApply_neverRerollsTheQuote() {
         let viewModel = makeViewModel()
-        let storage = StorageService(defaults: defaults)
+        let storage = TestStorage.make(defaults: defaults)
         let idBefore = viewModel.currentClipping?.id
         let shownBefore = storage.shownClippingIDs
 

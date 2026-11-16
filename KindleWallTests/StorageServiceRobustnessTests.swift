@@ -22,7 +22,7 @@ final class StorageServiceRobustnessTests: XCTestCase {
         TestDefaults.destroy(suiteNamed: suiteName, defaults: defaults)
     }
 
-    private func makeStorage() -> StorageService { StorageService(defaults: defaults) }
+    private func makeStorage() -> StorageService { TestStorage.make(defaults: defaults) }
 
     // MARK: - Nothing stored yet (first launch)
 

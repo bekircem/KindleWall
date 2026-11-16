@@ -89,6 +89,7 @@
 		9651EB08A73B52831A149DA0 /* SchedulerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960F9C40AEAD0DFA2A98BB65 /* SchedulerService.swift */; };
 		97165DBC3DB2D0EA43D144E1 /* SyncPushQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B530141C19E14A31011F77 /* SyncPushQueueTests.swift */; };
 		98AB2EA312F9487E4D3C913E /* DesignSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F72EB6BC11B4758B332D1506 /* DesignSettingsPage.swift */; };
+		9A6AD23CFE5E0E4F89389B16 /* TestStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87A00228E63C7D4AB5E69D7A /* TestStorage.swift */; };
 		9B1B3A8E3F53D844CFD00087 /* ApplyStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 595E663AFEB25269247290BF /* ApplyStatus.swift */; };
 		9D556BBC9221393FE012BEF5 /* RotationModeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF874A38B8BF8FB0D42AE74C /* RotationModeCard.swift */; };
 		9DE22B1856C11CB0CFB1B3AD /* SolarPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7564696BBF27D1BCF480289 /* SolarPhase.swift */; };
@@ -215,6 +216,7 @@
 		84BB3CC248CBF037C8D7A6A2 /* TypographyPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypographyPanelView.swift; sourceTree = "<group>"; };
 		84FA598536FDE02399641964 /* Clipping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipping.swift; sourceTree = "<group>"; };
 		8606F8E3F5DF3CA36E62D9C1 /* SunCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunCalculator.swift; sourceTree = "<group>"; };
+		87A00228E63C7D4AB5E69D7A /* TestStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStorage.swift; sourceTree = "<group>"; };
 		888C3196CA00FA1B394FD26C /* NSImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSImage+Extensions.swift"; sourceTree = "<group>"; };
 		8971C5BB1155EEBED857D250 /* DynamicWallpaperComposer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicWallpaperComposer.swift; sourceTree = "<group>"; };
 		89B2B61496ECE7CE529AD60C /* FakeWallpaperManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeWallpaperManager.swift; sourceTree = "<group>"; };
@@ -564,6 +566,7 @@
 				89B530141C19E14A31011F77 /* SyncPushQueueTests.swift */,
 				2F0BBEB7BE2A0CF059AB51A9 /* SyncSnapshotTests.swift */,
 				FAE5ACCD4353C9FC35A14B64 /* TestDefaults.swift */,
+				87A00228E63C7D4AB5E69D7A /* TestStorage.swift */,
 				2D0687135708CDDE0AD26830 /* UpdaterConfigurationTests.swift */,
 				083758A57448F8B09F4C4FBB /* WallpaperPruningTests.swift */,
 				6A9FB95141964FB00C6D72B8 /* WallpaperStoreSyncTests.swift */,
@@ -701,6 +704,7 @@
 				97165DBC3DB2D0EA43D144E1 /* SyncPushQueueTests.swift in Sources */,
 				43C70452C160F268DF58A5B5 /* SyncSnapshotTests.swift in Sources */,
 				AFDCC5033D6A6387D2DEE572 /* TestDefaults.swift in Sources */,
+				9A6AD23CFE5E0E4F89389B16 /* TestStorage.swift in Sources */,
 				7808512C8B6DD9352F9107D5 /* UpdaterConfigurationTests.swift in Sources */,
 				4514F7C5B2736643BCC3ECC0 /* WallpaperPruningTests.swift in Sources */,
 				ADE4F4E878A7CA5DC10F2430 /* WallpaperStoreSyncTests.swift in Sources */,
@@ -1063,7 +1067,7 @@
 			repositoryURL = "https://github.com/sparkle-project/Sparkle";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.9.6;
+				minimumVersion = 2.10.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

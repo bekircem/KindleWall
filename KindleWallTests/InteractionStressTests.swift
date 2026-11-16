@@ -27,7 +27,7 @@ final class InteractionStressTests: XCTestCase {
     }
 
     private func makeViewModel(dynamic: Bool) -> MainViewModel {
-        let storage = StorageService(defaults: defaults)
+        let storage = TestStorage.make(defaults: defaults)
         storage.dynamicWallpaperEnabled = dynamic
         storage.applyToAllSpaces = false
 

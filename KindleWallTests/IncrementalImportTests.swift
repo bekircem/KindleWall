@@ -54,13 +54,11 @@ final class IncrementalImportTests: XCTestCase {
         dir = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent("KindleWallIncremental-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        try? FileManager.default.removeItem(at: Constants.Paths.localClippingsFile)
     }
 
     override func tearDown() async throws {
         TestDefaults.destroy(suiteNamed: suiteName, defaults: defaults)
         try? FileManager.default.removeItem(at: dir)
-        try? FileManager.default.removeItem(at: Constants.Paths.localClippingsFile)
         dir = nil
     }
 
@@ -87,7 +85,7 @@ final class IncrementalImportTests: XCTestCase {
     // MARK: - The counts
 
     func test_firstImport_countsEverythingAsNew() throws {
-        let viewModel = MainViewModel(storage: StorageService(defaults: defaults))
+        let viewModel = MainViewModel(storage: TestStorage.make(defaults: defaults))
 
         let summary = try importing([Self.atomic, Self.meditations], into: viewModel)
 
@@ -100,7 +98,7 @@ final class IncrementalImportTests: XCTestCase {
 
     /// The ordinary case: the user has not read anything since last time.
     func test_reimportingAnUnchangedFile_findsNothingNew() throws {
-        let storage = StorageService(defaults: defaults)
+        let storage = TestStorage.make(defaults: defaults)
         let viewModel = MainViewModel(storage: storage)
         try importing([Self.atomic, Self.meditations], into: viewModel)
 
@@ -115,7 +113,7 @@ final class IncrementalImportTests: XCTestCase {
 
     /// The regression. A new highlight in a book already in the library is not a new book.
     func test_newHighlightInAnExistingBook_isNotANewBook() throws {
-        let viewModel = MainViewModel(storage: StorageService(defaults: defaults))
+        let viewModel = MainViewModel(storage: TestStorage.make(defaults: defaults))
         try importing([Self.atomic, Self.meditations], into: viewModel)
 
         let second = try importing([Self.atomic, Self.meditations, Self.atomicAgain], into: viewModel)
@@ -127,7 +125,7 @@ final class IncrementalImportTests: XCTestCase {
     }
 
     func test_aBookNeverSeenBefore_countsAsNew() throws {
-        let viewModel = MainViewModel(storage: StorageService(defaults: defaults))
+        let viewModel = MainViewModel(storage: TestStorage.make(defaults: defaults))
         try importing([Self.atomic], into: viewModel)
 
         let second = try importing([Self.atomic, Self.walden], into: viewModel)
@@ -140,7 +138,7 @@ final class IncrementalImportTests: XCTestCase {
 
     /// Both at once, which is what a month of reading actually looks like.
     func test_mixedImport_separatesNewBooksFromNewHighlights() throws {
-        let viewModel = MainViewModel(storage: StorageService(defaults: defaults))
+        let viewModel = MainViewModel(storage: TestStorage.make(defaults: defaults))
         try importing([Self.atomic], into: viewModel)
 
         let second = try importing([Self.atomic, Self.atomicAgain, Self.walden], into: viewModel)
@@ -159,11 +157,11 @@ final class IncrementalImportTests: XCTestCase {
     /// The launch case: a fresh view model whose in-memory library starts empty must still
     /// know which books it has already seen.
     func test_knownBooksSurviveANewViewModel() throws {
-        let storage = StorageService(defaults: defaults)
+        let storage = TestStorage.make(defaults: defaults)
         let first = MainViewModel(storage: storage)
         try importing([Self.atomic, Self.meditations], into: first)
 
-        let second = MainViewModel(storage: StorageService(defaults: defaults))
+        let second = MainViewModel(storage: TestStorage.make(defaults: defaults))
         let summary = try importing([Self.atomic, Self.meditations, Self.atomicAgain], into: second)
 
         XCTAssertEqual(summary.newClippings, 1)
@@ -175,7 +173,7 @@ final class IncrementalImportTests: XCTestCase {
     /// the clippings the ID set already vouches for, so the first check after upgrading does
     /// not announce the whole library as new.
     func test_installWithIDsButNoTitles_doesNotReportOldBooksAsNew() throws {
-        let storage = StorageService(defaults: defaults)
+        let storage = TestStorage.make(defaults: defaults)
         let viewModel = MainViewModel(storage: storage)
         try importing([Self.atomic, Self.meditations], into: viewModel)
 
@@ -194,7 +192,7 @@ final class IncrementalImportTests: XCTestCase {
     /// A launch import refreshes the library without interrupting; only an import the user
     /// asked for reports back.
     func test_launchImportDoesNotAnnounce_butACheckDoes() throws {
-        let storage = StorageService(defaults: defaults)
+        let storage = TestStorage.make(defaults: defaults)
         let viewModel = MainViewModel(storage: storage)
         let url = try write([Self.atomic])
         viewModel.importClippings(from: url, announce: true)
@@ -210,7 +208,7 @@ final class IncrementalImportTests: XCTestCase {
     }
 
     func test_checkIsOfferedOnlyWhenThereIsAFileToReread() throws {
-        let storage = StorageService(defaults: defaults)
+        let storage = TestStorage.make(defaults: defaults)
         let viewModel = MainViewModel(storage: storage)
         XCTAssertFalse(viewModel.canCheckForNewClippings)
 

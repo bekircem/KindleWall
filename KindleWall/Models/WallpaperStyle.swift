@@ -39,7 +39,7 @@ enum WallpaperStyle: String, Codable, CaseIterable, Identifiable {
         case .grid:        return String(localized: "Blue-black, monospace, fine rules")
         case .dawn:        return String(localized: "Warm gradient, sans-serif, minimal dots")
         case .depth:       return String(localized: "Cool indigo-violet gradient, sans-serif")
-        case .forestLight: return "Radial orman huzmesi, serif"
+        case .forestLight: return String(localized: "Radial forest beam, serif")
         }
     }
 

@@ -13,6 +13,10 @@ final class ClippingsCacheTests: XCTestCase {
     private var defaults: UserDefaults!
     private var sourceFile: URL!
 
+    /// Stands in for `Application Support/KindleWall/MyClippings.txt`. Never the real one — see
+    /// `TestStorage`.
+    private var cacheFile: URL!
+
     /// Stands in for the Kindle's file. Deleting it simulates unplugging the device.
     private func writeSourceFile() throws -> URL {
         let dir = URL(fileURLWithPath: NSTemporaryDirectory())
@@ -40,13 +44,17 @@ final class ClippingsCacheTests: XCTestCase {
         suiteName = TestDefaults.makeSuiteName("cache")
         defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         sourceFile = try writeSourceFile()
-        try? FileManager.default.removeItem(at: Constants.Paths.localClippingsFile)
+        cacheFile = TestStorage.makeCacheFile()
     }
 
     override func tearDown() async throws {
         TestDefaults.destroy(suiteNamed: suiteName, defaults: defaults)
         try? FileManager.default.removeItem(at: sourceFile.deletingLastPathComponent())
-        try? FileManager.default.removeItem(at: Constants.Paths.localClippingsFile)
+        try? FileManager.default.removeItem(at: cacheFile)
+    }
+
+    private func makeStorage() -> StorageService {
+        StorageService(defaults: defaults, clippingsCacheFile: cacheFile)
     }
 
     private func waitUntil(_ condition: () -> Bool, timeout: TimeInterval = 15) -> Bool {
@@ -59,7 +67,7 @@ final class ClippingsCacheTests: XCTestCase {
     }
 
     func test_successfulImportCachesTheFileLocally() throws {
-        let storage = StorageService(defaults: defaults)
+        let storage = makeStorage()
         let viewModel = MainViewModel(storage: storage)
 
         viewModel.importClippings(from: sourceFile)
@@ -71,7 +79,7 @@ final class ClippingsCacheTests: XCTestCase {
 
     /// The scenario that made the app useless: the Kindle is gone on the next launch.
     func test_afterTheSourceDisappears_clippingsStillLoadFromTheLocalCopy() throws {
-        let storage = StorageService(defaults: defaults)
+        let storage = makeStorage()
 
         let first = MainViewModel(storage: storage)
         first.importClippings(from: sourceFile)
@@ -93,7 +101,7 @@ final class ClippingsCacheTests: XCTestCase {
     }
 
     func test_withNoSourceAndNoCache_theUserIsAskedToPickAFile() {
-        let storage = StorageService(defaults: defaults)
+        let storage = makeStorage()
         let viewModel = MainViewModel(storage: storage)
 
         viewModel.loadClippings()
@@ -103,12 +111,12 @@ final class ClippingsCacheTests: XCTestCase {
     }
 
     func test_cachingIgnoresACopyOntoItself() throws {
-        let storage = StorageService(defaults: defaults)
-        try Data("veri".utf8).write(to: Constants.Paths.localClippingsFile)
+        let storage = makeStorage()
+        try Data("veri".utf8).write(to: cacheFile!)
 
-        storage.cacheClippingsFile(from: Constants.Paths.localClippingsFile)
+        storage.cacheClippingsFile(from: cacheFile!)
 
-        XCTAssertEqual(try Data(contentsOf: Constants.Paths.localClippingsFile),
+        XCTAssertEqual(try Data(contentsOf: cacheFile!),
                        Data("veri".utf8), "kendi üstüne kopyalama dosyayı bozmamalı")
     }
 }

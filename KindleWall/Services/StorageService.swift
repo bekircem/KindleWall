@@ -108,8 +108,19 @@ protocol StorageServiceProtocol {
 final class StorageService: StorageServiceProtocol {
     private let defaults: UserDefaults
 
-    init(defaults: UserDefaults = .standard) {
+    /// Where the local copy of the clippings file lives.
+    ///
+    /// Injectable for the same reason `WallpaperManager.wallpapersDirectory` is: the test host is
+    /// the real app, so a hard-coded path here means the suite reads, overwrites and deletes the
+    /// user's own `Application Support/KindleWall/MyClippings.txt`. It did — every importing test
+    /// wrote its fixture over the real cache, and two suites removed the file outright in
+    /// `setUp`/`tearDown`. Tests pass a throwaway file; the app gets the real one by default.
+    private let clippingsCacheFile: URL
+
+    init(defaults: UserDefaults = .standard,
+         clippingsCacheFile: URL = Constants.Paths.localClippingsFile) {
         self.defaults = defaults
+        self.clippingsCacheFile = clippingsCacheFile
         Self.cleanupRemovedFeatureKeys(in: defaults)
     }
 
@@ -150,17 +161,18 @@ final class StorageService: StorageServiceProtocol {
     }
 
     func localClippingsFileURL() -> URL? {
-        let url = Constants.Paths.localClippingsFile
+        let url = clippingsCacheFile
         return FileManager.default.fileExists(atPath: url.path) ? url : nil
     }
 
     func cacheClippingsFile(from url: URL) {
-        let destination = Constants.Paths.localClippingsFile
+        let destination = clippingsCacheFile
         // Never copy the cache onto itself.
         guard url.standardizedFileURL != destination.standardizedFileURL else { return }
 
         let fm = FileManager.default
-        try? fm.createDirectory(at: Constants.Paths.appSupportDirectory, withIntermediateDirectories: true)
+        try? fm.createDirectory(at: destination.deletingLastPathComponent(),
+                                withIntermediateDirectories: true)
         guard let data = try? Data(contentsOf: url) else { return }
         try? data.write(to: destination, options: .atomic)
     }

@@ -43,7 +43,7 @@ final class WallpaperPruningTests: XCTestCase {
     }
 
     private func makeManager() -> WallpaperManager {
-        WallpaperManager(storageService: StorageService(), wallpapersDirectory: tempDir)
+        WallpaperManager(storageService: TestStorage.make(), wallpapersDirectory: tempDir)
     }
 
     func test_setUp_createsEmptyDirectory() throws {

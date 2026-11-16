@@ -24,7 +24,7 @@ final class RotationBookTests: XCTestCase {
     }
 
     private func makeViewModel() -> MainViewModel {
-        MainViewModel(storage: StorageService(defaults: defaults))
+        MainViewModel(storage: TestStorage.make(defaults: defaults))
     }
 
     private func book(_ title: String, author: String? = nil, count: Int = 1) -> RotationBook {
