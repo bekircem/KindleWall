@@ -1,0 +1,133 @@
+# Compile gate for KindleWall.
+#
+# Why this exists: the project pins a macOS 26.0 deployment target and Swift 6 language mode,
+# and the development machine moved from Xcode 26 to Xcode 27 with nothing watching. A broken
+# build would have been found by hand, or not at all.
+#
+# Runner: `macos-26` is the arm64 image (macOS 26.7, Xcode 26.6 default). It is the only
+# GitHub-hosted label that ships an SDK new enough for a macOS 26.0 deployment target —
+# `macos-15` defaults to Xcode 16.4, and `macos-14` retired on 2026-11-02. The arm64 image also
+# matches the `arch=arm64` destination the project builds against.
+#
+# What is NOT here, and why: `xcodebuild test-without-building` cannot run on a GitHub-hosted
+# runner. The test host is the real app (see CLAUDE.md), and `KindleWallApp.init()` constructs
+# `CloudKitSyncService`, whose `CKContainer(identifier:)` calls `os_crash` when the process has
+# no `com.apple.developer.icloud-services` entitlement. A hosted runner has no Apple Developer
+# signing identity, and macOS only honours `com.apple.developer.*` entitlements from an
+# Apple-issued signature — an ad-hoc signature carrying them is ignored, which was measured, not
+# assumed: the host dies with SIGTRAP inside `CKContainer.__allocating_init(identifier:)` before
+# the first test runs. `build-for-testing` still *compiles* the whole test target, so every API
+# break and every new warning in the 205 tests is caught here; only their execution is not.
+# Two ways to close that gap, both needing a decision outside CI:
+#   1. Give the repo an Apple Development certificate + provisioning profile as secrets and
+#      import them into a temporary keychain before the build.
+#   2. Guard `CloudKitSyncService` so it reports the missing entitlement through `SyncState`
+#      instead of trapping — the same shape as `DesktopWallpaperGuard`. This would also let
+#      anyone without a paid Apple Developer account run the app from source.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build · warnings · localization
+    runs-on: macos-26
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Toolchain
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          swift --version
+          sdk=$(xcrun --sdk macosx --show-sdk-version)
+          echo "macOS SDK: $sdk"
+          # The deployment target is 26.0. An older SDK cannot build it, and the failure that
+          # produces is obscure, so say so here instead.
+          if [ "${sdk%%.*}" -lt 26 ]; then
+            echo "::error::macOS SDK $sdk is older than the 26.0 deployment target — the runner image changed its default Xcode."
+            exit 1
+          fi
+
+      - name: Install XcodeGen
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_CLEANUP: "1"
+          HOMEBREW_NO_ENV_HINTS: "1"
+        run: |
+          set -euo pipefail
+          brew install xcodegen
+          xcodegen --version
+
+      # Sparkle is the only package. Keyed on the resolved pin so a version bump busts the cache.
+      - name: Cache Swift packages
+        uses: actions/cache@v4
+        with:
+          path: .spm-cache
+          key: spm-${{ runner.os }}-${{ hashFiles('KindleWall.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved', 'project.yml') }}
+          restore-keys: |
+            spm-${{ runner.os }}-
+
+      # project.yml is the source of truth; the checked-in .xcodeproj is generated.
+      - name: Generate the Xcode project
+        run: xcodegen generate
+
+      # No -derivedDataPath on purpose: scripts/sync-catalog.py reads the .stringsdata out of
+      # ~/Library/Developer/Xcode/DerivedData/KindleWall-*, so the build has to land there.
+      # CODE_SIGNING_ALLOWED=NO because a hosted runner has no signing identity; the entitlements
+      # the Debug configuration asks for (CloudKit, APNS) cannot be granted without one.
+      - name: Build for testing
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing \
+            -project KindleWall.xcodeproj \
+            -scheme KindleWall \
+            -configuration Debug \
+            -destination 'platform=macOS,arch=arm64' \
+            -clonedSourcePackagesDirPath .spm-cache \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee build.log
+
+      # Warnings live in the build log, not the test log — `test-without-building` recompiles
+      # nothing. Target is 0, and it is currently met, so anything new fails the run.
+      # appintentsmetadataprocessor's "no AppIntents.framework dependency found" is tool noise on
+      # every build of an app without App Intents, not a compiler diagnostic.
+      - name: No new warnings
+        run: |
+          set -uo pipefail
+          grep 'warning:' build.log \
+            | grep -v 'appintentsmetadataprocessor' \
+            | sed 's/^[[:space:]]*//' \
+            | sort -u > warnings.txt || true
+          count=$(wc -l < warnings.txt | tr -d ' ')
+          echo "$count warning(s)"
+          if [ "$count" -ne 0 ]; then
+            cat warnings.txt
+            while IFS= read -r line; do echo "::warning::$line"; done < warnings.txt
+            echo "::error::$count compiler warning(s); the project's target is 0."
+            exit 1
+          fi
+
+      # Xcode fills the String Catalog only inside the IDE, so the catalog is rebuilt from the
+      # compiler's .stringsdata. --check reports without writing and fails on anything with no
+      # Turkish value.
+      - name: Localization catalog is in sync
+        run: python3 scripts/sync-catalog.py --check
+
+      - name: Upload build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: |
+            build.log
+            warnings.txt
+          if-no-files-found: ignore
